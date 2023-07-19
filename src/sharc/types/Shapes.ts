@@ -18,7 +18,7 @@ export type ShapeProperties<T = {}> = {
 export type LineProperties = {
     lineWidth?: number,
     lineCap?: CanvasLineCap,
-} & Omit<ShapeProperties, 'drawFunction'|'prepFunction'>;
+} & DefaultProperties
 
 export type ScaleType = {
     scaleX: number,
@@ -26,3 +26,16 @@ export type ScaleType = {
 };
 
 export type KeysOf<Properties> = keyof Properties|keyof DefaultProperties|'red'|'green'|'blue'|'colorAlpha'|'x1'|'y1'|'x2'|'y2'|'x'|'y'|'center'|'scaleX'|'scaleY'|'center';
+
+export type Stroke = {
+    color?: ColorType,
+    width?: number,
+    join?: CanvasLineJoin,
+    lineDash?: number,
+    lineDashGap?: number,
+    lineDashOffset?: number,
+}
+
+export type RectProperties = {
+    stroke?: Stroke|null;
+} & DefaultProperties;

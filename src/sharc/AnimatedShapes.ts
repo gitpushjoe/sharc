@@ -1,44 +1,12 @@
-import { Shape, Line } from './Shapes';
+import { Shape, Line, Rect } from './Shapes';
 import { RGB } from './Utils';
-import { BoundsType, ColorType, CurveType } from './types/Common';
-import { LineProperties, ScaleType } from './types/Shapes';
+import { LineProperties, RectProperties, ScaleType } from './types/Shapes';
 import { ShapeProperties, KeysOf } from './types/Shapes';
+import { AnimationType, AnimationPackage, AnimationParams, AnimatedRectHiddenProperties, DEFAULT_ACCEPTED_VALUES_TYPES } from './types/Animation';
 
-type AnimationCallback<PropertyType> = (property: PropertyType) => PropertyType;
-
-type AnimationType<ValidProperties, PropertyType=number> = {
-    property: ValidProperties,
-    from: PropertyType|null,
-    to: PropertyType|AnimationCallback<PropertyType>,
-    duration: number,
-    delay: number,
-    easing: CurveType,
-    frame?: number,
-    channel?: number,
-}
-
-type AnimationParams = {
-    loop?: boolean,
-    iterations?: number,
-    delay?: number,
-}
-
-type AnimationPackage<ValidProperties, ValidTypes> = {
-    animations: AnimationType<ValidProperties, ValidTypes>[],
-    params: AnimationParams
-}
-
-type SPECIAL_ACCEPTED_VALUES_TYPES = ColorType|BoundsType|ScaleType;
-type DEFAULT_ACCEPTED_VALUES_TYPES = number|SPECIAL_ACCEPTED_VALUES_TYPES;
-
-export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPropertyTypes=DEFAULT_ACCEPTED_VALUES_TYPES> extends Shape<Properties> {
+export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPropertyTypes=DEFAULT_ACCEPTED_VALUES_TYPES> extends Shape<Properties, HiddenProperties> {
 
     protected channels: Channel<KeysOf<Properties|HiddenProperties>, DEFAULT_ACCEPTED_VALUES_TYPES|OtherPropertyTypes>[];
-    protected specialProperties = new Map<string, string[]>([
-        ['color', ['red', 'green', 'blue', 'alpha']],
-        ['scale', ['scaleX', 'scaleY']],
-        ['bounds', ['x1', 'y1', 'x2', 'y2']],
-    ]);
 
     constructor( props: ShapeProperties<Properties>, channels: number = 1) {
         super(props);
@@ -55,6 +23,19 @@ export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPro
         return this.channels[index];
     }
 
+    public distribute(
+        animations: AnimationType<KeysOf<Properties|HiddenProperties>, DEFAULT_ACCEPTED_VALUES_TYPES|OtherPropertyTypes>[][], 
+        params: AnimationParams = { loop: false, iterations: 1, delay: 0 }
+        ): void {
+            if (animations.length > this.channels.length) {
+                throw new Error(`Cannot distribute ${animations.length} animations to ${this.channels.length} channels`);
+            }
+            for (const idx in animations) {
+                const animation = animations[idx];
+                this.channels[parseInt(idx) % this.channels.length].enqueue(animation, params);
+            }
+    }
+
     public animate(): void {
         const animations = this.channels.map(channel => channel.stepForward()).filter(animation => animation !== null);
         for (const animation of animations.reverse()) {
@@ -63,27 +44,36 @@ export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPro
     };
 
     private animateProperty(animation: AnimationType<KeysOf<Properties|HiddenProperties>, any>): void {
-        if (animation.from === null) {
-            animation.from = this.getProperty(animation.property);
+        if (animation.fromSaved === undefined || animation.frame === 0) {
+            if (animation.from === null) {
+                animation.fromSaved = this.getProperty(animation.property);
+            } else {
+                animation.fromSaved = animation.from;
+            }
         }
-        if (typeof animation.to === 'function') {
-            animation.to = animation.to(animation.from!);
+        if (animation.toSaved === undefined || animation.frame === 0) {
+            if (typeof animation.to === 'function') {
+                animation.toSaved = animation.to(animation.fromSaved);
+            } else {
+                animation.toSaved = animation.to;
+            }
         }
+        const [from, to, frame, duration, easing] = [animation.fromSaved, animation.toSaved, animation.frame || 0, animation.duration, animation.easing];
         if (this.isNumericProperty(animation.property)) {
             this.setProperty(animation.property, 
-                animation.from! + (animation.easing((animation.frame || 0) / animation.duration)) * (animation.to! - animation.from!)
+                from + (easing(frame / duration)) * (to - from)
             );
         } else if (this.specialProperties.has(animation.property as string)) {
             for (const propertyName of this.specialProperties.get(animation.property as string)!) {
-                const [from, to, frame, duration] = [animation.from![propertyName]!, animation.to![propertyName]!, animation.frame || 0, animation.duration];
-                if (from === undefined || to === undefined) {
-                    throw new Error(`Value ${from} or ${to} is not a valid value for property ${propertyName as string}`);
+                const [p_from, p_to] = [from[propertyName], to[propertyName]];
+                if (p_from === undefined || p_to === undefined) {
+                    throw new Error(`Value ${p_from} or ${p_to} is not a valid value for property ${propertyName as string}`);
                 }
                 const success = this.setProperty(propertyName as KeysOf<Properties|HiddenProperties>, 
-                    from + (animation.easing(frame / duration)) * (to - from)
+                    p_from + (easing(p_from / duration)) * (p_to - p_from)
                 , true);
                 if (!success) {
-                    throw new Error(`Value ${animation.from[propertyName]} or ${animation.to[propertyName]} is not a valid value for property ${propertyName as string}`);
+                    throw new Error(`Value ${p_from[propertyName]} or ${p_to[propertyName]} is not a valid value for property ${propertyName as string}`);
                 }
             }
         } else {
@@ -175,6 +165,7 @@ export class AnimatedLine extends AnimatedShape<LineProperties> {
         }, channels);
         this.lineWidth = props.lineWidth || 1;
         this.lineCap = props.lineCap || 'butt';
+        this.specialProperties.set('strokeColor', ['strokeRed', 'strokeGreen', 'strokeBlue', 'strokeAlpha']);
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
@@ -189,3 +180,47 @@ export class AnimatedLine extends AnimatedShape<LineProperties> {
         );
     }
 }
+
+export class AnimatedRect extends AnimatedShape<RectProperties, AnimatedRectHiddenProperties> {
+    protected strokeEnabled: boolean;
+    protected strokeRed: number;
+    protected strokeGreen: number;
+    protected strokeBlue: number;
+    protected strokeAlpha: number;
+    protected strokeSize: number;
+    protected strokeJoin: CanvasLineJoin;
+    protected strokeDash: number;
+    protected strokeDashGap: number;
+    protected strokeOffset: number;
+
+    constructor(props: RectProperties, channels: number = 1) {
+        super({
+            drawFunction: Rect.drawRect,
+            ...Shape.initializeProps(props)
+        }, channels);
+        this.strokeEnabled = props.stroke !== undefined;
+        this.strokeRed = props.stroke?.color?.red || 0;
+        this.strokeGreen = props.stroke?.color?.green || 0;
+        this.strokeBlue = props.stroke?.color?.blue || 0;
+        this.strokeAlpha = props.stroke?.color?.alpha || 1;
+        this.strokeSize = props.stroke?.width || 1;
+        this.strokeJoin = props.stroke?.join || 'miter';
+        this.strokeDash = props.stroke?.lineDash || 0;
+        this.strokeDashGap = props.stroke?.lineDashGap || props.stroke?.lineDash || 0;
+        this.strokeOffset = props.stroke?.lineDashOffset || 0;
+    }
+
+    public draw(ctx: CanvasRenderingContext2D) {
+        super.draw(ctx, { 
+            bounds: this.getBounds(),
+            stroke: this.strokeEnabled ? {
+                color: RGB(this.strokeRed, this.strokeGreen, this.strokeBlue, this.strokeAlpha),
+                width: this.strokeSize,
+                join: this.strokeJoin,
+                lineDash: this.strokeDash,
+                lineDashGap: this.strokeDashGap,
+                lineDashOffset: this.strokeOffset
+            } : null
+        });
+    }
+ }
