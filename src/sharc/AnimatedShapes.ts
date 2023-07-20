@@ -1,30 +1,31 @@
 import { Shape, Line, Rect } from './Shapes';
-import { RGB } from './Utils';
-import { LineProperties, RectProperties, ScaleType } from './types/Shapes';
+import { Corners, RGBA } from './Utils';
+import { DEFAULT_PROPERTIES, HiddenStrokeProperties, LineProperties, StrokeColorType, StrokeType, StrokeProperties as StrokeableProperties } from './types/Shapes';
 import { ShapeProperties, KeysOf } from './types/Shapes';
-import { AnimationType, AnimationPackage, AnimationParams, AnimatedRectHiddenProperties, DEFAULT_ACCEPTED_VALUES_TYPES } from './types/Animation';
+import { AnimationType, AnimationPackage, AnimationParams, DEFAULT_PROPERTY_TYPES } from './types/Animation';
+import { PositionType } from './types/Common';
 
-export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPropertyTypes=DEFAULT_ACCEPTED_VALUES_TYPES> extends Shape<Properties, HiddenProperties> {
+export abstract class AnimatedShape<Properties = DEFAULT_PROPERTIES, HiddenProperties extends PropertyKey = never, OtherPropertyTypes = never> extends Shape<Properties, HiddenProperties, OtherPropertyTypes> {
 
-    protected channels: Channel<KeysOf<Properties|HiddenProperties>, DEFAULT_ACCEPTED_VALUES_TYPES|OtherPropertyTypes>[];
+    protected channels: Channel<KeysOf<Properties>|HiddenProperties, DEFAULT_PROPERTY_TYPES|OtherPropertyTypes>[];
 
     constructor( props: ShapeProperties<Properties>, channels: number = 1) {
         super(props);
-        this.channels = Array.from({ length: channels }, () => new Channel<KeysOf<Properties|HiddenProperties>, DEFAULT_ACCEPTED_VALUES_TYPES|OtherPropertyTypes>());
+        this.channels = Array.from({ length: channels }, () => new Channel<KeysOf<Properties>|HiddenProperties, DEFAULT_PROPERTY_TYPES|OtherPropertyTypes>());
         return this;
     };
 
-    public draw(ctx: CanvasRenderingContext2D, properties: Properties): void {
+    public draw(ctx: CanvasRenderingContext2D, properties?: Properties): void {
         this.animate();
-        super.draw(ctx, properties);
+        super.draw(ctx, properties!);
     }
 
-    public getChannel(index: number): Channel<KeysOf<Properties|HiddenProperties>, DEFAULT_ACCEPTED_VALUES_TYPES|OtherPropertyTypes> {
+    public getChannel(index: number): Channel<KeysOf<Properties>|HiddenProperties, DEFAULT_PROPERTY_TYPES|OtherPropertyTypes> {
         return this.channels[index];
     }
 
     public distribute(
-        animations: AnimationType<KeysOf<Properties|HiddenProperties>, DEFAULT_ACCEPTED_VALUES_TYPES|OtherPropertyTypes>[][], 
+        animations: AnimationType<KeysOf<Properties>|HiddenProperties, DEFAULT_PROPERTY_TYPES|OtherPropertyTypes>[][], 
         params: AnimationParams = { loop: false, iterations: 1, delay: 0 }
         ): void {
             if (animations.length > this.channels.length) {
@@ -36,14 +37,14 @@ export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPro
             }
     }
 
-    public animate(): void {
+    private animate(): void {
         const animations = this.channels.map(channel => channel.stepForward()).filter(animation => animation !== null);
         for (const animation of animations.reverse()) {
             this.animateProperty(animation!);
         }
     };
 
-    private animateProperty(animation: AnimationType<KeysOf<Properties|HiddenProperties>, any>): void {
+    private animateProperty(animation: AnimationType<KeysOf<Properties>|HiddenProperties, any>): void {
         if (animation.fromSaved === undefined || animation.frame === 0) {
             if (animation.from === null) {
                 animation.fromSaved = this.getProperty(animation.property);
@@ -59,21 +60,40 @@ export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPro
             }
         }
         const [from, to, frame, duration, easing] = [animation.fromSaved, animation.toSaved, animation.frame || 0, animation.duration, animation.easing];
-        if (this.isNumericProperty(animation.property)) {
-            this.setProperty(animation.property, 
+        if (this.isNumericProperty(animation.property) && typeof from === 'number' && typeof to === 'number') {
+            const success = this.setProperty(animation.property, 
                 from + (easing(frame / duration)) * (to - from)
             );
-        } else if (this.specialProperties.has(animation.property as string)) {
-            for (const propertyName of this.specialProperties.get(animation.property as string)!) {
+            if (!success) {
+                throw new Error(`Value ${from} or ${to} is not a valid value for property ${animation.property as string}`);
+            }
+        } else if (this.aggregateProperties.has(animation.property as string)) {
+            for (const propertyName of this.aggregateProperties.get(animation.property as string)!) {
                 const [p_from, p_to] = [from[propertyName], to[propertyName]];
                 if (p_from === undefined || p_to === undefined) {
                     throw new Error(`Value ${p_from} or ${p_to} is not a valid value for property ${propertyName as string}`);
                 }
-                const success = this.setProperty(propertyName as KeysOf<Properties|HiddenProperties>, 
-                    p_from + (easing(p_from / duration)) * (p_to - p_from)
+                const success = this.setProperty(propertyName as KeysOf<Properties>|HiddenProperties, 
+                    p_from + (easing(frame / duration)) * (p_to - p_from)
                 , true);
                 if (!success) {
                     throw new Error(`Value ${p_from[propertyName]} or ${p_to[propertyName]} is not a valid value for property ${propertyName as string}`);
+                }
+            }
+        } else if (this.calculatedProperties.has(animation.property as string)) {
+            if (typeof from !== 'object' || typeof to !== 'object') {
+                throw new Error(`Value ${from} or ${to} is not a valid value for property ${animation.property as string}`);
+            }
+            for (const key of Object.keys(to)) {
+                const [p_from, p_to] = [from[key], to[key]];
+                if (p_from === undefined || p_to === undefined) {
+                    throw new Error(`Value ${p_from} or ${p_to} is not a valid value for property ${key as string}`);
+                }
+                const success = this.setProperty(key as KeysOf<Properties>|HiddenProperties,
+                    p_from + (easing(frame / duration)) * (p_to - p_from)
+                , true);
+                if (!success) {
+                    throw new Error(`Value ${p_from[key]} or ${p_to[key]} is not a valid value for property ${key as string}`);
                 }
             }
         } else {
@@ -83,7 +103,6 @@ export abstract class AnimatedShape<Properties, HiddenProperties=never, OtherPro
 }
 
 class Channel<ValidProperties, ValidTypes=number> {
-
     private queue: AnimationPackage<ValidProperties, ValidTypes>[];
     private index: number;
     private step: number;
@@ -154,6 +173,18 @@ class Channel<ValidProperties, ValidTypes=number> {
     }
 }
 
+export class AnimatedNullShape extends AnimatedShape {
+    constructor(props: Omit<DEFAULT_PROPERTIES, 'bounds'|'color'> & { position: PositionType }, channels: number = 1) {
+        super({
+            drawFunction: () => {},
+            ...Shape.initializeProps({
+                bounds: Corners(props.position.x, props.position.y, props.position.x, props.position.y),
+                ...props
+            })
+        }, channels);
+    }
+}
+
 export class AnimatedLine extends AnimatedShape<LineProperties> {
     protected lineWidth: number;
     protected lineCap: CanvasLineCap;
@@ -165,7 +196,6 @@ export class AnimatedLine extends AnimatedShape<LineProperties> {
         }, channels);
         this.lineWidth = props.lineWidth || 1;
         this.lineCap = props.lineCap || 'butt';
-        this.specialProperties.set('strokeColor', ['strokeRed', 'strokeGreen', 'strokeBlue', 'strokeAlpha']);
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
@@ -175,47 +205,56 @@ export class AnimatedLine extends AnimatedShape<LineProperties> {
                 bounds: this.getBounds(),
                 lineWidth: this.lineWidth,
                 lineCap: this.lineCap,
-                color: RGB(this.red, this.green, this.blue, this.colorAlpha)
+                color: RGBA(this.red, this.green, this.blue, this.colorAlpha)
             },
         );
     }
 }
 
-export class AnimatedRect extends AnimatedShape<RectProperties, AnimatedRectHiddenProperties> {
+export abstract class AnimatedStrokeableShape extends AnimatedShape<StrokeableProperties, HiddenStrokeProperties, StrokeColorType> {
     protected strokeEnabled: boolean;
     protected strokeRed: number;
     protected strokeGreen: number;
     protected strokeBlue: number;
     protected strokeAlpha: number;
-    protected strokeSize: number;
+    protected strokeWidth: number;
     protected strokeJoin: CanvasLineJoin;
     protected strokeDash: number;
     protected strokeDashGap: number;
     protected strokeOffset: number;
 
-    constructor(props: RectProperties, channels: number = 1) {
-        super({
-            drawFunction: Rect.drawRect,
-            ...Shape.initializeProps(props)
-        }, channels);
+    constructor(props: { stroke: StrokeType|null|undefined } & ShapeProperties<StrokeableProperties>, channels: number = 1) {
+        super(props, channels);
         this.strokeEnabled = props.stroke !== undefined;
-        this.strokeRed = props.stroke?.color?.red || 0;
-        this.strokeGreen = props.stroke?.color?.green || 0;
-        this.strokeBlue = props.stroke?.color?.blue || 0;
-        this.strokeAlpha = props.stroke?.color?.alpha || 1;
-        this.strokeSize = props.stroke?.width || 1;
+        this.strokeRed = props.stroke?.color?.strokeRed || 0;
+        this.strokeGreen = props.stroke?.color?.strokeGreen || 0;
+        this.strokeBlue = props.stroke?.color?.strokeBlue || 0;
+        this.strokeAlpha = props.stroke?.color?.strokeAlpha || 1;
+        this.strokeWidth = props.stroke?.width || 1;
         this.strokeJoin = props.stroke?.join || 'miter';
         this.strokeDash = props.stroke?.lineDash || 0;
         this.strokeDashGap = props.stroke?.lineDashGap || props.stroke?.lineDash || 0;
         this.strokeOffset = props.stroke?.lineDashOffset || 0;
+        this.aggregateProperties.set('strokeColor', ['strokeRed', 'strokeGreen', 'strokeBlue', 'strokeAlpha']);
+    }
+}
+
+export class AnimatedRect extends AnimatedStrokeableShape {
+
+    constructor(props: StrokeableProperties, channels: number = 1) {
+        super({
+            drawFunction: Rect.drawRect,
+            stroke: props.stroke,
+            ...Shape.initializeProps(props),
+        }, channels);
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
         super.draw(ctx, { 
             bounds: this.getBounds(),
             stroke: this.strokeEnabled ? {
-                color: RGB(this.strokeRed, this.strokeGreen, this.strokeBlue, this.strokeAlpha),
-                width: this.strokeSize,
+                color: {strokeRed: this.strokeRed, strokeGreen: this.strokeGreen, strokeBlue: this.strokeBlue, strokeAlpha: this.strokeAlpha},
+                width: this.strokeWidth,
                 join: this.strokeJoin,
                 lineDash: this.strokeDash,
                 lineDashGap: this.strokeDashGap,

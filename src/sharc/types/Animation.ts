@@ -1,4 +1,4 @@
-import { BoundsType, ColorType, CurveType } from "./Common";
+import { BoundsType, ColorType, CurveType, PositionType } from "./Common";
 import { ScaleType } from "./Shapes";
 
 export type AnimationCallback<PropertyType> = PropertyType extends any ? SingularCallback<PropertyType> : never;
@@ -29,7 +29,5 @@ export type AnimationPackage<ValidProperties, ValidTypes> = {
     params: AnimationParams
 }
 
-export type AnimatedRectHiddenProperties = 'strokeColor'|'strokeRed'|'strokeGreen'|'strokeBlue'|'strokeAlpha'|'strokeSize'|'strokeDash'|'strokeDashGap'|'strokeOffest';
-
-export type SPECIAL_ACCEPTED_VALUES_TYPES = ColorType|BoundsType|ScaleType;
-export type DEFAULT_ACCEPTED_VALUES_TYPES = number|SPECIAL_ACCEPTED_VALUES_TYPES;
+export type SPECIAL_PROEPRTY_TYPES = ColorType|BoundsType|ScaleType|PositionType;
+export type DEFAULT_PROPERTY_TYPES = number|SPECIAL_PROEPRTY_TYPES;
