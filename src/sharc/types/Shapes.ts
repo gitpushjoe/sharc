@@ -20,6 +20,13 @@ export type LineProperties = {
     lineCap?: CanvasLineCap,
 } & DEFAULT_PROPERTIES
 
+export type EllipseProperties = {
+    startAngle?: number,
+    endAngle?: number,
+} & StrokeProperties;
+
+export type HiddenEllipseProperties = 'radius'|'radiusX'|'radiusY';
+
 export type ScaleType = {
     scaleX: number,
     scaleY: number
@@ -38,6 +45,7 @@ export type StrokeType = {
     color?: StrokeColorType,
     width?: number,
     join?: CanvasLineJoin,
+    cap?: CanvasLineCap,
     lineDash?: number,
     lineDashGap?: number,
     lineDashOffset?: number,

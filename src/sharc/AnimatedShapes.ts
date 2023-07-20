@@ -1,6 +1,6 @@
-import { Shape, Line, Rect } from './Shapes';
+import { Shape, Line, Rect, Ellipse } from './Shapes';
 import { Corners, RGBA } from './Utils';
-import { DEFAULT_PROPERTIES, HiddenStrokeProperties, LineProperties, StrokeColorType, StrokeType, StrokeProperties as StrokeableProperties } from './types/Shapes';
+import { EllipseProperties, DEFAULT_PROPERTIES, HiddenEllipseProperties, HiddenStrokeProperties, LineProperties, StrokeColorType, StrokeProperties, StrokeType, StrokeProperties as StrokeableProperties } from './types/Shapes';
 import { ShapeProperties, KeysOf } from './types/Shapes';
 import { AnimationType, AnimationPackage, AnimationParams, DEFAULT_PROPERTY_TYPES } from './types/Animation';
 import { PositionType } from './types/Common';
@@ -59,7 +59,7 @@ export abstract class AnimatedShape<Properties = DEFAULT_PROPERTIES, HiddenPrope
                 animation.toSaved = animation.to;
             }
         }
-        const [from, to, frame, duration, easing] = [animation.fromSaved, animation.toSaved, animation.frame || 0, animation.duration, animation.easing];
+        const [from, to, frame, duration, easing] = [animation.fromSaved, animation.toSaved, animation.frame ?? 0, animation.duration, animation.easing];
         if (this.isNumericProperty(animation.property) && typeof from === 'number' && typeof to === 'number') {
             const success = this.setProperty(animation.property, 
                 from + (easing(frame / duration)) * (to - from)
@@ -132,7 +132,7 @@ class Channel<ValidProperties, ValidTypes=number> {
         if (this.step > this.currentAnimation!.delay + this.currentAnimation!.duration) {
             this.step = 0;
             this.index++;
-            if (this.index >= this.currentPackage!.animations.length || 0) {
+            if (this.index >= this.currentPackage!.animations.length ?? 0) {
                 this.index = 0;
                 if (this.currentPackage!.params.loop) {
                     this.step = 0;
@@ -155,7 +155,7 @@ class Channel<ValidProperties, ValidTypes=number> {
         animations: AnimationType<ValidProperties, ValidTypes>|AnimationType<ValidProperties, ValidTypes>[],
         params: AnimationParams = { loop: false, iterations: 1, delay: 0 }
     ) {
-        const [loop, iterations, delay] = [Boolean(params.loop), params.iterations || 1, params.delay || 0];
+        const [loop, iterations, delay] = [Boolean(params.loop), params.iterations ?? 1, params.delay ?? 0];
         if (!Array.isArray(animations)) {
             animations = [animations];
         }
@@ -194,8 +194,8 @@ export class AnimatedLine extends AnimatedShape<LineProperties> {
             drawFunction: Line.drawLine,
             ...Shape.initializeProps(props)
         }, channels);
-        this.lineWidth = props.lineWidth || 1;
-        this.lineCap = props.lineCap || 'butt';
+        this.lineWidth = props.lineWidth ?? 1;
+        this.lineCap = props.lineCap ?? 'butt';
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
@@ -211,7 +211,7 @@ export class AnimatedLine extends AnimatedShape<LineProperties> {
     }
 }
 
-export abstract class AnimatedStrokeableShape extends AnimatedShape<StrokeableProperties, HiddenStrokeProperties, StrokeColorType> {
+export abstract class AnimatedStrokeableShape<Properties extends StrokeProperties = StrokeProperties, HiddenProperties extends PropertyKey = never, OtherPropertyTypes = never> extends AnimatedShape<Properties, HiddenStrokeProperties|HiddenProperties, StrokeColorType|OtherPropertyTypes> {
     protected strokeEnabled: boolean;
     protected strokeRed: number;
     protected strokeGreen: number;
@@ -219,6 +219,7 @@ export abstract class AnimatedStrokeableShape extends AnimatedShape<StrokeablePr
     protected strokeAlpha: number;
     protected strokeWidth: number;
     protected strokeJoin: CanvasLineJoin;
+    protected strokeCap: CanvasLineCap;
     protected strokeDash: number;
     protected strokeDashGap: number;
     protected strokeOffset: number;
@@ -226,16 +227,32 @@ export abstract class AnimatedStrokeableShape extends AnimatedShape<StrokeablePr
     constructor(props: { stroke: StrokeType|null|undefined } & ShapeProperties<StrokeableProperties>, channels: number = 1) {
         super(props, channels);
         this.strokeEnabled = props.stroke !== undefined;
-        this.strokeRed = props.stroke?.color?.strokeRed || 0;
-        this.strokeGreen = props.stroke?.color?.strokeGreen || 0;
-        this.strokeBlue = props.stroke?.color?.strokeBlue || 0;
-        this.strokeAlpha = props.stroke?.color?.strokeAlpha || 1;
-        this.strokeWidth = props.stroke?.width || 1;
-        this.strokeJoin = props.stroke?.join || 'miter';
-        this.strokeDash = props.stroke?.lineDash || 0;
-        this.strokeDashGap = props.stroke?.lineDashGap || props.stroke?.lineDash || 0;
-        this.strokeOffset = props.stroke?.lineDashOffset || 0;
+        this.strokeRed = props.stroke?.color?.strokeRed ?? 0;
+        this.strokeGreen = props.stroke?.color?.strokeGreen ?? 0;
+        this.strokeBlue = props.stroke?.color?.strokeBlue ?? 0;
+        this.strokeAlpha = props.stroke?.color?.strokeAlpha ?? 1;
+        this.strokeWidth = props.stroke?.width ?? 1;
+        this.strokeJoin = props.stroke?.join ?? 'miter';
+        this.strokeCap = props.stroke?.cap ?? 'butt';
+        this.strokeDash = props.stroke?.lineDash ?? 0;
+        this.strokeDashGap = props.stroke?.lineDashGap ?? props.stroke?.lineDash ?? 0;
+        this.strokeOffset = props.stroke?.lineDashOffset ?? 0;
         this.aggregateProperties.set('strokeColor', ['strokeRed', 'strokeGreen', 'strokeBlue', 'strokeAlpha']);
+    }
+
+    public draw(ctx: CanvasRenderingContext2D, properties?: Properties) {
+        super.draw(ctx, {
+            ...properties!,
+            stroke: this.strokeEnabled ? {
+                color: {strokeRed: this.strokeRed, strokeGreen: this.strokeGreen, strokeBlue: this.strokeBlue, strokeAlpha: this.strokeAlpha},
+                width: this.strokeWidth,
+                join: this.strokeJoin,
+                cap: this.strokeCap,
+                lineDash: this.strokeDash,
+                lineDashGap: this.strokeDashGap,
+                lineDashOffset: this.strokeOffset
+            } : null
+        });
     }
 }
 
@@ -252,14 +269,65 @@ export class AnimatedRect extends AnimatedStrokeableShape {
     public draw(ctx: CanvasRenderingContext2D) {
         super.draw(ctx, { 
             bounds: this.getBounds(),
-            stroke: this.strokeEnabled ? {
-                color: {strokeRed: this.strokeRed, strokeGreen: this.strokeGreen, strokeBlue: this.strokeBlue, strokeAlpha: this.strokeAlpha},
-                width: this.strokeWidth,
-                join: this.strokeJoin,
-                lineDash: this.strokeDash,
-                lineDashGap: this.strokeDashGap,
-                lineDashOffset: this.strokeOffset
-            } : null
         });
     }
  }
+
+ export class AnimatedEllipse extends AnimatedStrokeableShape<EllipseProperties, HiddenEllipseProperties> {
+    protected startAngle: number;
+    protected endAngle: number;
+
+    constructor(props: EllipseProperties, channels: number = 1) {
+        super({
+            drawFunction: Ellipse.drawEllipse,
+            stroke: props.stroke,
+            ...Shape.initializeProps(props),
+        }, channels);
+        this.startAngle = props.startAngle ?? 0;
+        this.endAngle = props.endAngle ?? 360;
+        this.calculatedProperties.set(
+            'radius',
+            {
+                getter: (self) => (self.getWidth() + self.getHeight()) / 4,
+                setter: (self, value) => {
+                    const centerX = Math.min(self.getProperty('x1'), self.getProperty('x2')) + self.getWidth() / 2;
+                    const centerY = Math.min(self.getProperty('y1'), self.getProperty('y2')) + self.getHeight() / 2;
+                    self.setProperty('x1', centerX - value);
+                    self.setProperty('x2', centerX + value);
+                    self.setProperty('y1', centerY - value);
+                    self.setProperty('y2', centerY + value);
+                }
+            },
+        );
+        this.calculatedProperties.set(
+            'radiusX',
+            {
+                getter: (self) => self.getWidth() / 2,
+                setter: (self, value) => {
+                    const centerX = Math.min(self.getProperty('x1'), self.getProperty('x2')) + self.getWidth() / 2;
+                    self.setProperty('x1', centerX - value);
+                    self.setProperty('x2', centerX + value);
+                }
+            },
+        );
+        this.calculatedProperties.set(
+            'radiusY',
+            {
+                getter: (self) => self.getHeight() / 2,
+                setter: (self, value) => {
+                    const centerY = Math.min(self.getProperty('y1'), self.getProperty('y2')) + self.getHeight() / 2;
+                    self.setProperty('y1', centerY - value);
+                    self.setProperty('y2', centerY + value);
+                }
+            },
+        );
+    }
+
+    public draw(ctx: CanvasRenderingContext2D) {
+        super.draw(ctx, {
+            bounds: this.getBounds(),
+            startAngle: this.startAngle,
+            endAngle: this.endAngle,
+        });
+    }
+}

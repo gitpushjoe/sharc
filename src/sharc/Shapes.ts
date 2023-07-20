@@ -1,4 +1,4 @@
-import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, StrokeColorType } from './types/Shapes';
+import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, StrokeColorType, EllipseProperties, HiddenEllipseProperties } from './types/Shapes';
 import { BoundsType, ColorType, PositionType } from './types/Common';
 import { ColorToString, RGBA, Position, Corners } from './Utils';
 import { DEFAULT_PROPERTY_TYPES } from './types/Animation';
@@ -67,20 +67,20 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties ex
     ]);
 
     constructor(props: ShapeProperties<Properties>) {
-        this.red = props.color?.red || 0;
-        this.green = props.color?.green || 0;
-        this.blue = props.color?.blue || 0;
-        this.colorAlpha = props.color?.alpha || 1;
-        this.alpha = props.alpha || 1;
-        this.rotation = props.rotation || 0;
-        this.scaleX = props.scale?.x || 1;
-        this.scaleY = props.scale?.y || 1;
+        this.red = props.color?.red ?? 0;
+        this.green = props.color?.green ?? 0;
+        this.blue = props.color?.blue ?? 0;
+        this.colorAlpha = props.color?.alpha ?? 1;
+        this.alpha = props.alpha ?? 1;
+        this.rotation = props.rotation ?? 0;
+        this.scaleX = props.scale?.x ?? 1;
+        this.scaleY = props.scale?.y ?? 1;
         this.x1 = props.bounds.x1;
         this.y1 = props.bounds.y1;
         this.x2 = props.bounds.x2;
         this.y2 = props.bounds.y2;
-        this.effects = props.prepFunction || (() => { });
-        this.drawFunction = props.drawFunction || (() => { });
+        this.effects = props.prepFunction ?? (() => { });
+        this.drawFunction = props.drawFunction ?? (() => { });
     }
 
     public draw(ctx: CanvasRenderingContext2D, properties?: Properties) {
@@ -119,10 +119,10 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties ex
 
     static initializeProps(props: { color?: ColorType, alpha?: number, rotation?: number, scale?: PositionType, bounds: BoundsType }) {
         return {
-            color: props.color || RGBA(0, 0, 0),
-            alpha: props.alpha || 1,
-            rotation: props.rotation || 0,
-            scale: props.scale || Position(1, 1),
+            color: props.color ?? RGBA(0, 0, 0),
+            alpha: props.alpha ?? 1,
+            rotation: props.rotation ?? 0,
+            scale: props.scale ?? Position(1, 1),
             bounds: props.bounds
         };
     }
@@ -190,8 +190,8 @@ export class Line extends Shape<LineProperties> {
             drawFunction: Line.drawLine,
             ...Shape.initializeProps(props)
         });
-        this.lineWidth = props.lineWidth || 1;
-        this.lineCap = props.lineCap || 'butt';
+        this.lineWidth = props.lineWidth ?? 1;
+        this.lineCap = props.lineCap ?? 'butt';
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
@@ -208,9 +208,9 @@ export class Line extends Shape<LineProperties> {
 
     public static drawLine(ctx: CanvasRenderingContext2D, properties: LineProperties) {
         const coords = Shape.getContextArgs(properties.bounds);
-        ctx.lineWidth = properties.lineWidth || 1;
-        ctx.lineCap = properties.lineCap || 'butt';
-        ctx.strokeStyle = ColorToString(properties.color || RGBA(0, 0, 0));
+        ctx.lineWidth = properties.lineWidth ?? 1;
+        ctx.lineCap = properties.lineCap ?? 'butt';
+        ctx.strokeStyle = ColorToString(properties.color ?? RGBA(0, 0, 0));
         ctx.beginPath();
         ctx.moveTo(coords[0] * (properties.bounds.x1 > properties.bounds.x2 ? 1 : -1), coords[1] * (properties.bounds.y1 > properties.bounds.y2 ? 1 : -1));
         ctx.lineTo(coords[0] * (properties.bounds.x1 > properties.bounds.x2 ? -1 : 1), coords[1] * (properties.bounds.y1 > properties.bounds.y2 ? -1 : 1));
@@ -219,7 +219,7 @@ export class Line extends Shape<LineProperties> {
     }
 };
 
-export abstract class StrokeableShape extends Shape<StrokeProperties, HiddenStrokeProperties, StrokeColorType> {
+export abstract class StrokeableShape<Properties extends StrokeProperties = StrokeProperties, HiddenProperties extends PropertyKey = never, OtherPropertyTypes = never> extends Shape<Properties, HiddenStrokeProperties|HiddenProperties, StrokeColorType|OtherPropertyTypes> {
     protected strokeEnabled: boolean;
     protected strokeRed: number;
     protected strokeGreen: number;
@@ -227,23 +227,40 @@ export abstract class StrokeableShape extends Shape<StrokeProperties, HiddenStro
     protected strokeAlpha: number;
     protected strokeWidth: number;
     protected strokeJoin: CanvasLineJoin;
+    protected strokeCap: CanvasLineCap;
     protected strokeDash: number;
     protected strokeDashGap: number;
     protected strokeOffset: number;
 
-    constructor(props: { stroke: StrokeType|null|undefined } & ShapeProperties<StrokeProperties>) {
+    constructor(props: { stroke: StrokeType|null|undefined } & ShapeProperties<Properties>) {
         super(props);
         this.strokeEnabled = props.stroke !== undefined;
-        this.strokeRed = props.stroke?.color?.strokeRed || 0;
-        this.strokeGreen = props.stroke?.color?.strokeGreen || 0;
-        this.strokeBlue = props.stroke?.color?.strokeBlue || 0;
-        this.strokeAlpha = props.stroke?.color?.strokeAlpha || 1;
-        this.strokeWidth = props.stroke?.width || 1;
-        this.strokeJoin = props.stroke?.join || 'miter';
-        this.strokeDash = props.stroke?.lineDash || 0;
-        this.strokeDashGap = props.stroke?.lineDashGap || props.stroke?.lineDash || 0;
-        this.strokeOffset = props.stroke?.lineDashOffset || 0;
+        this.strokeRed = props.stroke?.color?.strokeRed ?? 0;
+        this.strokeGreen = props.stroke?.color?.strokeGreen ?? 0;
+        this.strokeBlue = props.stroke?.color?.strokeBlue ?? 0;
+        this.strokeAlpha = props.stroke?.color?.strokeAlpha ?? 1;
+        this.strokeWidth = props.stroke?.width ?? 1;
+        this.strokeJoin = props.stroke?.join ?? 'miter';
+        this.strokeCap = props.stroke?.cap ?? 'round';
+        this.strokeDash = props.stroke?.lineDash ?? 0;
+        this.strokeDashGap = props.stroke?.lineDashGap ?? props.stroke?.lineDash ?? 0;
+        this.strokeOffset = props.stroke?.lineDashOffset ?? 0;
         this.aggregateProperties.set('strokeColor', ['strokeRed', 'strokeGreen', 'strokeBlue', 'strokeAlpha']);
+    }
+
+    public draw(ctx: CanvasRenderingContext2D, properties?: Properties) {
+        super.draw(ctx, {
+            ...properties!,
+            stroke: this.strokeEnabled ? {
+                color: {strokeRed: this.strokeRed, strokeGreen: this.strokeGreen, strokeBlue: this.strokeBlue, strokeAlpha: this.strokeAlpha},
+                width: this.strokeWidth,
+                join: this.strokeJoin,
+                cap: this.strokeCap,
+                lineDash: this.strokeDash,
+                lineDashGap: this.strokeDashGap,
+                lineDashOffset: this.strokeOffset
+            } : null
+        });
     }
 }
 
@@ -260,14 +277,6 @@ export class Rect extends StrokeableShape {
     public draw(ctx: CanvasRenderingContext2D) {
         super.draw(ctx, { 
             bounds: this.getBounds(),
-            stroke: this.strokeEnabled ? {
-                color: {strokeRed: this.strokeRed, strokeGreen: this.strokeGreen, strokeBlue: this.strokeBlue, strokeAlpha: this.strokeAlpha},
-                width: this.strokeWidth,
-                join: this.strokeJoin,
-                lineDash: this.strokeDash,
-                lineDashGap: this.strokeDashGap,
-                lineDashOffset: this.strokeOffset
-            } : null
         });
     }
 
@@ -275,12 +284,13 @@ export class Rect extends StrokeableShape {
         const coords = Shape.getContextArgs(properties.bounds);
         ctx.fillRect(...coords);
         if (properties.stroke !== null && properties.stroke?.width !== 0) {
-            const { color, width, join, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
-            ctx.lineWidth = width || 1;
-            ctx.lineJoin = join || 'miter';
-            ctx.strokeStyle = `rgba(${color?.strokeRed || 0}, ${color?.strokeGreen || 0}, ${color?.strokeBlue || 0}, ${color?.strokeAlpha || 1})`;
-            ctx.setLineDash([lineDash || 0, lineDashGap || 0]);
-            ctx.lineDashOffset = lineDashOffset || 0;
+            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+            ctx.lineWidth = width ?? 1;
+            ctx.lineJoin = join ?? 'miter';
+            ctx.lineCap = cap ?? 'round';
+            ctx.strokeStyle = `rgba(${color?.strokeRed ?? 0}, ${color?.strokeGreen ?? 0}, ${color?.strokeBlue ?? 0}, ${color?.strokeAlpha ?? 1})`;
+            ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
+            ctx.lineDashOffset = lineDashOffset ?? 0;
             if (lineDash === 0) {
                 ctx.strokeRect(...coords);
             } else {
@@ -296,15 +306,78 @@ export class Rect extends StrokeableShape {
     }
 };
 
-// // Ellipse extends Rect to avoid re-writing the stroke member variables
-// export class Ellipse extends Rect {
-//     constructor (props: EllipseProperties) {
-//         super(props);
-//         this.drawFunction = Ellipse.drawEllipse;
-//     }
+export class Ellipse extends StrokeableShape<EllipseProperties, HiddenEllipseProperties> {
+    protected startAngle: number;
+    protected endAngle: number;
 
-//     public static drawEllipse(ctx: CanvasRenderingContext2D, properties: EllipseProperties) {
-//         const args = Shape.getContextArgs(properties.bounds);
+    constructor(props: EllipseProperties) {
+        super({
+            drawFunction: Ellipse.drawEllipse,
+            stroke: props.stroke,
+            ...Shape.initializeProps(props),
+        });
+        this.startAngle = props.startAngle ?? 0;
+        this.endAngle = props.endAngle ?? 360;
+        this.calculatedProperties.set(
+            'radius',
+            {
+                getter: (self) => (self.getWidth() + self.getHeight()) / 4,
+                setter: (self, value) => {
+                    const centerX = Math.min(self.getProperty('x1'), self.getProperty('x2')) + self.getWidth() / 2;
+                    const centerY = Math.min(self.getProperty('y1'), self.getProperty('y2')) + self.getHeight() / 2;
+                    self.setProperty('x1', centerX - value);
+                    self.setProperty('x2', centerX + value);
+                    self.setProperty('y1', centerY - value);
+                    self.setProperty('y2', centerY + value);
+                }
+            },
+        );
+        this.calculatedProperties.set(
+            'radiusX',
+            {
+                getter: (self) => self.getWidth() / 2,
+                setter: (self, value) => {
+                    const centerX = Math.min(self.getProperty('x1'), self.getProperty('x2')) + self.getWidth() / 2;
+                    self.setProperty('x1', centerX - value);
+                    self.setProperty('x2', centerX + value);
+                }
+            },
+        );
+        this.calculatedProperties.set(
+            'radiusY',
+            {
+                getter: (self) => self.getHeight() / 2,
+                setter: (self, value) => {
+                    const centerY = Math.min(self.getProperty('y1'), self.getProperty('y2')) + self.getHeight() / 2;
+                    self.setProperty('y1', centerY - value);
+                    self.setProperty('y2', centerY + value);
+                }
+            },
+        );
+    }
 
-//     }
-// }
+    public draw(ctx: CanvasRenderingContext2D) {
+        super.draw(ctx, {
+            bounds: this.getBounds(),
+            startAngle: this.startAngle,
+            endAngle: this.endAngle,
+        });
+    }
+
+    public static drawEllipse(ctx: CanvasRenderingContext2D, properties: EllipseProperties) {
+        const coords = Shape.getContextArgs(properties.bounds);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, coords[2] / 2, coords[3] / 2, 0, (properties.startAngle ?? 0) * Math.PI / 180, (properties.endAngle ?? 0) * Math.PI / 180);
+        ctx.fill();
+        if (properties.stroke !== null && properties.stroke?.width !== 0) {
+            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+            ctx.lineWidth = width ?? 1;
+            ctx.lineJoin = join ?? 'miter';
+            ctx.lineCap = cap ?? 'round';
+            ctx.strokeStyle = `rgba(${color?.strokeRed ?? 0}, ${color?.strokeGreen ?? 0}, ${color?.strokeBlue ?? 0}, ${color?.strokeAlpha ?? 1})`;
+            ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
+            ctx.lineDashOffset = lineDashOffset ?? 0;
+            ctx.stroke();
+        }
+    }
+}
