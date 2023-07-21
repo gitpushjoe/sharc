@@ -1,9 +1,9 @@
-import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, StrokeColorType, EllipseProperties, HiddenEllipseProperties } from './types/Shapes';
+import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties } from './types/Shapes';
 import { BoundsType, ColorType, PositionType } from './types/Common';
 import { ColorToString, RGBA, Position, Corners } from './Utils';
-import { DEFAULT_PROPERTY_TYPES } from './types/Animation';
+import { AcceptedTypesOf, DEFAULT_PROPERTY_TYPES } from './types/Animation';
 
-export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties extends PropertyKey = never, OtherPropertyTypes = never> {
+export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties = never> {
     protected red: number;
     protected green: number;
     protected blue: number;
@@ -18,7 +18,7 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties ex
     protected rotation: number;
     protected effects: EffectsType;
     protected drawFunction: DrawFunctionType<Properties>;
-    public children: Shape<any, any, any>[] = [];
+    public children: Shape<any, any>[] = [];
 
     protected aggregateProperties = new Map<string, string[]>([
         ['color', ['red', 'green', 'blue', 'alpha']],
@@ -127,7 +127,7 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties ex
         };
     }
 
-    public getProperty(property: KeysOf<Properties>|HiddenProperties): any {
+    public getProperty(property: KeysOf<Properties>|keyof HiddenProperties): any { // to-do: get rid of any
         if (this.aggregateProperties.has(property as string)) {
             const specialProps = this.aggregateProperties.get(property as string)!;
             let object : any = {};
@@ -140,10 +140,9 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties ex
         return Object.getOwnPropertyDescriptor(this, property)?.value;
     }
 
-    public setProperty(property: KeysOf<Properties>|HiddenProperties, value: DEFAULT_PROPERTY_TYPES|OtherPropertyTypes, raiseError: boolean = false): boolean {
-        if (this.aggregateProperties.has(property as string)) {
-            throw new Error(`Cannot set property ${property as string} directly`);
-        } else if (this.calculatedProperties.has(property as string)) {
+    public setProperty(property: KeysOf<Properties>|keyof HiddenProperties, value: AcceptedTypesOf<Properties>, raiseError: boolean = false): boolean {
+        if (this.calculatedProperties.has(property as string)) {
+            console.log(property)
             const {setter, getter} = this.calculatedProperties.get(property as string)!;
             if (!(typeof value === typeof getter(this))) {
                 if (raiseError) throw new Error(`Value ${value} is not a valid value for property ${property as string}`);
@@ -152,11 +151,14 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties ex
             setter(this, value);
             return true;
         }
+        if (this.aggregateProperties.has(property as string)) {
+            throw new Error(`Cannot set property ${property as string} directly`);
+        }
         if (Object.getOwnPropertyDescriptor(this, property)?.value === undefined) {
             if (raiseError) throw new Error(`Property ${property as string} does not exist on ${this.constructor.name}`);
             return false;
         }
-        if (typeof value !== typeof this.getProperty(property)) {
+        if (typeof value !== typeof this.getProperty(property as KeysOf<Properties>)) {
             if (raiseError) throw new Error(`Value ${value} is not a valid value for property ${property as string}`);
             return false;
         }
@@ -164,7 +166,7 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties ex
         return true;
     }
 
-    public isNumericProperty(property: KeysOf<Properties>|HiddenProperties): boolean {
+    public isNumericProperty(property: KeysOf<Properties>|keyof HiddenProperties): boolean {
         return typeof this.getProperty(property) === 'number';
     }
 };
@@ -181,7 +183,7 @@ export class NullShape extends Shape {
     }
 }
 
-export class Line extends Shape<LineProperties> {
+export class Line<Properties extends LineProperties = LineProperties, HiddenProperties = never> extends Shape<Properties, HiddenProperties|HiddenStrokeProperties> {
     protected lineWidth: number;
     protected lineCap: CanvasLineCap;
 
@@ -194,10 +196,11 @@ export class Line extends Shape<LineProperties> {
         this.lineCap = props.lineCap ?? 'butt';
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D, properties? : Properties) {
         super.draw(
             ctx,
             {
+                ...properties!, // Necessary for any class that can extend Line
                 bounds: this.getBounds(),
                 lineWidth: this.lineWidth,
                 lineCap: this.lineCap,
@@ -212,14 +215,14 @@ export class Line extends Shape<LineProperties> {
         ctx.lineCap = properties.lineCap ?? 'butt';
         ctx.strokeStyle = ColorToString(properties.color ?? RGBA(0, 0, 0));
         ctx.beginPath();
-        ctx.moveTo(coords[0] * (properties.bounds.x1 > properties.bounds.x2 ? 1 : -1), coords[1] * (properties.bounds.y1 > properties.bounds.y2 ? 1 : -1));
-        ctx.lineTo(coords[0] * (properties.bounds.x1 > properties.bounds.x2 ? -1 : 1), coords[1] * (properties.bounds.y1 > properties.bounds.y2 ? -1 : 1));
+        ctx.moveTo(coords[0] * Math.sign(properties.bounds.x2 - properties.bounds.x1), coords[1] * Math.sign(properties.bounds.y2 - properties.bounds.y1));
+        ctx.lineTo(coords[0] * Math.sign(properties.bounds.x1 - properties.bounds.x2), coords[1] * Math.sign(properties.bounds.y1 - properties.bounds.y2));
         ctx.stroke();
         ctx.closePath();
     }
 };
 
-export abstract class StrokeableShape<Properties extends StrokeProperties = StrokeProperties, HiddenProperties extends PropertyKey = never, OtherPropertyTypes = never> extends Shape<Properties, HiddenStrokeProperties|HiddenProperties, StrokeColorType|OtherPropertyTypes> {
+export abstract class StrokeableShape<Properties extends StrokeProperties = StrokeProperties, HiddenProperties = StrokeProperties> extends Shape<Properties, HiddenStrokeProperties|HiddenProperties> {
     protected strokeEnabled: boolean;
     protected strokeRed: number;
     protected strokeGreen: number;
@@ -358,6 +361,7 @@ export class Ellipse extends StrokeableShape<EllipseProperties, HiddenEllipsePro
 
     public draw(ctx: CanvasRenderingContext2D) {
         super.draw(ctx, {
+            color: RGBA(this.red, this.green, this.blue, this.colorAlpha),
             bounds: this.getBounds(),
             startAngle: this.startAngle,
             endAngle: this.endAngle,
@@ -366,6 +370,17 @@ export class Ellipse extends StrokeableShape<EllipseProperties, HiddenEllipsePro
 
     public static drawEllipse(ctx: CanvasRenderingContext2D, properties: EllipseProperties) {
         const coords = Shape.getContextArgs(properties.bounds);
+        if (coords[2] === coords[3] && (properties.stroke === null || properties.stroke?.width === 0)) {
+            ctx.lineWidth = coords[2];
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = ColorToString(properties.color ?? RGBA(0, 0, 0));
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, 0);
+            ctx.closePath();
+            ctx.stroke();
+            return;
+        }
         ctx.beginPath();
         ctx.ellipse(0, 0, coords[2] / 2, coords[3] / 2, 0, (properties.startAngle ?? 0) * Math.PI / 180, (properties.endAngle ?? 0) * Math.PI / 180);
         ctx.fill();
@@ -379,5 +394,65 @@ export class Ellipse extends StrokeableShape<EllipseProperties, HiddenEllipsePro
             ctx.lineDashOffset = lineDashOffset ?? 0;
             ctx.stroke();
         }
+    }
+}
+
+export class BezierCurve extends Line<BezierCurveProperties> {
+    protected controlPoint1x: number;
+    protected controlPoint1y: number;
+    protected controlPoint2x: number;
+    protected controlPoint2y: number;
+
+    constructor(props: BezierCurveProperties) {
+        super(props);
+        this.drawFunction = BezierCurve.drawBezierCurve;
+        this.controlPoint1x = props.control1.x;
+        this.controlPoint1y = props.control1.y;
+        this.controlPoint2x = props.control2.x;
+        this.controlPoint2y = props.control2.y;
+        this.calculatedProperties.set(
+            'control1',
+            {
+                getter: (self) => Position(self.getProperty('controlPoint1x'), self.getProperty('controlPoint1y')),
+                setter: (self, value) => {
+                    self.setProperty('controlPoint1x', value.x);
+                    self.setProperty('controlPoint1y', value.y);
+                }
+            }
+        );
+        this.calculatedProperties.set(
+            'control2',
+            {
+                getter: (self) => Position(self.getProperty('controlPoint2x'), self.getProperty('controlPoint2y')),
+                setter: (self, value) => {
+                    self.setProperty('controlPoint2x', value.x);
+                    self.setProperty('controlPoint2y', value.y);
+                }
+            }
+        );
+    }
+
+    public draw(ctx: CanvasRenderingContext2D) {
+        super.draw(ctx, {
+            bounds: this.getBounds(),
+            control1: Position(this.controlPoint1x, this.controlPoint1y),
+            control2: Position(this.controlPoint2x, this.controlPoint2y),
+        });
+    }
+
+    public static drawBezierCurve(ctx: CanvasRenderingContext2D, properties: BezierCurveProperties) {
+        const coords = Shape.getContextArgs(properties.bounds);
+        ctx.lineWidth = properties.lineWidth ?? 1;
+        ctx.lineCap = properties.lineCap ?? 'butt';
+        ctx.strokeStyle = ColorToString(properties.color ?? RGBA(0, 0, 0));
+        const src = [coords[0] * Math.sign(properties.bounds.x2 - properties.bounds.x1), coords[1] * Math.sign(properties.bounds.y2 - properties.bounds.y1)] as [number, number];
+        const control1 = [properties.control1.x - properties.bounds.x1 + src[0], properties.control1.y - properties.bounds.y1 + src[1]] as [number, number];
+        const control2 = [properties.control2.x - properties.bounds.x1 + src[0], properties.control2.y - properties.bounds.y1 + src[1]] as [number, number];
+        const dest = [coords[0] * Math.sign(properties.bounds.x1 - properties.bounds.x2), coords[1] * Math.sign(properties.bounds.y1 - properties.bounds.y2)] as [number, number];
+        ctx.beginPath();
+        ctx.moveTo(...src);
+        ctx.bezierCurveTo(...control1, ...control2, ...dest);
+        console.log(...src, ...dest)
+        ctx.stroke();
     }
 }

@@ -1,3 +1,4 @@
+import { Line } from '../Shapes.ts';
 import { BoundsType, ColorType, PositionType } from './Common.ts';
 
 export type DrawFunctionType<Property> = (ctx: CanvasRenderingContext2D, params: Property) => void;
@@ -25,7 +26,9 @@ export type EllipseProperties = {
     endAngle?: number,
 } & StrokeProperties;
 
-export type HiddenEllipseProperties = 'radius'|'radiusX'|'radiusY';
+export type HiddenEllipseProperties = {
+    radius: number;
+} & EllipseProperties;
 
 export type ScaleType = {
     scaleX: number,
@@ -56,3 +59,8 @@ export type HiddenStrokeProperties = 'strokeColor'|'strokeRed'|'strokeGreen'|'st
 export type StrokeProperties = {
     stroke?: StrokeType|null;
 } & DEFAULT_PROPERTIES;
+
+export type BezierCurveProperties = {
+    control1: PositionType,
+    control2: PositionType,
+} & LineProperties;

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import { Bounds as xywh, Corners, CircleBounds, Colors, StrokeColors } from "./sharc/Utils";
-import { AnimatedEllipse, AnimatedLine, AnimatedNullShape } from "./sharc/AnimatedShapes";
+import { Bounds as xywh, Corners, CircleBounds, Colors, StrokeColors, Bounds } from "./sharc/Utils";
+import { AnimatedBezierCurve, AnimatedEllipse, AnimatedLine, AnimatedNullShape } from "./sharc/AnimatedShapes";
 import { Bounce, EASE_IN_OUT, LINEAR } from "./sharc/Curves";
-import { Ellipse } from "./sharc/Shapes";
+import { BezierCurve, Ellipse } from "./sharc/Shapes";
 
 const App: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -36,20 +36,29 @@ const App: React.FC = () => {
         const myCircle = new AnimatedEllipse({
             bounds: CircleBounds(0, 0, 75),
             stroke: {
-                width: 20,
-                color: StrokeColors.yellow,
+                width: 10,
                 cap: 'round',
             },
-            color: Colors.none,
+            color: Colors.yellow,
             rotation: 90
-        }, 3)
+        }, 3);
 
-        const root = new AnimatedNullShape({position: {x: 600, y: 400}, scale: {x: 1, y: -1}, rotation:0});
+        const bzCurve = new AnimatedBezierCurve({
+            bounds: Corners(0, 0, 500, 500),
+            control1: {x: 0, y: 0},
+            control2: {x: 0, y: 250},
+            lineWidth: 5,
+            lineCap: 'round',
+            color: Colors.red,
+        }, 2);
+
+        const root = new AnimatedNullShape({position: {x: 600, y: 400}, scale: {x: .5, y: -.5}, rotation:0});
         const spin = new AnimatedNullShape({position: {x: 0, y: 0}});
 
         root.children.push(spin);
         spin.children.push(myLine);
         root.children.push(myCircle);
+        root.children.push(bzCurve);
 
         const animate = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -60,11 +69,11 @@ const App: React.FC = () => {
 
         spin.getChannel(0).enqueue([
             {property: 'rotation', from: 0, to: 360, duration: 60, delay: 0, easing: EASE_IN_OUT},
-        ], {loop: true});
+        ], {loop: false});
 
         myLine.getChannel(0).enqueue([
-            {property: 'rotation', from: 0, to: 360, duration: 60, delay: 0, easing: EASE_IN_OUT},
-        ], {loop: true});
+            {property: 'rotation', from: 0, to: 360, duration: 120, delay: 0, easing: EASE_IN_OUT},
+        ], {loop: false});
 
         myCircle.distribute([
             // [{property: 'radius', from: 100, to: 125, duration: 360, delay: 0, easing: Bounce(EASE_IN_OUT)}], 
@@ -76,7 +85,13 @@ const App: React.FC = () => {
             ],
             [{property: 'rotation', from: 0, to: 360, duration: 240, delay: 0, easing: LINEAR}],
             [{property: 'radius', from: 75, to: 125, duration: 180, delay: 0, easing: Bounce(LINEAR)}],
+        ], {loop: false});
+
+        bzCurve.distribute([
+            [{property: 'control1', from: {x: 0, y: 500}, to: {x: 225, y: 250}, duration: 60, delay: 0, easing: LINEAR}],
+            [{property: 'control2', from: {x: 0, y: 500}, to: {x: 225, y: 250}, duration: 60, delay: 0, easing: LINEAR}],
         ], {loop: true});
+            
 
         const canvas = canvasRef.current;
         const intervalId = setInterval(animate, 1000 / 60, canvas, canvas!.getContext('2d')!);
