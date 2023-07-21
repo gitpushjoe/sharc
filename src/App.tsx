@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Bounds as xywh, Corners, CircleBounds, Colors, StrokeColors, Bounds } from "./sharc/Utils";
+import { Bounds as xywh, Corners, CircleBounds, Colors } from "./sharc/Utils";
 import { AnimatedBezierCurve, AnimatedEllipse, AnimatedLine, AnimatedNullShape } from "./sharc/AnimatedShapes";
 import { Bounce, EASE_IN_OUT, LINEAR } from "./sharc/Curves";
-import { BezierCurve, Ellipse } from "./sharc/Shapes";
 
 const App: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -88,6 +87,7 @@ const App: React.FC = () => {
         ], {loop: false});
 
         bzCurve.distribute([
+            [{property: 'scaleX', from: 0, to: 100, duration: 60, delay: 0, easing: LINEAR}],
             [{property: 'control1', from: {x: 0, y: 500}, to: {x: 225, y: 250}, duration: 60, delay: 0, easing: LINEAR}],
             [{property: 'control2', from: {x: 0, y: 500}, to: {x: 225, y: 250}, duration: 60, delay: 0, easing: LINEAR}],
         ], {loop: true});

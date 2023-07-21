@@ -1,7 +1,7 @@
 import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties } from './types/Shapes';
 import { BoundsType, ColorType, PositionType } from './types/Common';
 import { ColorToString, RGBA, Position, Corners } from './Utils';
-import { AcceptedTypesOf, DEFAULT_PROPERTY_TYPES } from './types/Animation';
+import { AcceptedTypesOf } from './types/Animation';
 
 export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties = never> {
     protected red: number;

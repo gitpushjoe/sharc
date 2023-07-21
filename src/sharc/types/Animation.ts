@@ -35,10 +35,7 @@ export type AnimationPackage<ValidProperties> = {
 export type SPECIAL_PROEPRTY_TYPES = ColorType|BoundsType|ScaleType|PositionType;
 export type DEFAULT_PROPERTY_TYPES = number|SPECIAL_PROEPRTY_TYPES;
 
-type NewAnimationType<ValidProeprties> = {
-    [K in keyof ValidProeprties]: {property: K, value: ValidProeprties[K]}
-}[keyof ValidProeprties];
-
-type test = NewAnimationType<{x: number, y: number, color: string}>;
-
-// const x: test = {property: 'x', value: 'test'};
+export type HiddenLineProperties = {
+     lineWidth: number;
+     lineCap: CanvasLineCap;
+}

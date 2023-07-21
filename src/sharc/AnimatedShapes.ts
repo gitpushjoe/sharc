@@ -1,8 +1,8 @@
 import { Shape, Line, Rect, Ellipse, BezierCurve } from './Shapes';
-import { ColorToString, Corners, Position, RGBA } from './Utils';
-import { EllipseProperties, DEFAULT_PROPERTIES, HiddenEllipseProperties, HiddenStrokeProperties, LineProperties, StrokeColorType, StrokeProperties, StrokeType, BezierCurveProperties } from './types/Shapes';
-import { ShapeProperties, KeysOf } from './types/Shapes';
-import { AnimationType, AnimationPackage, AnimationParams, DEFAULT_PROPERTY_TYPES, AcceptedTypesOf } from './types/Animation';
+import { Corners, Position, RGBA } from './Utils';
+import { EllipseProperties, DEFAULT_PROPERTIES, HiddenEllipseProperties, HiddenStrokeProperties, LineProperties, StrokeProperties, StrokeType, BezierCurveProperties } from './types/Shapes';
+import { ShapeProperties } from './types/Shapes';
+import { AnimationType, AnimationPackage, AnimationParams, AcceptedTypesOf, HiddenLineProperties } from './types/Animation';
 import { PositionType } from './types/Common';
 
 export abstract class AnimatedShape<Properties = DEFAULT_PROPERTIES, HiddenProperties = {}> extends Shape<Properties, HiddenProperties> {
@@ -20,7 +20,7 @@ export abstract class AnimatedShape<Properties = DEFAULT_PROPERTIES, HiddenPrope
         super.draw(ctx, properties!);
     }
 
-    public getChannel(index: number): Channel<Properties & HiddenProperties, any> {
+    public getChannel(index: number): Channel<Properties & HiddenProperties> {
         return this.channels[index];
     }
 
@@ -105,7 +105,7 @@ export abstract class AnimatedShape<Properties = DEFAULT_PROPERTIES, HiddenPrope
     }
 }
 
-class Channel<ValidProperties, ValidTypes=number> {
+class Channel<ValidProperties> {
     private queue: AnimationPackage<ValidProperties>[];
     private index: number;
     private step: number;
@@ -188,7 +188,7 @@ export class AnimatedNullShape extends AnimatedShape {
     }
 }
 
-export class AnimatedLine<Properties extends LineProperties = LineProperties, HiddenProperties = {}> extends AnimatedShape<Properties, HiddenProperties> {
+export class AnimatedLine<Properties = {}, HiddenProperties = {}> extends AnimatedShape<Properties & LineProperties, HiddenProperties> {
     protected lineWidth: number;
     protected lineCap: CanvasLineCap;
 
@@ -215,7 +215,7 @@ export class AnimatedLine<Properties extends LineProperties = LineProperties, Hi
     }
 }
 
-export abstract class AnimatedStrokeableShape<Properties extends StrokeProperties = StrokeProperties, HiddenProperties = {}, OtherPropertyTypes = never> extends AnimatedShape<Properties, HiddenStrokeProperties & HiddenProperties> {
+export abstract class AnimatedStrokeableShape<Properties extends StrokeProperties = StrokeProperties, HiddenProperties = {}> extends AnimatedShape<Properties, HiddenStrokeProperties & HiddenProperties> {
     protected strokeEnabled: boolean;
     protected strokeRed: number;
     protected strokeGreen: number;

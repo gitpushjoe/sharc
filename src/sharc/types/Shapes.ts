@@ -1,4 +1,3 @@
-import { Line } from '../Shapes.ts';
 import { BoundsType, ColorType, PositionType } from './Common.ts';
 
 export type DrawFunctionType<Property> = (ctx: CanvasRenderingContext2D, params: Property) => void;
@@ -54,7 +53,17 @@ export type StrokeType = {
     lineDashOffset?: number,
 }
 
-export type HiddenStrokeProperties = 'strokeColor'|'strokeRed'|'strokeGreen'|'strokeBlue'|'strokeAlpha'|'strokeWidth'|'strokeDash'|'strokeDashGap'|'strokeOffest';
+export type HiddenStrokeProperties = {
+    strokeColor: StrokeColorType,
+    strokeRed: number,
+    strokeGreen: number,
+    strokeBlue: number,
+    strokeAlpha: number,
+    strokeWidth: number,
+    strokeDash: number,
+    strokeDashGap: number,
+    strokeOffest: number,
+}
 
 export type StrokeProperties = {
     stroke?: StrokeType|null;
