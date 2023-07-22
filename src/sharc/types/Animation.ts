@@ -8,8 +8,8 @@ type SingularCallback<PropertyType> = (property: PropertyType) => PropertyType;
 export type AnimationType<ValidProperties> = {
     [K in keyof ValidProperties]: {
         property: K, 
-        from: ValidProperties[K], 
-        to: ValidProperties[K], 
+        from: Exclude<ValidProperties[K], string|boolean|PositionType[]>|null, 
+        to: Exclude<ValidProperties[K], string|boolean|PositionType[]>|AnimationCallback<Exclude<ValidProperties[K], string|boolean|PositionType[]>>,
         duration: number,
         delay: number,
         easing: CurveType,

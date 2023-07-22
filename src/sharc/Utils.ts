@@ -1,21 +1,15 @@
 import { ColorType, PositionType, BoundsType } from './types/Common.ts';
-import { StrokeColorType } from './types/Shapes.ts';
 
 export function Position(x: number, y: number): PositionType {
     return { x, y };
 }
 
-export function ColorToString(color: ColorType|StrokeColorType) {
-    return 'red' in color ? `rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})` :
-        `rgba(${color.strokeRed}, ${color.strokeGreen}, ${color.strokeBlue}, ${color.strokeAlpha})`;
+export function ColorToString(color: ColorType) {
+    return `rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`;
 }
 
 export function RGBA(red: number, green: number, blue: number, alpha: number = 1): ColorType {
     return { red, green, blue, alpha };
-}
-
-export function StrokeRGBA(red: number, green: number, blue: number, alpha: number = 1): StrokeColorType {
-    return { strokeRed: red, strokeGreen: green, strokeBlue: blue, strokeAlpha: alpha };
 }
 
 export function Corners(x1: number, y1: number, x2: number, y2: number): BoundsType {
@@ -52,5 +46,3 @@ export const Colors = {
     brown: RGBA(128, 64, 0),
     pink: RGBA(255, 175, 175),
 };
-
-export const StrokeColors = Object.fromEntries(Object.entries(Colors).map(([key, value]) => [key, StrokeRGBA(value.red, value.green, value.blue, value.alpha)]));

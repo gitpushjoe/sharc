@@ -15,18 +15,38 @@ export type ShapeProperties<T = {}> = {
     drawFunction: DrawFunctionType<T>
 };
 
+export type HiddenShapeProperties = {
+    red: number,
+    green: number,
+    blue: number,
+    colorAlpha: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    scaleX: number,
+    scaleY: number,
+    effects: EffectsType,
+    center: PositionType,
+    centerX: number,
+    centerY: number,
+}
+
 export type LineProperties = {
     lineWidth?: number,
     lineCap?: CanvasLineCap,
 } & DEFAULT_PROPERTIES
 
 export type EllipseProperties = {
+    bounds: BoundsType,
     startAngle?: number,
     endAngle?: number,
 } & StrokeProperties;
 
 export type HiddenEllipseProperties = {
     radius: number;
+    radiusY: number;
+    radiusX: number;
 } & EllipseProperties;
 
 export type ScaleType = {
@@ -36,15 +56,8 @@ export type ScaleType = {
 
 export type KeysOf<Properties> = keyof Properties|keyof DEFAULT_PROPERTIES|'red'|'green'|'blue'|'colorAlpha'|'x1'|'y1'|'x2'|'y2'|'x'|'y'|'center'|'scaleX'|'scaleY'|'X'|'Y';
 
-export type StrokeColorType = {
-    strokeRed: number,
-    strokeGreen: number,
-    strokeBlue: number,
-    strokeAlpha: number,
-};
-
 export type StrokeType = {
-    color?: StrokeColorType,
+    color?: ColorType,
     width?: number,
     join?: CanvasLineJoin,
     cap?: CanvasLineCap,
@@ -54,7 +67,7 @@ export type StrokeType = {
 }
 
 export type HiddenStrokeProperties = {
-    strokeColor: StrokeColorType,
+    strokeColor: ColorType,
     strokeRed: number,
     strokeGreen: number,
     strokeBlue: number,
@@ -67,9 +80,22 @@ export type HiddenStrokeProperties = {
 
 export type StrokeProperties = {
     stroke?: StrokeType|null;
-} & DEFAULT_PROPERTIES;
+} & Omit<DEFAULT_PROPERTIES, 'bounds'>;
 
 export type BezierCurveProperties = {
     control1: PositionType,
     control2: PositionType,
 } & LineProperties;
+
+export type PathProperties = {
+    path: PositionType[],
+    fillRule?: CanvasFillRule,
+    closePath?: boolean,
+} & Omit<StrokeProperties, 'bounds'>;
+
+export type PolygonProperties = {
+    sides: number,
+    center: PositionType,
+    radius: number,
+    fillRule?: CanvasFillRule,
+} & Omit<StrokeProperties, 'bounds'>;
