@@ -1,4 +1,4 @@
-import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties, HiddenShapeProperties, PathProperties, PolygonProperties } from './types/Shapes';
+import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties, HiddenShapeProperties, PathProperties, PolygonProperties, StarProperties } from './types/Shapes';
 import { BoundsType, ColorType, PositionType } from './types/Common';
 import { ColorToString, RGBA, Position, Corners, Bounds, CenterBounds } from './Utils';
 import { AcceptedTypesOf, AnimationPackage, AnimationParams, AnimationType, HiddenLineProperties } from './types/Animation';
@@ -81,6 +81,7 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties = 
         this.y2 = props.bounds.y2;
         this.effects = props.prepFunction ?? (() => { });
         this.drawFunction = props.drawFunction ?? (() => { });
+        return this;
     }
 
     public draw(ctx: CanvasRenderingContext2D, properties?: Properties) {
@@ -210,7 +211,7 @@ export abstract class AnimatedShape<Properties = DEFAULT_PROPERTIES, HiddenPrope
     public distribute(
         animations: AnimationType<Properties & HiddenProperties & HiddenShapeProperties>[][], 
         params: AnimationParams = { loop: false, iterations: 1, delay: 0 }
-        ): void {
+        ) {
             if (animations.length > this.channels.length) {
                 throw new Error(`Cannot distribute ${animations.length} animations to ${this.channels.length} channels`);
             }
@@ -218,6 +219,7 @@ export abstract class AnimatedShape<Properties = DEFAULT_PROPERTIES, HiddenPrope
                 const animation = animations[idx];
                 this.channels[parseInt(idx) % this.channels.length].enqueue(animation, params);
             }
+        return this;
     }
 
     private animate(): void {
@@ -677,6 +679,8 @@ export class Path extends StrokeableShape<PathProperties> {
     protected path: PositionType[];
     protected fillRule: CanvasFillRule;
     protected closePath: boolean;
+    protected start: number;
+    protected end: number;
 
     constructor(props: PathProperties, channels: number = 1) {
         super({
@@ -690,6 +694,8 @@ export class Path extends StrokeableShape<PathProperties> {
         this.path = props.path;
         this.fillRule = props.fillRule ?? 'nonzero';
         this.closePath = props.closePath ?? false;
+        this.start = props.start ?? 0;
+        this.end = props.end ?? 1;
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
@@ -703,12 +709,18 @@ export class Path extends StrokeableShape<PathProperties> {
             fillRule: this.fillRule,
             closePath: this.closePath,
             color: RGBA(this.red, this.green, this.blue, this.colorAlpha),
+            start: this.start,
+            end: this.end,
         });
     }
 
     public static drawPath(ctx: CanvasRenderingContext2D, properties: PathProperties) {
         ctx.beginPath();
-        const path = properties.path.map(point => Shape.translatePosition(Path.getBoundsFromPath(properties.path), point)) as PositionType[];
+        let path = properties.path.map(point => Shape.translatePosition(Path.getBoundsFromPath(properties.path), point)) as PositionType[];
+        path = Path.getPathSegment(path, properties.start ?? 0, properties.end ?? 1);
+        if (path.length === 0) {
+            return;
+        }
         const region = new Path2D();
         region.moveTo(path[0].x, path[0].y);
         for (const point of path.slice(1)) {
@@ -730,6 +742,67 @@ export class Path extends StrokeableShape<PathProperties> {
         }
     }
 
+    public static getPathSegment(path: PositionType[], start: number, end: number): PositionType[] {
+        if (start === 0 && end === 1) {
+            return path;
+        } else if (start === end) {
+            return [];
+        } else if (start > end) {
+            return Path.getPathSegment(path, end, start).reverse();
+        } else if (start < 0 || end > 1) {
+            throw new Error('Start and end must be between 0 and 1');
+        }
+        const distances = path.map((point, idx) => Path.calculateDistance(point, path[idx + 1] ?? path[0]));
+        const totalDistance = distances.reduce((a, b) => a + b, 0);
+        const newPath = [] as PositionType[];
+        let pathRatio = 0;
+        let startRatio = 0;
+        let endRatio = 0;
+        const startIdx = distances.findIndex((_, idx) => {
+            const ratio = pathRatio + distances[idx] / totalDistance;
+            if (ratio >= start) {
+                startRatio = (start - pathRatio) / (distances[idx] / totalDistance);
+                return true;
+            }
+            pathRatio = ratio;
+            return false;
+        });
+        pathRatio = 0;
+        const endIdx = distances.findIndex((_, idx) => {
+            const ratio = pathRatio + distances[idx] / totalDistance;
+            if (ratio >= end) {
+                endRatio = (end - pathRatio) / (distances[idx] / totalDistance);
+                return true;
+            }
+            pathRatio = ratio;
+            return false;
+        });
+        if (startIdx === -1 || endIdx <= -1) {
+            return [];
+        }
+        if (startIdx >= endIdx) {
+            return [Path.interpolate(path[startIdx], path[startIdx + 1], startRatio), Path.interpolate(path[startIdx], path[startIdx + 1], endRatio)];
+        }
+        for (let idx = startIdx; idx <= endIdx + 1; idx++) {
+            if (idx === startIdx) {
+                newPath.push(Path.interpolate(path[idx], path[idx + 1], startRatio));
+            } else if (idx === endIdx + 1) {
+                newPath.push(Path.interpolate(path[idx - 1], path[Math.min(idx, path.length - 1)], endRatio));
+            } else {
+                newPath.push(path[idx]);
+            }
+        }
+        return newPath;
+    }
+
+    public static interpolate(point1: PositionType, point2: PositionType, ratio: number): PositionType {
+        return Position(point1.x + ratio * (point2.x - point1.x), point1.y + ratio * (point2.y - point1.y));
+    }
+
+    public static calculateDistance(point1: PositionType, point2: PositionType): number {
+        return Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2));
+    }
+
     // Returns the bounds of the path, which can be used to do rotations, scaling, translations.
     public static getBoundsFromPath(path: PositionType[]): BoundsType {
         return Corners(
@@ -746,6 +819,8 @@ export class Polygon extends StrokeableShape<PolygonProperties> {
     protected radius: number;
     protected centerX: number;
     protected centerY: number;
+    protected start: number;
+    protected end: number;
     protected fillRule: CanvasFillRule;
 
     constructor(props: PolygonProperties, channels: number = 1) {
@@ -761,6 +836,8 @@ export class Polygon extends StrokeableShape<PolygonProperties> {
         this.radius = props.radius;
         this.centerX = props.center.x ?? 0;
         this.centerY = props.center.y ?? 0;
+        this.start = props.start ?? 0;
+        this.end = props.end ?? 1;
         this.fillRule = props.fillRule ?? 'nonzero';
     }
 
@@ -772,8 +849,11 @@ export class Polygon extends StrokeableShape<PolygonProperties> {
         super.draw(ctx, {
             sides: this.sides,
             radius: this.radius,
+            fillRule: this.fillRule,
             color: RGBA(this.red, this.green, this.blue, this.colorAlpha),
             center: Position(this.centerX, this.centerY),
+            start: this.start,
+            end: this.end,
         });
     }
 
@@ -789,9 +869,83 @@ export class Polygon extends StrokeableShape<PolygonProperties> {
         });
         Path.drawPath(ctx, {
             path,
-            fillRule: properties.fillRule,
+            fillRule: properties.fillRule ?? 'nonzero',
             closePath: true,
             stroke: properties.stroke,
+            start: properties.start ?? 0,
+            end: properties.end ?? 1,
+        });
+    }
+}
+
+export class Star extends StrokeableShape<StarProperties> {
+    protected center: PositionType;
+    protected radius: number;
+    protected innerRadius: number;
+    protected fillRule: CanvasFillRule;
+    protected start: number;
+    protected end: number;
+
+    constructor(props: StarProperties, channels: number = 1) {
+        super({
+            drawFunction: Star.drawStar,
+            stroke: props.stroke,
+            ...Shape.initializeProps({
+                bounds: Corners(0, 0, 0, 0), // calculated later
+                ...props,
+            }),
+        }, channels);
+        this.center = props.center;
+        this.radius = props.radius;
+        this.fillRule = props.fillRule ?? 'nonzero';
+        this.innerRadius = props.innerRadius ?? props.radius * (3 - Math.sqrt(5)) / 2;
+        this.start = props.start ?? 0;
+        this.end = props.end ?? 1;
+    }
+
+    public draw(ctx: CanvasRenderingContext2D) {
+        this.x1 = this.center.x - this.radius;
+        this.y1 = this.center.y - this.radius;
+        this.x2 = this.center.x + this.radius;
+        this.y2 = this.center.y + this.radius;
+        super.draw(ctx, {
+            center: this.center,
+            radius: this.radius,
+            innerRadius: this.innerRadius,
+            color: RGBA(this.red, this.green, this.blue, this.colorAlpha),
+            start: this.start,
+            end: this.end,
+        });
+    }
+
+    public static drawStar(ctx: CanvasRenderingContext2D, properties: StarProperties) {
+        const radius = properties.radius;
+        const innerRadius = properties.innerRadius ?? radius * (3 - Math.sqrt(5)) / 2;
+
+        const pointFromAngle = (angle: number, radius: number) => {
+            return Position(radius * Math.cos(Math.PI / 2 + angle), radius * Math.sin(Math.PI / 2 + angle));
+        }
+
+        const path = [
+            pointFromAngle(0, radius),
+            pointFromAngle(2 * Math.PI / 10, innerRadius),
+            pointFromAngle(2 * Math.PI / 5, radius),
+            pointFromAngle(6 * Math.PI / 10, innerRadius),
+            pointFromAngle(4 * Math.PI / 5, radius),
+            pointFromAngle(10 * Math.PI / 10, innerRadius),
+            pointFromAngle(6 * Math.PI / 5, radius),
+            pointFromAngle(14 * Math.PI / 10, innerRadius),
+            pointFromAngle(8 * Math.PI / 5, radius),
+            pointFromAngle(18 * Math.PI / 10, innerRadius),
+        ];
+
+        Path.drawPath(ctx, {
+            path,
+            fillRule: properties.fillRule ?? 'nonzero',
+            closePath: true,
+            stroke: properties.stroke,
+            start: properties.start ?? 0,
+            end: properties.end ?? 1,
         });
     }
 }

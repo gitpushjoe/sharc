@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Bounds as xywh, Corners, Colors, Position, RGBA } from "./sharc/Utils";
 import { Easing } from "./sharc/Curves";
-import { BezierCurve, Ellipse, Line, NullShape, Path, Polygon } from "./sharc/Shapes";
+import { BezierCurve, Ellipse, Line, NullShape, Path, Polygon, Star } from "./sharc/Shapes";
 
 const App: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -31,17 +31,6 @@ const App: React.FC = () => {
             color: Colors.red,
         }, 3));
 
-        const myCircle = new Ellipse({
-            bounds: Ellipse.Bounds(0, 100, 250),
-            stroke: {
-                width: 10,
-                cap: 'round',
-                color: Colors.black,
-            },
-            color: Colors.yellow,
-            rotation: 90,
-        }, 3);
-
         const bzCurve = new BezierCurve({
             bounds: Corners(0, 0, 500, 500),
             control1: {x: 0, y: 0},
@@ -56,20 +45,30 @@ const App: React.FC = () => {
 
         root.children.push(spin);
         spin.children.push(myLine);
-        root.children.push(myCircle);
 
         const myPath = new Path({
             path: [
-                Position(0, 0),
-                Position(-200, 200),
-                Position(-175, 225),
-                Position(175, 225),
-                Position(200, 200),
+                { x: 0, y: 0 },
+                { x: 50, y: -10 },
+                { x: 100, y: 0 },
+                { x: 50, y: 10 },
+                { x: 70, y: 50 },
+                { x: 40, y: 80 },
+                { x: 0, y: 50 },
+                { x: -40, y: 80 },
+                { x: -70, y: 50 },
+                { x: -50, y: 10 },
+                { x: -100, y: 0 },
+                { x: -50, y: -10 },
+                { x: 0, y: 0 },
             ],
-            stroke: {color: Colors.black, width: 10, cap: 'round'},
+            stroke: {color: Colors.black, width: 10, join: 'round', cap: 'round'},
             color: RGBA(100, 120, 255),
-            closePath: true,
-        });
+            closePath: false,
+            scale: {x: 5, y: 5},
+        }, 2).distribute([
+            [{property: 'end', from: 0, to: 1, duration: 480, delay: 0, easing: Easing.EASE_IN_OUT}],
+        ], {loop: true});
         root.children.push(myPath);
 
         const polygon = new Polygon({
@@ -80,6 +79,17 @@ const App: React.FC = () => {
             color: RGBA(100, 120, 255),
         }, 10);
         root.children.push(polygon);
+
+        const star = new Star({
+            center: {x: 150, y: -150},
+            radius: 100,
+            color: RGBA(100, 120, 255),
+            stroke: {color: Colors.black, width: 10, join: 'round'},
+            fillRule: 'evenodd',
+        }).distribute([
+            [{property: 'end', from: 0, to: 1, duration: 480, delay: 0, easing: Easing.EASE_IN_OUT}],
+        ], {loop: true});
+        root.children.push(star);
 
         polygon.distribute([[
             {property: 'rotation', from: 0, to: 360, duration: 900, delay: 0, easing: Easing.Bounce(Easing.LINEAR)},
@@ -99,18 +109,6 @@ const App: React.FC = () => {
 
         myLine.getChannel(0).enqueue([
             {property: 'rotation', from: 0, to: 360, duration: 120, delay: 0, easing: Easing.EASE_IN_OUT},
-        ], {loop: false});
-
-        myCircle.distribute([
-            // [{property: 'radius', from: 100, to: 125, duration: 360, delay: 0, easing: Bounce(EASE_IN_OUT)}], 
-            [
-                {property: 'endAngle', from: 0, to: 360, duration: 120, delay: 0, easing: Easing.LINEAR},
-                {property: 'startAngle', from: 0, to: 360, duration: 120, delay: 0, easing: Easing.LINEAR},
-                {property: 'startAngle', from: 360, to: 0, duration: 120, delay: 0, easing: Easing.LINEAR},
-                {property: 'endAngle', from: 360, to: 0, duration: 120, delay: 0, easing: Easing.LINEAR},
-            ],
-            [{property: 'rotation', from: 0, to: 360, duration: 240, delay: 0, easing: Easing.LINEAR}],
-            // [{property: 'strokeRed', from: 75, to: 125, duration: 180, delay: 0, easing: Easing.Bounce(Easing.LINEAR)}],
         ], {loop: false});
 
         bzCurve.distribute([

@@ -91,11 +91,24 @@ export type PathProperties = {
     path: PositionType[],
     fillRule?: CanvasFillRule,
     closePath?: boolean,
+    start?: number,
+    end?: number,
 } & Omit<StrokeProperties, 'bounds'>;
 
 export type PolygonProperties = {
     sides: number,
     center: PositionType,
     radius: number,
+    fillRule?: CanvasFillRule,
+    start?: number,
+    end?: number,
+} & Omit<StrokeProperties, 'bounds'>;
+
+export type StarProperties = {
+    center: PositionType,
+    radius: number,
+    innerRadius?: number,
+    start?: number,
+    end?: number,
     fillRule?: CanvasFillRule,
 } & Omit<StrokeProperties, 'bounds'>;
