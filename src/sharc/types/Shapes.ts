@@ -3,7 +3,7 @@ import { BoundsType, ColorType, PositionType } from './Common.ts';
 export type DrawFunctionType<Property> = (ctx: CanvasRenderingContext2D, params: Property) => void;
 export type EffectsType = (ctx: CanvasRenderingContext2D) => void;
 
-export type DEFAULT_PROPERTIES = Omit<ShapeProperties, 'drawFunction'|'prepFunction'>;
+export type DEFAULT_PROPERTIES = Omit<ShapeProperties, 'drawFunction'>;
 
 export type ShapeProperties<T = {}> = {
     bounds: BoundsType,
@@ -11,7 +11,7 @@ export type ShapeProperties<T = {}> = {
     alpha?: number,
     rotation?: number,
     scale?: PositionType,
-    prepFunction?: EffectsType,
+    effects?: EffectsType,
     drawFunction: DrawFunctionType<T>
 };
 
@@ -55,6 +55,13 @@ export type ScaleType = {
 };
 
 export type KeysOf<Properties> = keyof Properties|keyof DEFAULT_PROPERTIES|'red'|'green'|'blue'|'colorAlpha'|'x1'|'y1'|'x2'|'y2'|'x'|'y'|'center'|'scaleX'|'scaleY'|'X'|'Y';
+
+export type RadiusType = [number]|[number, number]|[number, number, number]|[number, number, number, number];
+
+export type RectProperties = {
+    bounds: BoundsType,
+    radius?: RadiusType,
+}
 
 export type StrokeType = {
     color?: ColorType,
@@ -111,4 +118,19 @@ export type StarProperties = {
     start?: number,
     end?: number,
     fillRule?: CanvasFillRule,
+} & Omit<StrokeProperties, 'bounds'>;
+
+export type TextProperties = {
+    text: string,
+    position: PositionType,
+    positionIsCenter?: boolean,
+    font?: string,
+    fontSize?: number,
+    textAlign?: CanvasTextAlign,
+    textBaseline?: CanvasTextBaseline,
+    textDirection?: CanvasDirection,
+    maxWidth?: number|null,
+    bold?: boolean,
+    italic?: boolean,
+    underline?: boolean,
 } & Omit<StrokeProperties, 'bounds'>;

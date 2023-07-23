@@ -1,4 +1,4 @@
-import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties, HiddenShapeProperties, PathProperties, PolygonProperties, StarProperties } from './types/Shapes';
+import { DrawFunctionType, ShapeProperties, EffectsType as EffectsType, LineProperties, DEFAULT_PROPERTIES, KeysOf, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties, HiddenShapeProperties, PathProperties, PolygonProperties, StarProperties, RectProperties, RadiusType, TextProperties } from './types/Shapes';
 import { BoundsType, ColorType, PositionType } from './types/Common';
 import { ColorToString, RGBA, Position, Corners, Bounds, CenterBounds } from './Utils';
 import { AcceptedTypesOf, AnimationPackage, AnimationParams, AnimationType, HiddenLineProperties } from './types/Animation';
@@ -79,7 +79,7 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties = 
         this.y1 = props.bounds.y1;
         this.x2 = props.bounds.x2;
         this.y2 = props.bounds.y2;
-        this.effects = props.prepFunction ?? (() => { });
+        this.effects = props.effects ?? (() => { });
         this.drawFunction = props.drawFunction ?? (() => { });
         return this;
     }
@@ -136,13 +136,14 @@ export abstract class Shape<Properties = DEFAULT_PROPERTIES, HiddenProperties = 
         )
     }
 
-    static initializeProps(props: { color?: ColorType, alpha?: number, rotation?: number, scale?: PositionType, bounds: BoundsType }) {
+    static initializeProps(props: { color?: ColorType, alpha?: number, rotation?: number, scale?: PositionType, bounds: BoundsType, effects?: EffectsType }) {
         return {
             color: props.color ?? RGBA(0, 0, 0),
             alpha: props.alpha ?? 1,
             rotation: props.rotation ?? 0,
             scale: props.scale ?? Position(1, 1),
-            bounds: props.bounds
+            bounds: props.bounds,
+            effects: props.effects ?? (() => { })
         };
     }
 
@@ -474,44 +475,65 @@ export abstract class StrokeableShape<Properties = {}, HiddenProperties = {}> ex
     }
 }
 
-export class Rect extends StrokeableShape<{bounds: BoundsType}> {
-
-    constructor(props: StrokeProperties & {bounds: BoundsType}, channels: number = 1) {
+export class Rect extends StrokeableShape<RectProperties> {
+    protected radius: RadiusType;
+    
+    constructor(props: StrokeProperties & RectProperties, channels: number = 1) {
         super({
             drawFunction: Rect.drawRect,
             stroke: props.stroke,
             ...Shape.initializeProps(props),
         }, channels);
+        this.radius = props.radius ?? [0];
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
         super.draw(ctx, { 
             bounds: this.getBounds(),
+            radius: this.radius,
         });
     }
 
-    public static drawRect(ctx: CanvasRenderingContext2D, properties: StrokeProperties & {bounds: BoundsType}) {
+    public static drawRect(ctx: CanvasRenderingContext2D, properties: StrokeProperties & RectProperties) {
         const coords = Shape.translateBounds(properties.bounds);
-        ctx.fillRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
-        if (properties.stroke !== null && properties.stroke?.width !== 0) {
-            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
-            ctx.lineWidth = width ?? 1;
-            ctx.lineJoin = join ?? 'miter';
-            ctx.lineCap = cap ?? 'round';
-            ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${color?.alpha ?? 1})`;
-            ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
-            ctx.lineDashOffset = lineDashOffset ?? 0;
-            if (lineDash === 0) {
+        if (properties.stroke === null || properties.stroke?.width === 0) {
+            if (properties.radius && properties.radius[0] === 0 && properties.radius.length === 1) {
+                ctx.fillRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
+                return;
+            } else {
+                ctx.beginPath();
+                ctx.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+                ctx.fill();
+                ctx.closePath();
+                return;
+            }
+        }
+        const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+        ctx.lineWidth = width ?? 1;
+        ctx.lineJoin = join ?? 'miter';
+        ctx.lineCap = cap ?? 'round';
+        ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${color?.alpha ?? 1})`;
+        ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
+        ctx.lineDashOffset = lineDashOffset ?? 0;
+        if (lineDash === 0) {
+            if (properties.radius && properties.radius[0] === 0 && properties.radius.length === 1) {
+                ctx.fillRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
                 ctx.strokeRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
             } else {
                 ctx.beginPath();
-                ctx.moveTo(coords.x1, coords.y1);
-                ctx.lineTo(coords.x2, coords.y1);
-                ctx.lineTo(coords.x2, coords.y2);
-                ctx.lineTo(coords.x1, coords.y2);
-                ctx.closePath();
+                ctx.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+                ctx.fill();
                 ctx.stroke();
+                ctx.closePath();
             }
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(coords.x1, coords.y1);
+            ctx.lineTo(coords.x2, coords.y1);
+            ctx.lineTo(coords.x2, coords.y2);
+            ctx.lineTo(coords.x1, coords.y2);
+            ctx.closePath();
+            ctx.stroke();
         }
     }
 
@@ -828,7 +850,7 @@ export class Polygon extends StrokeableShape<PolygonProperties> {
             drawFunction: Polygon.drawPolygon,
             stroke: props.stroke,
             ...Shape.initializeProps({
-                bounds: Corners(0, 0, 0, 0), // calculated later
+                bounds: Corners(props.center.x - props.radius, props.center.y - props.radius, props.center.x + props.radius, props.center.y + props.radius),
                 ...props,
             }),
         }, channels);
@@ -891,7 +913,7 @@ export class Star extends StrokeableShape<StarProperties> {
             drawFunction: Star.drawStar,
             stroke: props.stroke,
             ...Shape.initializeProps({
-                bounds: Corners(0, 0, 0, 0), // calculated later
+                bounds: Corners(props.center.x - props.radius, props.center.y - props.radius, props.center.x + props.radius, props.center.y + props.radius),
                 ...props,
             }),
         }, channels);
@@ -947,5 +969,104 @@ export class Star extends StrokeableShape<StarProperties> {
             start: properties.start ?? 0,
             end: properties.end ?? 1,
         });
+    }
+}
+
+export class Text extends StrokeableShape<TextProperties> {
+    protected text: string;
+    protected positionX: number;
+    protected positionY: number;
+    protected positionIsCenter: boolean;
+    protected font: string;
+    protected fontSize: number;
+    protected textAlign: CanvasTextAlign;
+    protected textBaseline: CanvasTextBaseline;
+    protected textDirection: CanvasDirection;
+    protected maxWidth: number|null;
+    protected bold: boolean;
+    protected italic: boolean;
+
+    constructor(props: TextProperties, channels: number = 1) {
+        super({
+            drawFunction: Text.drawText,
+            stroke: props.stroke,
+            ...Shape.initializeProps({
+                bounds: Corners(props.position.x, props.position.y, props.position.x, props.position.y),
+                ...props,
+            }),
+        }, channels);
+        this.text = props.text;
+        this.positionX = props.position.x;
+        this.positionY = props.position.y;
+        this.positionIsCenter = props.positionIsCenter ?? false;
+        this.font = props.font ?? 'sans-serif';
+        this.fontSize = props.fontSize ?? 16;
+        this.textAlign = props.textAlign ?? 'start';
+        this.textBaseline = props.textBaseline ?? 'alphabetic';
+        this.textDirection = props.textDirection ?? 'inherit';
+        this.maxWidth = props.maxWidth ?? null;
+        this.bold = props.bold ?? false;
+        this.italic = props.italic ?? false;
+        this.calculatedProperties.set(
+            'position',
+            {
+                getter: (self) => Position(self.getProperty('positionX'), self.getProperty('positionY')),
+                setter: (self, value) => {
+                    self.setProperty('positionX', value.x);
+                    self.setProperty('positionY', value.y);
+                }
+            }
+        );
+    }
+
+    public draw(ctx: CanvasRenderingContext2D) {
+        ctx.font = `${this.bold ? 'bold ' : ''}${this.italic ? 'italic ' : ''}${this.fontSize}px ${this.font}`;
+        ctx.textAlign = this.textAlign;
+        ctx.textBaseline = this.textBaseline;
+        ctx.direction = this.textDirection;
+        const width = ctx.measureText(this.text).width;
+        const height = this.fontSize;
+        if (this.positionIsCenter) {
+            this.x1 = this.positionX - width / 2;
+            this.y1 = this.positionY - height / 2;
+            this.x2 = this.positionX + width / 2;
+            this.y2 = this.positionY + height / 2;
+        } else {
+            this.x1 = this.positionX;
+            this.y1 = this.positionY;
+            this.x2 = this.positionX + width;
+            this.y2 = this.positionY + height;
+        }
+        console.log(this.x1, this.y1, this.x2, this.y2);
+        super.draw(ctx, {
+            text: this.text,
+            position: Position(this.positionX, this.positionY),
+            font: this.font,
+            fontSize: this.fontSize,
+            textAlign: this.textAlign,
+            textBaseline: this.textBaseline,
+            textDirection: this.textDirection,
+            maxWidth: this.maxWidth,
+            bold: this.bold,
+            italic: this.italic,
+            color: RGBA(this.red, this.green, this.blue, this.colorAlpha),
+        });
+    }
+
+    public static drawText(ctx: CanvasRenderingContext2D, properties: TextProperties) {
+        const { text, fontSize, maxWidth, } = properties;
+        const textWidth = ctx.measureText(text).width;
+        const height = fontSize ?? 16;
+        ctx.fillText(text, -textWidth / 2, height / 2, maxWidth ?? undefined);
+        if (properties.stroke !== null && properties.stroke?.width !== 0) {
+            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+            ctx.lineWidth = width ?? 1;
+            ctx.lineJoin = join ?? 'miter';
+            ctx.lineCap = cap ?? 'round';
+            ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${color?.alpha ?? 1})`;
+            ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
+            ctx.lineDashOffset = lineDashOffset ?? 0;
+            ctx.strokeText(text, -textWidth / 2, height / 2, maxWidth ?? undefined);
+        }
     }
 }
