@@ -1,162 +1,136 @@
 import { useEffect, useRef } from "react";
-import { Bounds as xywh, Corners, Colors, Position, RGBA, Bounds } from "./sharc/Utils";
-import { Easing } from "./sharc/Curves";
-import { BezierCurve, Ellipse, Line, NullShape, Path, Polygon, Rect, Star, Text } from "./sharc/Shapes";
+import { Colors, Position, AnimateTo, Corners } from "./sharc/Utils";
+import { Easing } from "./sharc/Easing";
+import { Ellipse, ImageShape, Rect, TextSprite } from "./sharc/Shapes";
+import { Stage } from "./sharc/Stage";
+import Picture from '/shark.png';
+import Picture2 from '/download.png';
+import { Sprite } from "./sharc/BaseShapes";
 
 const App: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {
-        
-        const myLine = new Line({
-            bounds: xywh(0, 100, 0, 200),
-            lineWidth: 20,
-            lineCap: 'round',
-            color: Colors.Red,
-        }, 3);
 
-        const arrowheadLength = 37.5;
+    const stage = new Stage(canvasRef.current!, 'centered', Colors.LightGrey);
+    const root = stage.root;
 
-        myLine.children.push(new Line({
-            bounds: Corners(-arrowheadLength, 100 - arrowheadLength, 0, 100),
-            lineWidth: 20,
-            lineCap: 'round',
-            color: Colors.Red,
-        }, 3));
+    const boundingBox = new Rect({
+        bounds: Rect.Bounds(-800, -500, 1600, 1000),
+        stroke: {color: Colors.White, width: 5},
+        name: 'boundingBox',
+        color: Colors.None
+    });
 
-        myLine.children.push(new Line({
-            bounds: Corners(arrowheadLength, 100 - arrowheadLength, 0, 100),
-            lineWidth: 20,
-            lineCap: 'round',
-            color: Colors.Red,
-        }, 3));
+    root.addChildren(boundingBox);
 
-        const bzCurve = new BezierCurve({
-            bounds: Corners(0, 0, 500, 500),
-            control1: {x: 0, y: 0},
-            control2: {x: 0, y: 250},
-            lineWidth: 5,
-            lineCap: 'round',
-            color: Colors.DarkSeaGreen,
-        }, 3);
+    const ball = (x: number, y: number, radius: number) => {const ball = new Ellipse({
+        bounds: Ellipse.Bounds(x, y, radius),
+        stroke: {color: Colors.White, width: 5},
+    }, 5).distribute([
+        [AnimateTo('centerY', -500 + radius, 30, 0, Easing.EASE_IN_CUBIC, 'bounce-floor'),
+        AnimateTo('centerY', Math.random() * 400, 30, 0, Easing.EASE_OUT_CUBIC, 'drop')],
+        [AnimateTo('centerX', -800 + radius, 90, 0, Easing.LINEAR, 'bounce-left'),
+        AnimateTo('centerX', 800 - radius, 90, 0, Easing.LINEAR, 'bounce-right')],
+        [AnimateTo('red', Math.random() * 255, 60, 0, Easing.EASE_OUT)],
+        [AnimateTo('green', Math.random() * 255, 60, 0, Easing.EASE_OUT)],
+    ], {loop: true});
+    ball.onAnimationFinish = function (shape, animation) {
+        if (animation?.name)
+            console.log(`${shape.getProperty('name')}: ${animation!.name}`);
+    }
+    return ball;}
 
-        const root = new NullShape({position: {x: 600, y: 400}, scale: {x: 1, y: -1}, rotation:0});
-        const spin = new NullShape({position: {x: 0, y: 0}});
+    const img = new Image();
+    img.src = Picture;
 
-        root.children.push(spin);
-        spin.children.push(myLine);
+    root.addChildren(new ImageShape({
+        image: img,
+        bounds: Corners(-200, -200, 200, 200),
+        scale: Position(1, -1),
+        name: 'shark',
+    }));
 
-        const myPath = new Path({
-            path: [
-                { x: 0, y: 0 },
-                { x: 50, y: -10 },
-                { x: 100, y: 0 },
-                { x: 50, y: 10 },
-                { x: 70, y: 50 },
-                { x: 40, y: 80 },
-                { x: 0, y: 50 },
-                { x: -40, y: 80 },
-                { x: -70, y: 50 },
-                { x: -50, y: 10 },
-                { x: -100, y: 0 },
-                { x: -50, y: -10 },
-                { x: 0, y: 0 },
-            ],
-            stroke: {color: Colors.Black, width: 10, join: 'round', cap: 'round'},
-            color: RGBA(100, 120, 255),
-            closePath: false,
-            scale: {x: 5, y: 5},
-            effects: (ctx => {ctx.shadowColor = 'black'; ctx.shadowBlur = 50;})
-        }, 2).distribute([
-            [{property: 'end', from: 0, to: 1, duration: 480, delay: 0, easing: Easing.EASE_IN_OUT}],
-        ], {loop: true});
-        root.children.push(myPath);
+    setTimeout(() => {
+        const img2 = new Image();
+        img2.src = Picture2;
+        root.findChild('shark')!.setProperty('image', img2);      
+    }, 1000);
 
-        const polygon = new Polygon({
-            center: {x: 0, y: 0},
-            radius: 100,
-            sides: 7.5,
-            stroke: {color: Colors.Black, width: 10, cap: 'round'},
-            color: RGBA(100, 120, 255),
-        }, 10);
-        root.children.push(polygon);
+    root.addChildren(new TextSprite({
+        text: 'Click anywhere to add a ball',
+        position: Position(-750, 400),
+        scale: Position(1, -1),
+        fontSize: 50,
+        bold: true,
+    })).getChannel(0).push([
+        {property: 'alpha', from: 5, to: 10, duration: 60, delay: 0, easing: Easing.EASE_OUT, details: ['5']},
+    ])
+    
+    root.addChildren(new TextSprite({
+        text: '% FPS',
+        position: Position(-750, 337.5),
+        scale: Position(1, -1),
+        fontSize: 50,
+        bold: true,
+        name: 'text',
+        color: Colors.Green,
+    }));
 
-        const star = new Star({
-            center: {x: 150, y: -150},
-            radius: 100,
-            color: RGBA(100, 120, 255),
-            stroke: {color: Colors.Black, width: 10, join: 'round'},
-            fillRule: 'evenodd',
-        }, 2).distribute([
-            [{property: 'innerRadius', from: 0, to: 200, duration: 480, delay: 0, easing: Easing.EASE_IN_OUT}],
-        ], {loop: true});
-        root.children.push(star);
+    boundingBox.onDrag = function (_, e, transform) {
+        const pos = transform(Position(e.offsetX, e.offsetY));
+        boundingBox.addChildren(ball(pos.x, pos.y, Math.random() * 100 + 50));
+        root.children[2].setProperty('text', `Count: ${boundingBox.children.length}`);
+    }
 
-        const rect = new Rect({
-            bounds: Bounds(-400, -200, 100, 100),
-            color: RGBA(100, 120, 255),
-            radius: [20, 0],
-            stroke: {color: Colors.Black, width: 10, join: 'round'},
-        })
-        root.children.push(rect);
+    boundingBox.onRelease = boundingBox.onDrag;
+    
+    setInterval(() => {
+        root.findChild('text')!.setProperty('text', `${Math.round(1000 / stage.lastRenderMs)} FPS`);
+    }, 250);
 
-        polygon.distribute([[
-            {property: 'rotation', from: 0, to: 360, duration: 900, delay: 0, easing: Easing.Bounce(Easing.LINEAR)},
-        ]
-        ], {loop: true});
+    stage.beforeDraw = function (stage: Stage) {
+        stage.root.findChild('boundingBox')!.children.forEach((c: Sprite<any, any>) => {
+            if (c.getProperty('name') === 'special') {
+                c.setProperty('effects', (ctx: CanvasRenderingContext2D) => {ctx.shadowBlur = 60; ctx.shadowColor = 'red';});
+                c.setProperty('alpha', 1);
+            } else {
+                c.setProperty('effects', () => {});
+                c.setProperty('alpha', 0.1);
+            }
+        });
+    }
 
-        const helloWorld = new Text({
-            text: 'Hello World!',
-            font: 'Arial',
-            bold: true,
-            fontSize: 100,
-            color: Colors.Aqua,
-            position: {x: 0, y: 0},
-            rotation: 180,
-            scale: {x: -1, y: 1},
-            stroke: {color: Colors.Black, width: 2, join: 'round'},
-            positionIsCenter: true,
-            italic: true,
-            effects: (ctx => {ctx.shadowColor = 'black'; ctx.shadowBlur = 3;})
-        }, 2).distribute([
-            [{property: 'centerX', from: 180, to: -180, duration: 60, delay: 0, easing: Easing.EASE_IN_OUT}],
-            [{property: 'rotation', from: 0, to: 360, duration: 60, delay: 0, easing: Easing.EASE_IN_OUT}],
-            // [{property: 'position', from: Position(0, 0), to: Position(-100, -100), duration: 60, delay: 0, easing: Easing.EASE_IN_OUT}],
-        ], {loop: true});
-        root.children.push(helloWorld);
-        
-        const animate = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'darkgray';
-            ctx.fillRect(0, 0, 1200, 800);
-            root.draw(ctx);
+    stage.afterDraw = function (stage: Stage) {
+        if (stage.currentFrame % 120 === 0) {
+            const boundingbox = stage.root.findChild('boundingBox')!;
+            boundingbox!.children.forEach((c: Sprite<any, any>) => {
+                c.setProperty('name', '');
+            });
+            const ballsCount = boundingbox.children.length;
+            if (ballsCount > 0) {
+                const randomBall = boundingbox!.children[Math.floor(Math.random() * ballsCount)];
+                randomBall.setProperty('name', 'special');
+                boundingbox!.removeChildren(randomBall);
+                boundingbox!.addChildren(randomBall);
+            }
+        }
+
+        stage.onScroll = function (stage, e) {
+            const boundingbox = stage.root.findChild('boundingBox')!;
+            boundingbox.setProperty('scale', Position(boundingbox.getProperty('scaleX') + e.deltaY / 1000, boundingbox.getProperty('scaleY') + e.deltaY / 1000));
         };
+    }
 
-        spin.getChannel(0).enqueue([
-            {property: 'rotation', from: 0, to: 360, duration: 60, delay: 0, easing: Easing.EASE_IN_OUT},
-        ], {loop: false});
-
-        myLine.getChannel(0).enqueue([
-            {property: 'rotation', from: 0, to: 360, duration: 120, delay: 0, easing: Easing.EASE_IN_OUT},
-        ], {loop: false});
-
-        bzCurve.distribute([
-            [{property: 'centerX', from: 0, to: 500, duration: 60, delay: 0, easing: Easing.LINEAR}],
-            [{property: 'control2', from: {x: 0, y: 500}, to: {x: 225, y: 250}, duration: 60, delay: 0, easing: Easing.LINEAR}],
-        ], {loop: true});
-
-        const canvas = canvasRef.current;
-        const intervalId = setInterval(animate, 1000 / 60, canvas, canvas!.getContext('2d')!);
-
-        return () => {
-          clearInterval(intervalId);
-        };
-    }, []);
+    stage.loop(60);
+    
+    return () => {stage.stop();};
+    }, [canvasRef]);
 
   return (
     <div style={{padding: '1em'}}>
       <h1>Demo</h1>
-      <canvas width={1200} height={800} ref={canvasRef} style={{ border: '5px solid black' }}></canvas>
+      <canvas width={1600} height={1000} ref={canvasRef} style={{ border: '5px solid black' }}></canvas>
     </div>
   );
 };

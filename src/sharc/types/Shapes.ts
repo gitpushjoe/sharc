@@ -11,11 +11,13 @@ export type ShapeProperties<T = {}> = {
     alpha?: number,
     rotation?: number,
     scale?: PositionType,
+    name?: string,
+    details?: (string|number)[],
     effects?: EffectsType,
     drawFunction: DrawFunctionType<T>
 };
 
-export type HiddenShapeProperties = {
+export type HIDDEN_SHAPE_PROPERTIES = {
     red: number,
     green: number,
     blue: number,
@@ -35,6 +37,9 @@ export type HiddenShapeProperties = {
 export type LineProperties = {
     lineWidth?: number,
     lineCap?: CanvasLineCap,
+    lineDash?: number,
+    lineDashGap?: number,
+    lineDashOffset?: number,
 } & DEFAULT_PROPERTIES
 
 export type EllipseProperties = {
@@ -89,10 +94,24 @@ export type StrokeProperties = {
     stroke?: StrokeType|null;
 } & Omit<DEFAULT_PROPERTIES, 'bounds'>;
 
-export type BezierCurveProperties = {
+export type BezierCurveType = {
     control1: PositionType,
     control2: PositionType,
-} & LineProperties;
+    end: PositionType,
+}
+
+export type BezierCurveProperties = {
+    start: PositionType,
+    curves: BezierCurveType[],
+    closePath?: boolean,
+    fillRule?: CanvasFillRule,
+} & Omit<StrokeProperties, 'bounds'>;
+
+export type HiddenBezierCurveProperties = {
+    [key: `control1-${number}`]: PositionType,
+    [key: `control2-${number}`]: PositionType,
+    [key: `end-${number}`]: PositionType,
+}
 
 export type PathProperties = {
     path: PositionType[],
@@ -132,5 +151,23 @@ export type TextProperties = {
     maxWidth?: number|null,
     bold?: boolean,
     italic?: boolean,
-    underline?: boolean,
 } & Omit<StrokeProperties, 'bounds'>;
+
+export type HiddenTextProperties = {
+    position: PositionType,
+    positionX: number,
+    positionY: number,
+}
+
+export type ImageProperties = {
+    image: HTMLImageElement,
+    srcBounds?: BoundsType,
+} & Omit<StrokeProperties, 'bounds'> & { bounds: BoundsType };
+
+export type HiddenImageProperties = {
+    srcX1: number,
+    srcY1: number,
+    srcX2: number,
+    srcY2: number,
+    useSrcBounds: boolean,
+}

@@ -17,4 +17,4 @@ export type BoundsType = {
     y2: number
 }
 
-export type CurveType = (x: number) => number;
+export type EasingType = (x: number) => number;
