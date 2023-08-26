@@ -1,16 +1,15 @@
 import { Sprite } from "../BaseShapes";
-import { BoundsType, ColorType, EasingType, PositionType } from "./Common";
-import { ScaleType } from "./Shapes";
+import { PositionType } from "./Common";
 
-export type AnimationCallback<PropertyType> = PropertyType extends any ? SingularCallback<PropertyType> : never;
+export type EasingType = (x: number) => number;
 
-type SingularCallback<PropertyType> = (property: PropertyType) => PropertyType;
+export type AnimationCallback<PropertyType> = (property: PropertyType) => PropertyType;
 
-export type AnimationType<ValidProperties> = {
-    [K in keyof ValidProperties]: {
+export type PrivateAnimationType<Properties> = {
+    [K in keyof Properties]: {
         property: K, 
-        from: Exclude<ValidProperties[K], string|boolean|PositionType[]|Array<any>>|null, 
-        to: Exclude<ValidProperties[K], string|boolean|PositionType[]|Array<any>>|AnimationCallback<Exclude<ValidProperties[K], string|boolean|PositionType[]|Array<any>>>,
+        from: (Properties[K] & (number|Record<string, number>))|null, 
+        to: (Properties[K] & (number|Record<string, number>))|AnimationCallback<Properties[K] & (number|Record<string, number>)>,
         duration: number,
         delay: number,
         easing: EasingType,
@@ -18,21 +17,23 @@ export type AnimationType<ValidProperties> = {
         channel?: number,
         details?: (string|number)[],
         name?: string,
-        _from?: ValidProperties[K], // used by sprites to store the original value
-        _to?: ValidProperties[K],
-}}[keyof ValidProperties]
+        _from?: Properties[K] & (number|Record<string, number>), // used by sprites to store the original value
+        _to?: Properties[K] & (number|Record<string, number>),
+    }
+}[keyof Properties]
 
-export type PublicAnimationType<ValidProperties> = {
-    [K in keyof ValidProperties]: {
+export type AnimationType<Properties> = {
+    [K in keyof Properties]: {
         property: K, 
-        from: Exclude<ValidProperties[K], string|boolean|PositionType[]|Array<any>>|null, 
-        to: Exclude<ValidProperties[K], string|boolean|PositionType[]|Array<any>>|AnimationCallback<Exclude<ValidProperties[K], string|boolean|PositionType[]|Array<any>>>,
+        from: (Properties[K] & (number|Record<string, number>))|null,
+        to: (Properties[K] & (number|Record<string, number>))|AnimationCallback<Properties[K] & (number|Record<string, number>)>,
         duration: number,
         delay: number,
         easing: EasingType,
         name?: string,
         details?: (string|number)[],
-}}[keyof ValidProperties]
+    }
+}[keyof Properties]
 
 export type AcceptedTypesOf<Properties> = Properties[keyof Properties];
 
@@ -43,19 +44,8 @@ export type AnimationParams = {
 }
 
 export type AnimationPackage<ValidProperties> = {
-    animations: AnimationType<ValidProperties>[],
+    animations: PrivateAnimationType<ValidProperties>[],
     params: AnimationParams
 }
 
-export type SPECIAL_PROEPRTY_TYPES = ColorType|BoundsType|ScaleType|PositionType;
-export type DEFAULT_PROPERTY_TYPES = number|SPECIAL_PROEPRTY_TYPES;
-
-export type HiddenLineProperties = {
-     lineWidth: number;
-     lineCap: CanvasLineCap;
-    lineDash: number;
-    lineDashGap: number;
-    lineDashOffset: number;
-}
-
-export type PointerEventCallback = (shape: Sprite<any, any>, e: PointerEvent, translatePoint: (point: PositionType) => PositionType) => void;
+export type PointerEventCallback<Properties, HiddenProperties> = (shape: Sprite<Properties, HiddenProperties>, event: PointerEvent, translatedPoint: PositionType) => void;

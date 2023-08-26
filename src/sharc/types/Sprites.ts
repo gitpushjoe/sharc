@@ -1,6 +1,6 @@
 import { BoundsType, ColorType, PositionType } from './Common.ts';
 
-export type DrawFunctionType<Property> = (ctx: CanvasRenderingContext2D, params: Property) => void;
+export type DrawFunctionType<Property> = (ctx: CanvasRenderingContext2D, params: Property) => Path2D|void;
 export type EffectsType = (ctx: CanvasRenderingContext2D) => void;
 
 export type DEFAULT_PROPERTIES = Omit<ShapeProperties, 'drawFunction'>;
@@ -28,10 +28,13 @@ export type HIDDEN_SHAPE_PROPERTIES = {
     y2: number,
     scaleX: number,
     scaleY: number,
-    effects: EffectsType,
     center: PositionType,
     centerX: number,
     centerY: number,
+    corner1: PositionType,
+    corner2: PositionType,
+    width: number,
+    height: number,
 }
 
 export type LineProperties = {
@@ -50,16 +53,11 @@ export type EllipseProperties = {
 
 export type HiddenEllipseProperties = {
     radius: number;
-    radiusY: number;
     radiusX: number;
+    radiusY: number;
 } & EllipseProperties;
 
-export type ScaleType = {
-    scaleX: number,
-    scaleY: number
-};
-
-export type KeysOf<Properties> = keyof Properties|keyof DEFAULT_PROPERTIES|'red'|'green'|'blue'|'colorAlpha'|'x1'|'y1'|'x2'|'y2'|'x'|'y'|'center'|'scaleX'|'scaleY'|'X'|'Y';
+export type KeysOf<Properties> = keyof Properties|keyof DEFAULT_PROPERTIES|keyof HIDDEN_SHAPE_PROPERTIES;
 
 export type RadiusType = [number]|[number, number]|[number, number, number]|[number, number, number, number];
 
@@ -70,9 +68,9 @@ export type RectProperties = {
 
 export type StrokeType = {
     color?: ColorType,
-    width?: number,
-    join?: CanvasLineJoin,
-    cap?: CanvasLineCap,
+    lineWidth?: number,
+    lineJoin?: CanvasLineJoin,
+    lineCap?: CanvasLineCap,
     lineDash?: number,
     lineDashGap?: number,
     lineDashOffset?: number,
@@ -87,14 +85,16 @@ export type HiddenStrokeProperties = {
     strokeWidth: number,
     strokeDash: number,
     strokeDashGap: number,
-    strokeOffest: number,
+    strokeOffset: number,
+    strokeJoin: CanvasLineJoin,
+    strokeCap: CanvasLineCap,
 }
 
 export type StrokeProperties = {
     stroke?: StrokeType|null;
 } & Omit<DEFAULT_PROPERTIES, 'bounds'>;
 
-export type BezierCurveType = {
+export type BezierPoint = {
     control1: PositionType,
     control2: PositionType,
     end: PositionType,
@@ -102,7 +102,7 @@ export type BezierCurveType = {
 
 export type BezierCurveProperties = {
     start: PositionType,
-    curves: BezierCurveType[],
+    points: BezierPoint[],
     closePath?: boolean,
     fillRule?: CanvasFillRule,
 } & Omit<StrokeProperties, 'bounds'>;
@@ -111,6 +111,15 @@ export type HiddenBezierCurveProperties = {
     [key: `control1-${number}`]: PositionType,
     [key: `control2-${number}`]: PositionType,
     [key: `end-${number}`]: PositionType,
+    [key: `curve-${number}`]: BezierPoint,
+    'startX': number,
+    'startY': number,
+}
+
+export type HiddenPathProperties = {
+    [key: `point-${number}`]: PositionType,
+    [key: `x-${number}`]: number,
+    [key: `y-${number}`]: number,
 }
 
 export type PathProperties = {
@@ -154,7 +163,6 @@ export type TextProperties = {
 } & Omit<StrokeProperties, 'bounds'>;
 
 export type HiddenTextProperties = {
-    position: PositionType,
     positionX: number,
     positionY: number,
 }
@@ -169,5 +177,7 @@ export type HiddenImageProperties = {
     srcY1: number,
     srcX2: number,
     srcY2: number,
+    srcCorner1: PositionType,
+    srcCorner2: PositionType,
     useSrcBounds: boolean,
 }

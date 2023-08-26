@@ -1,17 +1,16 @@
-import { ShapeProperties, LineProperties, DEFAULT_PROPERTIES, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties, PathProperties, PolygonProperties, StarProperties, RectProperties, RadiusType, TextProperties, BezierCurveType, HiddenBezierCurveProperties, ImageProperties, HiddenTextProperties } from './types/Shapes';
+import { ShapeProperties, LineProperties, DEFAULT_PROPERTIES, StrokeProperties, HiddenStrokeProperties, StrokeType, EllipseProperties, HiddenEllipseProperties, BezierCurveProperties, PathProperties, PolygonProperties, StarProperties, RectProperties, RadiusType, TextProperties, BezierPoint, HiddenBezierCurveProperties, ImageProperties, HiddenTextProperties, HiddenPathProperties, HiddenImageProperties } from './types/Sprites';
 import { BoundsType, PositionType } from './types/Common';
-import { ColorToString, Color, Position, Corners, Dimensions, Center as Center, getX1Y1WH, translateBounds, translatePosition, Circle } from './Utils';
-import { HiddenLineProperties } from './types/Animation';
+import { ColorToString, Color, Position, Corners, Dimensions, getX1Y1WH, translateBounds, translatePosition, CircleBounds } from './Utils';
 import { Sprite, Shape } from './BaseShapes';
 
 /**
  * A shape that has no bounds and does not draw anything.
  * 
- * Consists of only a position, scale and rotation. (Posiiton defaults to (0, 0))
+ * Consists of only a position, scale and rotation. (Position defaults to (0, 0))
  * 
  * Useful for creating a parent for other shapes.
  */
-export class NullShape extends Sprite {
+export class NullSprite extends Sprite<DEFAULT_PROPERTIES, {position?: PositionType}> {
     constructor(props: { position?: PositionType } & Omit<DEFAULT_PROPERTIES, 'bounds'|'color'>, channels: number = 1) {
         props.position = props.position === undefined ? Position(0, 0) : props.position;
         super({
@@ -31,7 +30,7 @@ export class NullShape extends Sprite {
     }
 }
 
-export class Line<Properties = {}, HiddenProperties = {}> extends Sprite<Properties & LineProperties, HiddenProperties & HiddenLineProperties> {
+export class Line<Properties = {}, HiddenProperties = {}> extends Sprite<Properties & LineProperties, HiddenProperties> {
     protected lineWidth: number;
     protected lineCap: CanvasLineCap;
     protected lineDash: number;
@@ -66,7 +65,7 @@ export class Line<Properties = {}, HiddenProperties = {}> extends Sprite<Propert
         );
     }
 
-    private static drawLine(ctx: CanvasRenderingContext2D, properties: LineProperties) {
+    private static drawLine(ctx: CanvasRenderingContext2D, properties: LineProperties): Path2D {
         const bounds = translateBounds(properties.bounds);
         ctx.lineWidth = properties.lineWidth ?? 1;
         ctx.lineCap = properties.lineCap ?? 'butt';
@@ -78,6 +77,10 @@ export class Line<Properties = {}, HiddenProperties = {}> extends Sprite<Propert
         ctx.lineTo(bounds.x2, bounds.y2);
         ctx.stroke();
         ctx.closePath();
+        const path = new Path2D();
+        path.moveTo(bounds.x1, bounds.y1);
+        path.lineTo(bounds.x2, bounds.y2);
+        return path;
     }
 
     /**
@@ -95,9 +98,9 @@ export class Line<Properties = {}, HiddenProperties = {}> extends Sprite<Propert
  * 
  * Initializes the stroke properties as member variables. 
  * 
- * DOES NOT actually draw the stroke. 
+ * DOES NOT actually draw the stroke, that is left to the subclass' implementation of draw().
  * 
- * Aggrgate Properties: ['strokeColor']
+ * Aggregate Properties: ['strokeColor']
  * 
  * Hidden Properties: ['strokeRed', 'strokeGreen', 'strokeBlue', 'strokeAlpha', 'strokeWidth', 'strokeJoin', 'strokeCap', 'strokeDash', 'strokeDashGap', 'strokeOffset', 'strokeEnabled']
  */
@@ -121,9 +124,9 @@ export abstract class StrokeableSprite<Properties = {}, HiddenProperties = {}> e
         this.strokeGreen = props.stroke?.color?.green ?? 0;
         this.strokeBlue = props.stroke?.color?.blue ?? 0;
         this.strokeAlpha = props.stroke?.color?.alpha ?? 1;
-        this.strokeWidth = props.stroke?.width ?? 1;
-        this.strokeJoin = props.stroke?.join ?? 'miter';
-        this.strokeCap = props.stroke?.cap ?? 'butt';
+        this.strokeWidth = props.stroke?.lineWidth ?? 1;
+        this.strokeJoin = props.stroke?.lineJoin ?? 'miter';
+        this.strokeCap = props.stroke?.lineCap ?? 'butt';
         this.strokeDash = props.stroke?.lineDash ?? 0;
         this.strokeDashGap = props.stroke?.lineDashGap ?? props.stroke?.lineDash ?? 0;
         this.strokeOffset = props.stroke?.lineDashOffset ?? 0;
@@ -137,9 +140,9 @@ export abstract class StrokeableSprite<Properties = {}, HiddenProperties = {}> e
             ...properties!,
             stroke: this.strokeEnabled ? {
                 color: {red: this.strokeRed, green: this.strokeGreen, blue: this.strokeBlue, alpha: this.strokeAlpha},
-                width: this.strokeWidth,
-                join: this.strokeJoin,
-                cap: this.strokeCap,
+                lineWidth: this.strokeWidth,
+                lineJoin: this.strokeJoin,
+                lineCap: this.strokeCap,
                 lineDash: this.strokeDash,
                 lineDashGap: this.strokeDashGap,
                 lineDashOffset: this.strokeOffset
@@ -170,20 +173,26 @@ export class Rect extends StrokeableSprite<RectProperties> {
         });
     }
 
-    public static drawRect(ctx: CanvasRenderingContext2D, properties: StrokeProperties & RectProperties) {
+    public static drawRect(ctx: CanvasRenderingContext2D, properties: StrokeProperties & RectProperties): Path2D {
         const coords = translateBounds(properties.bounds);
-        if (properties.stroke === null || properties.stroke?.width === 0) {
+        if (properties.stroke === null || properties.stroke?.lineWidth === 0) {
             if (properties.radius && properties.radius[0] === 0 && properties.radius.length === 1) {
-                ctx.fillRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
-                return;
+                const region = new Path2D();
+                region.rect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
+                ctx.fill(region, 'nonzero');
+                return region;
+                // ctx.fillRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
             } else {
-                ctx.beginPath();
-                ctx.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
-                ctx.fill();
-                return;
+                const region = new Path2D();
+                region.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+                ctx.fill(region, 'nonzero');
+                return region;
+                // ctx.beginPath();
+                // ctx.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+                // ctx.fill();
             }
         }
-        const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+        const { color, lineWidth: width, lineJoin: join, lineCap: cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
         ctx.lineWidth = width ?? 1;
         ctx.lineJoin = join ?? 'miter';
         ctx.lineCap = cap ?? 'round';
@@ -191,20 +200,29 @@ export class Rect extends StrokeableSprite<RectProperties> {
         ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
         ctx.lineDashOffset = lineDashOffset ?? 0;
         if (lineDash === 0) {
-            ctx.beginPath();
-            ctx.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
-            ctx.fill();
-            ctx.stroke();
-            ctx.closePath();
+            const region = new Path2D();
+            region.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+            ctx.fill(region, 'nonzero');
+            ctx.stroke(region);
+            return region;
+            // ctx.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+            // ctx.fill();
+            // ctx.stroke();
+            // ctx.closePath();
         } else {
-            ctx.beginPath();
-            ctx.moveTo(coords.x1, coords.y1);
-            ctx.lineTo(coords.x2, coords.y1);
-            ctx.lineTo(coords.x2, coords.y2);
-            ctx.lineTo(coords.x1, coords.y2);
-            ctx.fill();
-            ctx.closePath();
-            ctx.stroke();
+            const region = new Path2D();
+            region.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+            ctx.fill(region, 'nonzero');
+            ctx.stroke(region);
+            return region;
+            // ctx.beginPath();
+            // ctx.moveTo(coords.x1, coords.y1);
+            // ctx.lineTo(coords.x2, coords.y1);
+            // ctx.lineTo(coords.x2, coords.y2);
+            // ctx.lineTo(coords.x1, coords.y2);
+            // ctx.fill();
+            // ctx.closePath();
+            // ctx.stroke();
         }
     }
 
@@ -238,36 +256,36 @@ export class Rect extends StrokeableSprite<RectProperties> {
         this.calculatedProperties.set(
             'radius',
             {
-                getter: (self) => (self.width + self.height) / 4,
+                getter: (self) => (self.get('width') + self.get('height')) / 4,
                 setter: (self, value) => {
-                    const centerX = Math.min(self.getProperty('x1'), self.getProperty('x2')) + self.width / 2;
-                    const centerY = Math.min(self.getProperty('y1'), self.getProperty('y2')) + self.height / 2;
-                    self.setProperty('x1', centerX - value);
-                    self.setProperty('x2', centerX + value);
-                    self.setProperty('y1', centerY - value);
-                    self.setProperty('y2', centerY + value);
+                    const centerX = Math.min(self.get('x1'), self.get('x2')) + self.get('width') / 2;
+                    const centerY = Math.min(self.get('y1'), self.get('y2')) + self.get('height') / 2;
+                    self.set('x1', centerX - value);
+                    self.set('x2', centerX + value);
+                    self.set('y1', centerY - value);
+                    self.set('y2', centerY + value);
                 }
             },
         );
         this.calculatedProperties.set(
             'radiusX',
             {
-                getter: (self) => self.width / 2,
+                getter: (self) => self.get('width') / 2,
                 setter: (self, value) => {
-                    const centerX = Math.min(self.getProperty('x1'), self.getProperty('x2')) + self.width / 2;
-                    self.setProperty('x1', centerX - value);
-                    self.setProperty('x2', centerX + value);
+                    const centerX = Math.min(self.get('x1'), self.get('x2')) + self.get('height') / 2;
+                    self.set('x1', centerX - value);
+                    self.set('x2', centerX + value);
                 }
             },
         );
         this.calculatedProperties.set(
             'radiusY',
             {
-                getter: (self) => self.height / 2,
+                getter: (self) => self.get('height') / 2,
                 setter: (self, value) => {
-                    const centerY = Math.min(self.getProperty('y1'), self.getProperty('y2')) + self.height / 2;
-                    self.setProperty('y1', centerY - value);
-                    self.setProperty('y2', centerY + value);
+                    const centerY = Math.min(self.get('y1'), self.get('y2')) + self.get('height') / 2;
+                    self.set('y1', centerY - value);
+                    self.set('y2', centerY + value);
                 }
             },
         );
@@ -282,32 +300,32 @@ export class Rect extends StrokeableSprite<RectProperties> {
         });
     }
 
-    public static drawEllipse(ctx: CanvasRenderingContext2D, properties: EllipseProperties) {
+    public static drawEllipse(ctx: CanvasRenderingContext2D, properties: EllipseProperties): Path2D {
         const coords = getX1Y1WH(properties.bounds);
-        if (coords[2] === coords[3] && (properties.stroke === null || properties.stroke?.width === 0) && properties.startAngle === 0 && properties.endAngle === 360) {
-            ctx.lineWidth = coords[2];
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = ColorToString(properties.color ?? Color(0, 0, 0));
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, 0);
-            ctx.closePath();
-            ctx.stroke();
-            return;
-        }
         ctx.beginPath();
-        ctx.ellipse(0, 0, coords[2] / 2, coords[3] / 2, 0, (properties.startAngle ?? 0) * Math.PI / 180, (properties.endAngle ?? 0) * Math.PI / 180);
-        ctx.fill();
-        if (properties.stroke !== null && properties.stroke?.width !== 0) {
-            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+        const region = new Path2D();
+        region.ellipse(0, 0, coords[2] / 2, coords[3] / 2, 0, (properties.startAngle ?? 0) * Math.PI / 180, (properties.endAngle ?? 0) * Math.PI / 180);
+        region.closePath();
+        ctx.fill(region,'nonzero');
+        ctx.closePath();
+        // ctx.ellipse(0, 0, coords[2] / 2, coords[3] / 2, 0, (properties.startAngle ?? 0) * Math.PI / 180, (properties.endAngle ?? 0) * Math.PI / 180);
+        // ctx.fill();
+        if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
+            const { color, lineWidth: width, lineJoin: join, lineCap: cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
             ctx.lineWidth = width ?? 1;
             ctx.lineJoin = join ?? 'miter';
             ctx.lineCap = cap ?? 'round';
             ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${color?.alpha ?? 1})`;
             ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
             ctx.lineDashOffset = lineDashOffset ?? 0;
-            ctx.stroke();
+            ctx.stroke(region);
         }
+        return region;
+
+        // bounding box
+        // ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+        // ctx.ellipse(0, 0, coords[2] / 2, coords[3] / 2, 0, (properties.startAngle ?? 0) * Math.PI / 180, (properties.endAngle ?? 0) * Math.PI / 180);
+        // ctx.fill();
     }
 
     /**
@@ -318,7 +336,7 @@ export class Rect extends StrokeableSprite<RectProperties> {
      * Identical to Bounds.Center.
      */
     public static Bounds(x: number, y: number, radius: number, radiusY?: number): BoundsType {
-        return Circle(x, y, radius, radiusY);
+        return CircleBounds(x, y, radius, radiusY);
     }
 }
 
@@ -335,7 +353,7 @@ export class Rect extends StrokeableSprite<RectProperties> {
 export class BezierCurve extends StrokeableSprite<BezierCurveProperties, HiddenBezierCurveProperties> {
     protected startX: number;
     protected startY: number;
-    protected curves: BezierCurveType[];
+    protected points: BezierPoint[];
     protected closePath: boolean;
     protected fillRule: CanvasFillRule;
 
@@ -345,61 +363,160 @@ export class BezierCurve extends StrokeableSprite<BezierCurveProperties, HiddenB
             stroke: props.stroke,
             ...Shape.initializeProps({
                 ...props,
-                bounds: BezierCurve.getBoundsFromCurves(Position(props.start.x, props.start.y), props.curves),
+                bounds: BezierCurve.getBoundsFromCurves(Position(props.start.x, props.start.y), props.points),
             }),
         }, channels);
         this.startX = props.start.x;
         this.startY = props.start.y;
-        this.curves = props.curves;
+        this.points = props.points;
         this.closePath = props.closePath ?? false;
         this.fillRule = props.fillRule ?? 'nonzero';
         this.aggregateProperties.set(
             'start', [['x', 'startX'], ['y', 'startY']]
         );
-        for (const idx in this.curves) {
-            for (const key of ['end', 'control1', 'control2']) {
-                this.calculatedProperties.set(
-                    `${key}-${parseInt(idx)}`,
-                    {
-                        getter: (self) => {
-                            if (parseInt(idx) >= self.getProperty('curves')!.length) {
-                                throw new Error(`Index ${idx} is out of bounds`);
-                            } else {
-                                return self.getProperty('curves')![parseInt(idx)][key];
-                            }
-                        },
-                        setter: (self, value: BezierCurveType) => {
-                            const curves = self.getProperty('curves')!;
-                            if (parseInt(idx) >= curves.length) {
-                                throw new Error(`Index ${idx} is out of bounds`);
-                            } else {
-                                curves[parseInt(idx)][key] = value;
-                                self.setProperty('curves', curves);
-                            }
-                        }
-                    }
-                );
+        this.aggregateProperties.delete('bounds');
+        this.calculatedProperties.set(
+            'points',
+            {
+                getter: (self) => Object.getOwnPropertyDescriptor(self, 'points')!.value,
+                setter: (self, value: BezierPoint[]) => {
+                    Object.defineProperty(self, 'points', { value });
+                    BezierCurve.setCalculatedCurveProperties(this);
+                    const bounds = BezierCurve.getBoundsFromCurves(Position(self.get('startX'), self.get('startY')), value);
+                    self.set('x1', bounds.x1);
+                    self.set('y1', bounds.y1);
+                    self.set('x2', bounds.x2);
+                    self.set('y2', bounds.y2);
+                }
             }
-        }
+        )
+        this.calculatedProperties.set(
+            'center',
+            {
+                getter: (self) => {
+                    const bounds = BezierCurve.getBoundsFromCurves(Position(self.get('startX'), self.get('startY')), self.get('points')!);
+                    return Position((bounds.x1 + bounds.x2) / 2, (bounds.y1 + bounds.y2) / 2);
+                }, setter: (self, value: PositionType) => {
+                    const bounds = BezierCurve.getBoundsFromCurves(Position(self.get('startX'), self.get('startY')), self.get('points')!);
+                    const diff = Position(value.x - (bounds.x1 + bounds.x2) / 2, value.y - (bounds.y1 + bounds.y2) / 2);
+                    self.set('startX', self.get('startX') + diff.x);
+                    self.set('startY', self.get('startY') + diff.y);
+                }
+            }
+        );
+        this.calculatedProperties.set(
+            'centerX',
+            {
+                getter: (self) => {
+                    const bounds = BezierCurve.getBoundsFromCurves(Position(self.get('startX'), self.get('startY')), self.get('points')!);
+                    return (bounds.x1 + bounds.x2) / 2;
+                }, setter: (self, value: number) => {
+                    const bounds = BezierCurve.getBoundsFromCurves(Position(self.get('startX'), self.get('startY')), self.get('points')!);
+                    const diff = value - (bounds.x1 + bounds.x2) / 2;
+                    self.set('startX', self.get('startX') + diff);
+                    const points = self.get('points')!;
+                    for (const point of points) {
+                        point.control1.x += diff;
+                        point.control2.x += diff;
+                        point.end.x += diff;
+                    }
+                    self.set('points', points);
+                }
+            }
+        );
+        this.calculatedProperties.set(
+            'centerY',
+            {
+                getter: (self) => {
+                    const bounds = BezierCurve.getBoundsFromCurves(Position(self.get('startX'), self.get('startY')), self.get('points')!);
+                    return (bounds.y1 + bounds.y2) / 2;
+                }, setter: (self, value: number) => {
+                    const bounds = BezierCurve.getBoundsFromCurves(Position(self.get('startX'), self.get('startY')), self.get('points')!);
+                    const diff = value - (bounds.y1 + bounds.y2) / 2;
+                    self.set('startY', self.get('startY') + diff);
+                    const points = self.get('points')!;
+                    for (const point of points) {
+                        point.control1.y += diff;
+                        point.control2.y += diff;
+                        point.end.y += diff;
+                    }
+                    self.set('points', points);
+                }
+            }
+        );
+        BezierCurve.setCalculatedCurveProperties(this);
     }
-
-    public draw(ctx: CanvasRenderingContext2D) {
-        const bounds = BezierCurve.getBoundsFromCurves(Position(this.startX, this.startY), this.curves);
+        
+        public draw(ctx: CanvasRenderingContext2D) {
+        const bounds = BezierCurve.getBoundsFromCurves(Position(this.startX, this.startY), this.points);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
         this.x2 = bounds.x2;
         this.y2 = bounds.y2;
         super.draw(ctx, {
             start: Position(this.startX, this.startY),
-            curves: this.curves,
+            points: this.points,
             closePath: this.closePath,
             fillRule: this.fillRule,
         });
     }
 
-    private static getBoundsFromCurves(start: PositionType, curves: BezierCurveType[]): BoundsType {
+    public static setCalculatedCurveProperties(beziercurve: BezierCurve) {
+        const curveRelatedKeys = Array.from(beziercurve.calculatedProperties.keys()).filter(key => key.startsWith('point-') || key.startsWith('control1-') || key.startsWith('control2-') || key.startsWith('end-'));
+        curveRelatedKeys.forEach(key => beziercurve.calculatedProperties.delete(key));
+
+        for (const idx in beziercurve.points) {
+            beziercurve.calculatedProperties.set(
+                `point-${idx}`,
+                {
+                    getter: (self) => {
+                        if (parseInt(idx) >= self.get('points')!.length) {
+                            throw new Error(`Index ${idx} is out of bounds`);
+                        } else {
+                            return self.get('points')![parseInt(idx)];
+                        }
+                    },
+                    setter: (self, value: BezierPoint) => {
+                        const points = self.get('points')!;
+                        if (parseInt(idx) >= points.length) {
+                            throw new Error(`Index ${idx} is out of bounds`);
+                        } else {
+                            points[parseInt(idx)] = value;
+                            self.set('points', points);
+                        }
+                    }
+                }
+                );
+                for (const key of ['end', 'control1', 'control2']) {
+                    beziercurve.calculatedProperties.set(
+                        `${key}-${parseInt(idx)}`,
+                        {
+                            getter: (self) => {
+                                if (parseInt(idx) >= self.get('points')!.length) {
+                                    throw new Error(`Index ${idx} is out of bounds`);
+                                } else {
+                                    return self.get('points')![parseInt(idx)][key];
+                                }
+                            },
+                        setter: (self, value: BezierPoint) => {
+                            const points = self.get('points')!;
+                            if (parseInt(idx) >= points.length) {
+                                throw new Error(`Index ${idx} is out of bounds`);
+                            } else {
+                                points[parseInt(idx)][key] = value;
+                                self.set('points', points);
+                            }
+                        }
+                    }
+                    );
+                }
+            }
+        }
+
+
+    private static getBoundsFromCurves(start: PositionType, points: BezierPoint[]): BoundsType {
         let [x1, y1, x2, y2] = [start.x, start.y, start.x, start.y];
-        curves.forEach(curve => {
+        points.forEach(curve => {
             x1 = Math.min(x1, curve.end.x);
             y1 = Math.min(y1, curve.end.y);
             x2 = Math.max(x2, curve.end.x);
@@ -408,41 +525,42 @@ export class BezierCurve extends StrokeableSprite<BezierCurveProperties, HiddenB
         return Corners(x1, y1, x2, y2);
     }
 
-    public static drawBezierCurve(ctx: CanvasRenderingContext2D, properties: BezierCurveProperties) {
+    public static drawBezierCurve(ctx: CanvasRenderingContext2D, properties: BezierCurveProperties): Path2D {
         let [x1, y1, x2, y2] = [properties.start.x, properties.start.y, properties.start.x, properties.start.y];
-        properties.curves.forEach(curve => {
-            x1 = Math.min(x1, curve.end.x);
-            y1 = Math.min(y1, curve.end.y);
-            x2 = Math.max(x2, curve.end.x);
-            y2 = Math.max(y2, curve.end.y);
+        properties.points.forEach(point => {
+            x1 = Math.min(x1, point.end.x);
+            y1 = Math.min(y1, point.end.y);
+            x2 = Math.max(x2, point.end.x);
+            y2 = Math.max(y2, point.end.y);
         });
         const bounds = Corners(x1, y1, x2, y2);
-        ctx.beginPath();
-        ctx.moveTo(translatePosition(bounds, Position(properties.start.x, properties.start.y)).x, translatePosition(bounds, Position(properties.start.x, properties.start.y)).y);
-        properties.curves.forEach(curve => {
-            ctx.bezierCurveTo(
-                translatePosition(bounds, Position(curve.control1.x, curve.control1.y)).x,
-                translatePosition(bounds, Position(curve.control1.x, curve.control1.y)).y,
-                translatePosition(bounds, Position(curve.control2.x, curve.control2.y)).x,
-                translatePosition(bounds, Position(curve.control2.x, curve.control2.y)).y,
-                translatePosition(bounds, Position(curve.end.x, curve.end.y)).x,
-                translatePosition(bounds, Position(curve.end.x, curve.end.y)).y,
+        const region = new Path2D();
+        region.moveTo(translatePosition(bounds, Position(properties.start.x, properties.start.y)).x, translatePosition(bounds, Position(properties.start.x, properties.start.y)).y);
+        properties.points.forEach(point => {
+            region.bezierCurveTo(
+                translatePosition(bounds, Position(point.control1.x, point.control1.y)).x,
+                translatePosition(bounds, Position(point.control1.x, point.control1.y)).y,
+                translatePosition(bounds, Position(point.control2.x, point.control2.y)).x,
+                translatePosition(bounds, Position(point.control2.x, point.control2.y)).y,
+                translatePosition(bounds, Position(point.end.x, point.end.y)).x,
+                translatePosition(bounds, Position(point.end.x, point.end.y)).y,
             );
         });
         if (properties.closePath) {
-            ctx.closePath();
+            region.closePath();
         }
-        ctx.fill(properties.fillRule ?? 'nonzero');
-        if (properties.stroke !== null && properties.stroke?.width !== 0) {
-            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+        ctx.fill(region, properties.fillRule ?? 'nonzero');
+        if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
+            const { color, lineWidth: width, lineJoin: join, lineCap: cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
             ctx.lineWidth = width ?? 1;
             ctx.lineJoin = join ?? 'miter';
             ctx.lineCap = cap ?? 'round';
             ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${color?.alpha ?? 1})`;
             ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
             ctx.lineDashOffset = lineDashOffset ?? 0;
-            ctx.stroke();
+            ctx.stroke(region);
         }
+        return region;
     }
 }
 
@@ -451,19 +569,16 @@ export class BezierCurve extends StrokeableSprite<BezierCurveProperties, HiddenB
  * 
  * Inherits from StrokeableSprite.
  */
-export class Path extends StrokeableSprite<PathProperties> {
+export class Path extends StrokeableSprite<PathProperties, HiddenPathProperties> {
     protected path: PositionType[];
     protected fillRule: CanvasFillRule;
     protected closePath: boolean;
     protected start: number;
     protected end: number;
-    private region?: Path2D;
 
     constructor(props: PathProperties, channels: number = 1) {
         super({
-            drawFunction: (ctx, properties) => {
-                this.region = Path.drawPath(ctx, properties) ?? undefined;
-            },
+            drawFunction: Path.drawPath,
             stroke: props.stroke,
             ...Shape.initializeProps({
                 bounds: Path.getBoundsFromPath(props.path),
@@ -475,21 +590,67 @@ export class Path extends StrokeableSprite<PathProperties> {
         this.closePath = props.closePath ?? false;
         this.start = props.start ?? 0;
         this.end = props.end ?? 1;
+        this.calculatedProperties.set(
+            'path',
+            {
+                getter: (self) => Object.getOwnPropertyDescriptor(self, 'path')!.value,
+                setter: (self, value: PositionType[]) => {
+                    if (value.length !== self.get('path')!.length) {
+                        throw new Error('Path length cannot be changed at runtime');
+                    }
+                    Object.getOwnPropertyDescriptor(self, 'path')!.value;
+                }
+            }
+        );
+        Array.from(Array(props.path.length).keys()).forEach(idx => {
+            this.calculatedProperties.set(
+                `point-${idx}`,
+                {
+                    getter: (self) => self.get('path')![idx],
+                    setter: (self, value: PositionType) => {
+                        const path = self.get('path')!;
+                        path[idx] = value;
+                        self.set('path', path);
+                    }
+                }
+            );
+            this.calculatedProperties.set(
+                `x-${idx}`,
+                {
+                    getter: (self) => self.get('path')![idx].x,
+                    setter: (self, value: number) => {
+                        const path = self.get('path')!;
+                        path[idx].x = value;
+                        self.set('path', path);
+                    }
+                }
+            );
+            this.calculatedProperties.set(
+                `y-${idx}`,
+                {
+                    getter: (self) => self.get('path')![idx].y,
+                    setter: (self, value: number) => {
+                        const path = self.get('path')!;
+                        path[idx].y = value;
+                        self.set('path', path);
+                    }
+                }
+            );
+        });
     }
 
-    public isPointInPath(ctx: CanvasRenderingContext2D, x: number, y: number): boolean {
-        if (this.region === undefined) {
-            return false;
-        }
-        return ctx.isPointInPath(this.region, x, y, this.fillRule);
-    }
+    // public isPointInPath(ctx: CanvasRenderingContext2D, x: number, y: number): boolean {
+    //     if (this.region === undefined) {
+    //         return ctx.isPointInPath(x, y, this.fillRule);
+    //     }
+    //     return ctx.isPointInPath(this.region, x, y, this.fillRule);
+    // }
 
     public draw(ctx: CanvasRenderingContext2D) {
-        const bounds = this.getBounds();
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        this.set('x1', Path.getBoundsFromPath(this.path).x1);
+        this.set('y1', Path.getBoundsFromPath(this.path).y1);
+        this.set('x2', Path.getBoundsFromPath(this.path).x2);
+        this.set('y2', Path.getBoundsFromPath(this.path).y2);
         super.draw(ctx, {
             path: this.path,
             fillRule: this.fillRule,
@@ -500,12 +661,13 @@ export class Path extends StrokeableSprite<PathProperties> {
         });
     }
 
-    public static drawPath(ctx: CanvasRenderingContext2D, properties: PathProperties): void|Path2D {
+    public static drawPath(ctx: CanvasRenderingContext2D, properties: PathProperties): Path2D {
         ctx.beginPath();
         let path = properties.path.map(point => translatePosition(Path.getBoundsFromPath(properties.path), point)) as PositionType[];
         path = Path.getPathSegment(path, properties.start ?? 0, properties.end ?? 1);
+        // console.log(path);
         if (path.length === 0) {
-            return;
+            return new Path2D();
         }
         const region = new Path2D();
         region.moveTo(path[0].x, path[0].y);
@@ -516,8 +678,8 @@ export class Path extends StrokeableSprite<PathProperties> {
             region.closePath();
         }
         ctx.fill(region, properties.fillRule ?? 'nonzero');
-        if (properties.stroke !== null && properties.stroke?.width !== 0) {
-            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+        if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
+            const { color, lineWidth: width, lineJoin: join, lineCap: cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
             ctx.lineWidth = width ?? 1;
             ctx.lineJoin = join ?? 'miter';
             ctx.lineCap = cap ?? 'round';
@@ -526,6 +688,15 @@ export class Path extends StrokeableSprite<PathProperties> {
             ctx.lineDashOffset = lineDashOffset ?? 0;
             ctx.stroke(region);
         }
+
+        // // Bounding box for pointer events
+        // ctx.fillStyle = `rgba(0, 0, 0, 0)`
+        // const boundingBox = Path.getBoundsFromPath(path);
+        // ctx.moveTo(boundingBox.x1, boundingBox.y1);
+        // ctx.lineTo(boundingBox.x2, boundingBox.y1);
+        // ctx.lineTo(boundingBox.x2, boundingBox.y2);
+        // ctx.lineTo(boundingBox.x1, boundingBox.y2);
+
         return region;
     }
 
@@ -540,46 +711,42 @@ export class Path extends StrokeableSprite<PathProperties> {
             throw new Error('Start and end must be between 0 and 1');
         }
         const distances = path.map((point, idx) => Path.calculateDistance(point, path[idx + 1] ?? path[0]));
+        distances.pop();
         const totalDistance = distances.reduce((a, b) => a + b, 0);
         const newPath = [] as PositionType[];
-        let pathRatio = 0;
-        let startRatio = 0;
-        let endRatio = 0;
-        const startIdx = distances.findIndex((_, idx) => {
-            const ratio = pathRatio + distances[idx] / totalDistance;
-            if (ratio >= start) {
-                startRatio = (start - pathRatio) / (distances[idx] / totalDistance);
-                return true;
+        let currentDistance = 0;
+        let currentIdx = 0;
+        let ratio = 0;
+        for (const distance of distances) {
+            const currentRatio = distance / totalDistance;
+            if (ratio + currentRatio < start) {
+                ratio += currentRatio;
+                currentIdx++;
+                continue;
             }
-            pathRatio = ratio;
-            return false;
-        });
-        pathRatio = 0;
-        const endIdx = distances.findIndex((_, idx) => {
-            const ratio = pathRatio + distances[idx] / totalDistance;
-            if (ratio >= end) {
-                endRatio = (end - pathRatio) / (distances[idx] / totalDistance);
-                return true;
+            let leftRatio = 0;
+            if (ratio + currentRatio > start && ratio < start) {
+                leftRatio = (start - ratio) * (1 / currentRatio);
             }
-            pathRatio = ratio;
-            return false;
-        });
-        if (startIdx === -1 || endIdx <= -1) {
-            return [];
-        }
-        if (startIdx >= endIdx) {
-            return [Path.interpolate(path[startIdx], path[startIdx + 1], startRatio), Path.interpolate(path[startIdx], path[startIdx + 1], endRatio)];
-        }
-        for (let idx = startIdx; idx <= endIdx + 1; idx++) {
-            if (idx === startIdx) {
-                newPath.push(Path.interpolate(path[idx], path[idx + 1], startRatio));
-            } else if (idx === endIdx + 1) {
-                newPath.push(Path.interpolate(path[idx - 1], path[Math.min(idx, path.length - 1)], endRatio));
-            } else {
-                newPath.push(path[idx]);
+            let rightRatio = 1;
+            if (ratio + currentRatio > end && ratio < end) {
+                rightRatio = (end - ratio) * (1 / currentRatio);
             }
+            // if (leftRatio < 0 || rightRatio < 0)
+            //     console.log(leftRatio, rightRatio, ratio, currentRatio, start, end)
+            if (ratio + currentRatio > start) {
+                newPath.push(Path.interpolate(path[currentIdx], path[currentIdx + 1] ?? path[0], leftRatio));
+            }
+            // console.log(ratio + currentRatio, ratio + currentRatio >= end)
+            if (ratio < end && ratio + currentRatio > end) {
+                newPath.push(Path.interpolate(path[currentIdx], path[currentIdx + 1] ?? path[0], rightRatio));
+                return newPath;
+            }
+            currentDistance += distance;
+            ratio += currentRatio;
+            currentIdx++;
         }
-        return newPath;
+        return end === 1 ? newPath.concat(path[path.length - 1]) : newPath;
     }
 
     public static interpolate(point1: PositionType, point2: PositionType, ratio: number): PositionType {
@@ -615,13 +782,10 @@ export class Polygon extends StrokeableSprite<PolygonProperties> {
     protected start: number;
     protected end: number;
     protected fillRule: CanvasFillRule;
-    private region?: Path2D;
 
     constructor(props: PolygonProperties, channels: number = 1) {
         super({
-            drawFunction: (ctx, properties) => {
-                this.region = Polygon.drawPolygon(ctx, properties) ?? undefined;
-            },
+            drawFunction: Polygon.drawPolygon,
             stroke: props.stroke,
             ...Shape.initializeProps({
                 bounds: Corners(props.center.x - props.radius, props.center.y - props.radius, props.center.x + props.radius, props.center.y + props.radius),
@@ -643,13 +807,6 @@ export class Polygon extends StrokeableSprite<PolygonProperties> {
         );
     }
 
-    public isPointInPath(ctx: CanvasRenderingContext2D, x: number, y: number): boolean {
-        if (this.region === undefined) {
-            return false;
-        }
-        return ctx.isPointInPath(this.region, x, y, this.fillRule);
-    }
-
     public draw(ctx: CanvasRenderingContext2D) {
         this.x1 = this.centerX - this.radius;
         this.y1 = this.centerY - this.radius;
@@ -666,7 +823,7 @@ export class Polygon extends StrokeableSprite<PolygonProperties> {
         });
     }
 
-    public static drawPolygon(ctx: CanvasRenderingContext2D, properties: PolygonProperties): void|Path2D {
+    public static drawPolygon(ctx: CanvasRenderingContext2D, properties: PolygonProperties): Path2D {
         const sides = properties.sides;
         const radius = properties.radius;
         if (sides < 3 || radius <= 0) {
@@ -693,47 +850,45 @@ export class Polygon extends StrokeableSprite<PolygonProperties> {
  * Inherits from StrokeableSprite.
  */
 export class Star extends StrokeableSprite<StarProperties> {
-    protected center: PositionType;
     protected radius: number;
     protected innerRadius: number;
     protected fillRule: CanvasFillRule;
     protected start: number;
     protected end: number;
-    private region?: Path2D;
+    protected centerX: number;
+    protected centerY: number;
 
     constructor(props: StarProperties, channels: number = 1) {
         super({
-            drawFunction: (ctx, properties) => {
-                this.region = Star.drawStar(ctx, properties) ?? undefined;
-            },
+            drawFunction: Star.drawStar,
             stroke: props.stroke,
             ...Shape.initializeProps({
                 bounds: Corners(props.center.x - props.radius, props.center.y - props.radius, props.center.x + props.radius, props.center.y + props.radius),
                 ...props,
             }),
         }, channels);
-        this.center = props.center;
+        this.centerX = props.center.x ?? 0;
+        this.centerY = props.center.y ?? 0;
         this.radius = props.radius;
         this.fillRule = props.fillRule ?? 'nonzero';
         this.innerRadius = props.innerRadius ?? props.radius * (3 - Math.sqrt(5)) / 2;
         this.start = props.start ?? 0;
         this.end = props.end ?? 1;
-    }
-
-    public isPointInPath(ctx: CanvasRenderingContext2D, x: number, y: number): boolean {
-        if (this.region === undefined) {
-            return false;
-        }
-        return ctx.isPointInPath(this.region, x, y, this.fillRule);
+        this.calculatedProperties.delete('center');
+        this.calculatedProperties.delete('centerX');
+        this.calculatedProperties.delete('centerY');
+        this.aggregateProperties.set(
+            'center', [['x', 'centerX'], ['y', 'centerY']]
+        );
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
-        this.x1 = this.center.x - this.radius;
-        this.y1 = this.center.y - this.radius;
-        this.x2 = this.center.x + this.radius;
-        this.y2 = this.center.y + this.radius;
+        this.x1 = this.centerX - this.radius;
+        this.y1 = this.centerY - this.radius;
+        this.x2 = this.centerX + this.radius;
+        this.y2 = this.centerY + this.radius;
         super.draw(ctx, {
-            center: this.center,
+            center: Position(this.centerX, this.centerY),
             radius: this.radius,
             innerRadius: this.innerRadius,
             color: Color(this.red, this.green, this.blue, this.colorAlpha),
@@ -742,7 +897,7 @@ export class Star extends StrokeableSprite<StarProperties> {
         });
     }
 
-    public static drawStar(ctx: CanvasRenderingContext2D, properties: StarProperties): void|Path2D {
+    public static drawStar(ctx: CanvasRenderingContext2D, properties: StarProperties): Path2D {
         const radius = properties.radius;
         const innerRadius = properties.innerRadius ?? radius * (3 - Math.sqrt(5)) / 2;
 
@@ -860,13 +1015,13 @@ export class TextSprite extends StrokeableSprite<TextProperties, HiddenTextPrope
         });
     }
 
-    public static drawText(ctx: CanvasRenderingContext2D, properties: TextProperties) {
+    public static drawText(ctx: CanvasRenderingContext2D, properties: TextProperties): Path2D {
         const { text, fontSize, maxWidth, } = properties;
         const textWidth = ctx.measureText(text).width;
         const height = fontSize ?? 16;
         ctx.fillText(text, -textWidth / 2, height / 2, maxWidth ?? undefined);
-        if (properties.stroke !== null && properties.stroke?.width !== 0) {
-            const { color, width, join, cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+        if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
+            const { color, lineWidth: width, lineJoin: join, lineCap: cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
             ctx.lineWidth = width ?? 1;
             ctx.lineJoin = join ?? 'miter';
             ctx.lineCap = cap ?? 'round';
@@ -877,12 +1032,13 @@ export class TextSprite extends StrokeableSprite<TextProperties, HiddenTextPrope
         }
 
         // Bounding box for pointer events
-        ctx.fillStyle = `rgba(0, 0, 0, 0)`
-        ctx.moveTo(-textWidth / 2, -height / 2);
-        ctx.lineTo(textWidth / 2, -height / 2);
-        ctx.lineTo(textWidth / 2, height / 2);
-        ctx.lineTo(-textWidth / 2, height / 2);
-        ctx.closePath();
+        const region = new Path2D();
+        region.moveTo(-textWidth / 2, -height / 2);
+        region.lineTo(textWidth / 2, -height / 2);
+        region.lineTo(textWidth / 2, height / 2);
+        region.lineTo(-textWidth / 2, height / 2);
+        region.closePath();
+        return region;
     }
 }
 
@@ -895,7 +1051,7 @@ export class TextSprite extends StrokeableSprite<TextProperties, HiddenTextPrope
  * 
  * Hidden Properties: ['srcX1', 'srcY1', 'srcX2', 'srcY2', 'useSrcBounds']
  */
-export class ImageShape extends StrokeableSprite<ImageProperties> {
+export class ImageSprite extends StrokeableSprite<ImageProperties, HiddenImageProperties> {
     protected image: HTMLImageElement;
     protected srcX1: number;
     protected srcY1: number;
@@ -905,7 +1061,7 @@ export class ImageShape extends StrokeableSprite<ImageProperties> {
 
     constructor(props: ImageProperties, channels: number = 1) {
         super({
-            drawFunction: ImageShape.drawImage,
+            drawFunction: ImageSprite.drawImage,
             stroke: props.stroke,
             ...Shape.initializeProps(props),
         }, channels);
@@ -915,6 +1071,15 @@ export class ImageShape extends StrokeableSprite<ImageProperties> {
         this.srcX2 = props.srcBounds?.x2 ?? props.image.width;
         this.srcY2 = props.srcBounds?.y2 ?? props.image.height;
         this.useSrcBounds = props.srcBounds !== undefined;
+        this.aggregateProperties.set(
+            'srcCorner1', [['x', 'srcX1'], ['y', 'srcY1']]
+        );
+        this.aggregateProperties.set(
+            'srcCorner2', [['x', 'srcX2'], ['y', 'srcY2']]
+        );
+        this.aggregateProperties.set(
+            'srcBounds', [['x1', 'srcX1'], ['y1', 'srcY1'], ['x2', 'srcX2'], ['y2', 'srcY2']]
+        )
     }
 
     public draw(ctx: CanvasRenderingContext2D) {
@@ -925,7 +1090,7 @@ export class ImageShape extends StrokeableSprite<ImageProperties> {
         });
     }
 
-    public static drawImage(ctx: CanvasRenderingContext2D, properties: ImageProperties) {
+    public static drawImage(ctx: CanvasRenderingContext2D, properties: ImageProperties): Path2D {
         const { image, srcBounds: sourceBounds, bounds } = properties;
         const width = bounds.x2 - bounds.x1;
         const height = bounds.y2 - bounds.y1;
@@ -934,5 +1099,35 @@ export class ImageShape extends StrokeableSprite<ImageProperties> {
         } else {
             ctx.drawImage(image, -width/2, -height/2, width, height);
         }
+
+        
+        const region = new Path2D();
+        region.moveTo(-width/2, -height/2);
+        region.lineTo(width/2, -height/2);
+        region.lineTo(width/2, height/2);
+        region.lineTo(-width/2, height/2);
+        region.closePath();
+
+        if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
+            const { color, lineWidth: width, lineJoin: join, lineCap: cap, lineDash, lineDashGap, lineDashOffset } = properties.stroke!;
+            ctx.lineWidth = width ?? 1;
+            ctx.lineJoin = join ?? 'miter';
+            ctx.lineCap = cap ?? 'round';
+            ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${color?.alpha ?? 1})`;
+            ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
+            ctx.lineDashOffset = lineDashOffset ?? 0;
+            ctx.stroke(region);
+        }
+
+        return region;
+    }
+
+    /**
+     * Returns a BoundsType object with a corner at (x1, y1) and the specified width and height.
+     * 
+     * Identical to Bounds.Dimensions.
+     */
+    public static Bounds(x1: number, y1: number, width: number, height: number): BoundsType {
+        return Dimensions(x1, y1, width, height);
     }
 }

@@ -1,8 +1,7 @@
-import { NullShape } from './Shapes'
-import { Sprite } from './BaseShapes';
+import { NullSprite } from './Sprites'
 import { ColorToString, Colors, Position } from './Utils';
-import { ColorType } from './types/Common';
-import { PointerEventsCollection } from './types/MainStage';
+import { ColorType, PositionType } from './types/Common';
+import { PointerEventsCollection } from './types/Stage';
 
 /**
  * A wrapper for the canvas element. 
@@ -15,7 +14,7 @@ export class Stage {
      * 
      * All sprites drawn to the canvas must descend from this sprite.
      */
-    public root: Sprite;
+    public root: NullSprite;
     private ctx: CanvasRenderingContext2D = this.canvas?.getContext('2d')!;
     private active: boolean = false;
     private nextRenderTime?: number = undefined;
@@ -24,7 +23,7 @@ export class Stage {
      * The time it took to render the last frame.
      */
     public lastRenderMs: number = 0;
-    private frameIndex: number = 0;
+    public currentFrame: number = 0;
     private pointerEvents = {
         down: [] as PointerEvent[],
         up: [] as PointerEvent[],
@@ -33,29 +32,29 @@ export class Stage {
     /**
      * Callback that is run on the Stage when a pointerDown event is fired.
      * 
-     * @param e The pointerDown event that was fired.
      * @param stage This stage.
+     * @param event The pointerDown event that was fired.
      */
-    public onPointerDown: (stage: Stage, event: PointerEvent) => void = () => {};
+    public onPointerDown: (stage: Stage, event: PointerEvent, position: PositionType) => void = () => {};
     /**
      * Callback that is run on the Stage when a pointerDown event is fired.
      * 
-     * @param e The pointerUp event that was fired.
      * @param stage This stage.
+     * @param event The pointerUp event that was fired.
      */
-    public onPointerUp: (stage: Stage, event: PointerEvent) => void = () => {};
+    public onPointerUp: (stage: Stage, event: PointerEvent, position: PositionType) => void = () => {};
     /**
      * Callback that is run on the Stage when a pointerMove event is fired.
      * 
-     * @param e The pointerMove event that was fired.
      * @param stage This stage.
+     * @param event The pointerMove event that was fired.
      */
-    public onPointerMove: (stage: Stage, event: PointerEvent) => void = () => {};
+    public onPointerMove: (stage: Stage, event: PointerEvent, position: PositionType) => void = () => {};
     /**
      * Callback that is run on the Stage when a scrollWheel event is fired.
      * 
-     * @param e The WheelEvent that was fired.
      * @param stage This stage.
+     * @param event The WheelEvent that was fired.
      */
     public onScroll: (stage: Stage, event: WheelEvent) => void = () => {};
     /**
@@ -73,32 +72,49 @@ export class Stage {
 
     constructor(
         private canvas?: HTMLCanvasElement,
-        rootStyle: 'classic'|'centered' = 'centered',
+        private readonly rootStyle: 'classic'|'centered' = 'centered',
         public bgColor: ColorType = Colors.White,
     ) {
         if (!canvas) {
             throw new Error('No canvas element provided');
         }
         this.root = rootStyle === 'classic' ? 
-            new NullShape({}) : 
-            new NullShape({ position: Position(this.width! /2, this.height! / 2), scale: Position(1, -1) });
+            new NullSprite({}) : 
+            new NullSprite({ position: Position(this.width! /2, this.height! / 2), scale: Position(1, -1) });
+        canvas.oncontextmenu = () => false;
+        canvas.style.touchAction = 'none';
     }
     
     private pointerDownHandler(e: PointerEvent) {
-        this.onPointerDown(this, e);
+        e.preventDefault();
+        const position = Position(
+            (e.offsetX || e.pageX - this.canvas!.offsetLeft) * this.scaleX - (this.rootStyle === 'centered' ? this.width! / 2 : 0),
+            ((e.offsetY || e.pageY - this.canvas!.offsetTop) * this.scaleY - (this.rootStyle === 'centered' ? this.height! / 2: 0)) * (this.rootStyle === 'centered' ? -1 : 1),
+        );
+        this.onPointerDown(this, e, position as PositionType);
         this.pointerEvents.down.push(e);
         this.pointerEvents.down = this.pointerEvents.down.slice(0, 8);
     }
 
     private pointerUpHandler(e: PointerEvent) {
-        this.onPointerUp(this, e);
+        e.preventDefault();
+        const position = Position(
+            (e.offsetX || e.pageX - this.canvas!.offsetLeft) * this.scaleX - (this.rootStyle === 'centered' ? this.width! / 2 : 0),
+            ((e.offsetY || e.pageY - this.canvas!.offsetTop) * this.scaleY - (this.rootStyle === 'centered' ? this.height! / 2: 0)) * (this.rootStyle === 'centered' ? -1 : 1),
+        );
+        this.onPointerUp(this, e, position as PositionType);
         this.pointerEvents.down = this.pointerEvents.down.filter((event) => event.pointerId !== e.pointerId);
         this.pointerEvents.up.push(e);
         this.pointerEvents.up = this.pointerEvents.up.slice(0, 8);
     }
 
     private pointerMoveHandler(e: PointerEvent) {
-        this.onPointerMove(this, e);
+        e.preventDefault();
+        const position = Position(
+            (e.offsetX || e.pageX - this.canvas!.offsetLeft) * this.scaleX - (this.rootStyle === 'centered' ? this.width! / 2 : 0),
+            ((e.offsetY || e.pageY - this.canvas!.offsetTop) * this.scaleY - (this.rootStyle === 'centered' ? this.height! / 2: 0)) * (this.rootStyle === 'centered' ? -1 : 1),
+        );
+        this.onPointerMove(this, e, position as PositionType);
         this.pointerEvents.move = this.pointerEvents.move.filter((event) => event.pointerId !== e.pointerId);
         this.pointerEvents.move.push(e);
         this.pointerEvents.move = this.pointerEvents.move.slice(0, 32);
@@ -106,10 +122,7 @@ export class Stage {
 
     private wheelHandler(e: WheelEvent) {
         this.onScroll(this, e);
-    }
-
-    public get currentFrame() {
-        return this.frameIndex;
+        e.preventDefault();
     }
 
     /**
@@ -125,6 +138,8 @@ export class Stage {
         this.canvas!.addEventListener('wheel', this.wheelHandler.bind(this));
         this.active = true;
         this.frameRate = frameRate;
+        this.nextRenderTime = performance.now();
+        this.currentFrame = 0;
         requestAnimationFrame(this.draw.bind(this));
     }
 
@@ -133,7 +148,7 @@ export class Stage {
      * 
      * Automatically called by the loop method.
      */
-    public draw() {
+    private draw() {
         const start = performance.now();
         if (this.nextRenderTime && start < this.nextRenderTime) {
             requestAnimationFrame(this.draw.bind(this));
@@ -142,7 +157,7 @@ export class Stage {
         if (!this.active) {
             return;
         }
-        this.root.r_setPointerEvents(this.pointerEvents);
+        this.root.setPointerEvents(this.pointerEvents);
         this.ctx = this.canvas?.getContext('2d')!;
         this.ctx.fillStyle = ColorToString(this.bgColor);
         this.ctx.fillRect(0, 0, this.width ?? 0, this.height ?? 0);
@@ -157,9 +172,9 @@ export class Stage {
         this.pointerEvents.up = [];
         this.pointerEvents.move = [];
         this.pointerEvents.down = [];
-        this.frameIndex++;
+        this.currentFrame++;
         this.lastRenderMs = performance.now() - start;
-        this.nextRenderTime = start + 1000 / this.frameRate - this.lastRenderMs;
+        this.nextRenderTime = start + (900 / this.frameRate); // using 900 instead of 1000 better accounts for skipped requestAnimationFrames
         requestAnimationFrame(this.draw.bind(this));
         return;
     }
@@ -189,4 +204,17 @@ export class Stage {
         return this.canvas?.height;
     }
 
+    /**
+     * The ratio of the canvas width to the client width.
+     */
+    public get scaleX() {
+        return (this.width! ?? 0) / this.canvas!.clientWidth;
+    }
+
+    /**
+     * The ratio of the canvas height to the client height. 
+     */
+    public get scaleY() {
+        return (this.height! ?? 0) / this.canvas!.clientHeight;
+    }
 }
