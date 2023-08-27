@@ -1,4 +1,4 @@
-import { BoundsType, ColorType, PositionType } from './Common.ts';
+import { BoundsType, ColorType, PositionType } from './Common';
 
 export type DrawFunctionType<Property> = (ctx: CanvasRenderingContext2D, params: Property) => Path2D|void;
 export type EffectsType = (ctx: CanvasRenderingContext2D) => void;

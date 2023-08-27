@@ -1,6 +1,6 @@
-import { AnimationCallback, AnimationType } from './types/Animation.ts';
-import { ColorType, PositionType, BoundsType } from './types/Common.ts';
-import { EasingType } from './types/Animation.ts';
+import { AnimationCallback, AnimationType } from './types/Animation';
+import { ColorType, PositionType, BoundsType } from './types/Common';
+import { EasingType } from './types/Animation';
 
 /**
  * Returns (x, y) as a PositionType.
@@ -142,7 +142,7 @@ export function Animate<props>(
     easing: EasingType = Easing.LINEAR,
     name: string = '',
     details: (string|number)[] = []): AnimationType<props> {
-    return { property, from, to, duration, delay, easing, name, details };
+        return { property, from, to, duration, delay, easing, name, details };
 }
 
 /**

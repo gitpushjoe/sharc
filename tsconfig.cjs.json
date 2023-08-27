@@ -28,21 +28,21 @@
 {
     "files": ["src/sharc/Channels.ts", "src/sharc/Sprites.ts", "src/sharc/Sprites.ts", "src/sharc/Stage.ts", "src/sharc/Utils.ts"],
     "compilerOptions": {
-      "target": "ES2020",
-      "lib": ["ES2020", "DOM", "DOM.Iterable"],
-      "baseUrl": "./",
-      "paths": {
-        "sharc/*": ["./src/sharc/*"]
-      },
-        "module": "ESNext",
-        "moduleResolution": "Bundler",
+        "target": "ES2020",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "baseUrl": "./",
+        "paths": {
+          "sharc/*": ["./src/sharc/*"]
+        },
+        "module": "commonjs",
         "allowSyntheticDefaultImports": true,
         "allowJs": true,
-      "declaration": true,
-      "outDir": "dist",
-      "noEmit": false,
-      "strict": true,
-      "noImplicitAny": true,
+        "moduleResolution": "Node",
+        "declaration": false,
+        "outDir": "dist/cjs",
+        "noEmit": false,
+        "strict": true,
+        "noImplicitAny": true,
       "strictNullChecks": true,
       "strictFunctionTypes": true,
       "strictBindCallApply": true,

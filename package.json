@@ -1,8 +1,64 @@
 {
-  "name": "animation",
-  "private": true,
-  "version": "0.0.0",
+  "name": "sharc-js",
+  "private": false,
+  "version": "1.0.3-a",
   "type": "module",
+  "files": [
+    "dist/*"
+  ],
+  "exports": {
+    "./Animation.js": "./dist/Animation.js",
+    "./Stage.js": "./dist/Stage.js",
+    "./Sprites.js": "./dist/Sprites.js",
+    "./Channels.js": "./dist/Channels.js",
+    "./Utils.js": "./dist/Utils.js",
+    "./Animation": {
+      "import": "./dist/Animation.js",
+      "require": "./dist/cjs/Animation.js",
+      "types": "./dist/Animation.d.ts"
+    },
+    "./Stage": {
+      "import": "./dist/Stage.js",
+      "require": "./dist/cjs/Stage.js",
+      "types": "./dist/Stage.d.ts"
+    },
+    "./Sprites": {
+      "import": "./dist/Sprites.js",
+      "require": "./dist/cjs/Sprites.js",
+      "types": "./dist/Sprites.d.ts"
+    },
+    "./Channels": {
+      "import": "./dist/Channels.js",
+      "require": "./dist/cjs/Channels.js",
+      "types": "./dist/Channels.d.ts"
+    },
+    "./Utils": {
+      "import": "./dist/Utils.js",
+      "require": "./dist/cjs/Utils.js",
+      "types": "./dist/Utils.d.ts"
+    },
+    "./types/Animation": {
+      "import": "./dist/types/Animation.js",
+      "require": "./dist/types/Animation.cjs.js",
+      "types": "./dist/types/Animation.d.ts"
+    },
+    "./types/Common": {
+      "import": "./dist/types/Common.js",
+      "require": "./dist/types/Common.cjs.js",
+      "types": "./dist/types/Common.d.ts"
+    },
+    "./types/Channels": {
+      "import": "./dist/types/Channels.js",
+      "require": "./dist/types/Channels.cjs.js",
+      "types": "./dist/types/Channels.d.ts"
+    },
+    "./types/Stage": {
+      "import": "./dist/types/Stage.js",
+      "require": "./dist/types/Stage.cjs.js",
+      "types": "./dist/types/Stage.d.ts"
+    }
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "hostdev": "vite --host",
@@ -11,8 +67,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.14",
@@ -23,7 +77,11 @@
     "eslint": "^8.44.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
-    "typescript": "^5.0.2",
+    "typescript": "^5.2.2",
     "vite": "^4.4.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gitpushjoe/sharc.git"
   }
 }
