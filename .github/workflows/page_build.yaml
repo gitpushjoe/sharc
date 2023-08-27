@@ -2,7 +2,7 @@ name: sharc
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "docs" ]
     
 env:
   CI: false
