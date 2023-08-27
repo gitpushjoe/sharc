@@ -12,9 +12,11 @@
     "hostdev": "vite --host",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "vite preview"
+    "start": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://gitpushjoe.github.io/sharc/",
+  "homepage": "http://gitpushjoe.github.io/sharc/",
   "dependencies": {
     "@types/react-bootstrap": "^0.32.32",
     "parcel": "^2.9.3",
