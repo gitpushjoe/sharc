@@ -60,7 +60,7 @@ function Docs() {
                     Download{'\u00A0\u00A0'}
                 </button>
                 <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1DA7QlCm2AYLxfLz9NlM1DHVcrK1dIBqr?usp=drive_link">beta v1.0.0 (latest)</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1DA7QlCm2AYLxfLz9NlM1DHVcrK1dIBqr?usp=drive_link">beta v1.0.0</a>
                 </div>
                 </div>
         </div></div>
