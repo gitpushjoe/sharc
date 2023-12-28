@@ -3,15 +3,9 @@ import { AnimationPackage, PrivateAnimationType, AnimationType, AnimationParams 
 export const DEFAULT_ANIMATION_PARAMS: AnimationParams = {
     loop: false,
     iterations: 1,
-    delay: 0,
+    delay: 0
 };
 
-/**
- * A channel is a queue of animations that can be played in sequence.
- * The current animation will always be the package at the front of the queue, and will be removed once it is finished.
- * 
- * @template Properties Used to determine which properties can be animated, and which value types are valid.
- */
 export class Channel<Properties> {
     private queue: AnimationPackage<Properties>[];
     private index: number;
@@ -23,17 +17,11 @@ export class Channel<Properties> {
         this.step = 0;
     }
 
-    /**
-     * Returns the current animation package, or undefined if the queue is empty.
-     */
-    private currentPackage(): AnimationPackage<Properties>|undefined {
+    private currentPackage(): AnimationPackage<Properties> | undefined {
         return this.queue[0];
     }
 
-    /**
-     * Returns the current animation, or undefined if the queue is empty.
-     */
-    private currentAnimation(): PrivateAnimationType<Properties>|undefined {
+    private currentAnimation(): PrivateAnimationType<Properties> | undefined {
         return this.currentPackage()?.animations[this.index % this.currentPackage()!.animations.length];
     }
 
@@ -41,11 +29,13 @@ export class Channel<Properties> {
         return this.queue.length === 0;
     }
 
-    public stepForward(): PrivateAnimationType<Properties>|null {
-        if (this.queueIsEmpty())
-            return null;
+    public stepForward(): PrivateAnimationType<Properties> | null {
+        if (this.queueIsEmpty()) return null;
         this.step++;
-        if (this.step > this.currentAnimation()!.delay + this.currentAnimation()!.duration + this.currentPackage()!.params.delay!) {
+        if (
+            this.step >
+            this.currentAnimation()!.delay + this.currentAnimation()!.duration + this.currentPackage()!.params.delay!
+        ) {
             this.step = 0;
             this.index++;
             if (this.index >= this.currentPackage()!.animations.length * this.currentPackage()!.params.iterations!) {
@@ -65,13 +55,16 @@ export class Channel<Properties> {
         if (this.step < this.currentAnimation()!.delay + this.currentPackage()!.params.delay!) {
             return null;
         }
-        this.currentAnimation()!.frame = Math.max(this.step - this.currentAnimation()!.delay - this.currentPackage()!.params.delay!, 0);
+        this.currentAnimation()!.frame = Math.max(
+            this.step - this.currentAnimation()!.delay - this.currentPackage()!.params.delay!,
+            0
+        );
         this.currentAnimation()!.channel = this.index;
         return this.currentAnimation()!;
     }
 
     private verifyAnimations(
-        animations: AnimationType<Properties>|AnimationType<Properties>[],
+        animations: AnimationType<Properties> | AnimationType<Properties>[],
         params: AnimationParams = DEFAULT_ANIMATION_PARAMS
     ) {
         const [loop, iterations, delay] = [Boolean(params.loop), params.iterations ?? 1, params.delay ?? 0];
@@ -81,22 +74,23 @@ export class Channel<Properties> {
         if (animations.length === 0) {
             return undefined;
         }
-        for (const idx in animations) {
+        for (let idx = 0; idx < animations.length; idx++) {
             const animation = animations[idx];
-            if (animation.duration <= 0) 
-                throw new Error('Animation duration must be greater than 0');
-            if (animation.delay < 0)
-                animation.delay = 0;
+            animation.delay ??= 0;
+            animation.duration ??= 60;
+            animation.easing ??= (x: number) => x;
+            animation.name ??= "";
+            if (animation.duration <= 0) throw new Error("Animation duration must be greater than 0");
+            if (animation.delay < 0) animation.delay = 0;
         }
-        return { animations, params: { loop, iterations, delay } };
+        return {
+            animations: animations as PrivateAnimationType<Properties>[],
+            params: { loop, iterations, delay }
+        };
     }
 
-    /**
-     * Creates an animation package and adds it to the rear of the queue.
-     * @returns the channel instance
-     */
     public push(
-        animations: AnimationType<Properties>|AnimationType<Properties>[],
+        animations: AnimationType<Properties> | AnimationType<Properties>[],
         params: AnimationParams = DEFAULT_ANIMATION_PARAMS
     ) {
         const pkg = this.verifyAnimations(animations, params);
@@ -106,12 +100,8 @@ export class Channel<Properties> {
         return this;
     }
 
-    /**
-     * Creates an animation package and adds it to the front of the queue, resetting the progress of the channel.
-     * @returns the channel instance
-     */
     public unshift(
-        animations: AnimationType<Properties>|AnimationType<Properties>[],
+        animations: AnimationType<Properties> | AnimationType<Properties>[],
         params: AnimationParams = DEFAULT_ANIMATION_PARAMS
     ) {
         const pkg = this.verifyAnimations(animations, params);
@@ -123,40 +113,24 @@ export class Channel<Properties> {
         return this;
     }
 
-    /**
-     * Removes the animation package at the front of the queue.
-     * @returns The animation package at the front of the queue, or undefined if the queue is empty.
-     */
-    public shift(): AnimationPackage<Properties>|undefined {
+    public shift(): AnimationPackage<Properties> | undefined {
         return this.queue.shift();
     }
 
-    /**
-     * Removes the last animation package from the queue.
-     * @returns The animation package at the rear of the queue, or undefined if the queue is empty.
-     */
-    public pop(): AnimationPackage<Properties>|undefined {
+    public pop(): AnimationPackage<Properties> | undefined {
         return this.queue.pop();
     }
 
-    /**
-     * Removes the animation at the front of the queue.
-     * @returns The animation at the front of the queue, or undefined if the queue is empty.
-     */
-    public shiftAnimation(): AnimationType<Properties>|undefined {
-        const animation = this.currentPackage()?.animations.shift() as AnimationType<Properties>|undefined;
+    public shiftAnimation(): AnimationType<Properties> | undefined {
+        const animation = this.currentPackage()?.animations.shift() as AnimationType<Properties> | undefined;
         if (this.currentPackage()?.animations.length === 0) {
             this.queue.shift();
         }
         return animation;
     }
 
-    /**
-     * Removes the last animation from the queue.
-     * @returns The animation at the rear of the queue, or undefined if the queue is empty.
-     */
-    public popAnimation(): AnimationType<Properties>|undefined {
-        const animation = this.currentPackage()?.animations.pop() as AnimationType<Properties>|undefined;
+    public popAnimation(): AnimationType<Properties> | undefined {
+        const animation = this.currentPackage()?.animations.pop() as AnimationType<Properties> | undefined;
         if (this.currentPackage()?.animations.length === 0) {
             this.queue.pop();
         }
@@ -164,9 +138,9 @@ export class Channel<Properties> {
     }
 
     public enqueue(
-        animations: AnimationType<Properties>|AnimationType<Properties>[],
-        index: number = 1,
-        params: AnimationParams = DEFAULT_ANIMATION_PARAMS,
+        animations: AnimationType<Properties> | AnimationType<Properties>[],
+        index = 1,
+        params: AnimationParams = DEFAULT_ANIMATION_PARAMS
     ) {
         if (this.currentPackage() === undefined) {
             this.push(animations, params);
@@ -185,9 +159,6 @@ export class Channel<Properties> {
         return this;
     }
 
-    /**
-     * Clears the queue.
-     */
     public clear(): this {
         this.queue = [];
         this.index = 0;
@@ -195,9 +166,6 @@ export class Channel<Properties> {
         return this;
     }
 
-    /**
-     * @returns All animation packages in the queue.
-     */
     public get animations(): AnimationPackage<Properties>[] {
         return [...this.queue];
     }

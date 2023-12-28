@@ -1,191 +1,142 @@
-import { AnimationCallback, AnimationType } from './types/Animation';
-import { ColorType, PositionType, BoundsType } from './types/Common';
-import { EasingType } from './types/Animation';
+import { AnimationCallback, AnimationType } from "./types/Animation";
+import { ColorType, PositionType, BoundsType } from "./types/Common";
+import { EasingType } from "./types/Animation";
 
-/**
- * Returns (x, y) as a PositionType.
- */
 export function Position(x: number, y: number): PositionType {
     return { x, y };
 }
 
-/**
- * Converts a ColorType to a string.
- */
 export function ColorToString(color: ColorType) {
     return `rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`;
 }
 
-/**
- * Converts an RGBA value to a ColorType. Alpha defaults to 1.
- */
-export function Color(red: number, green: number, blue: number, alpha: number = 1): ColorType {
+export function Color(red: number, green: number, blue: number, alpha = 1): ColorType {
     return { red, green, blue, alpha };
 }
 
-/**
- * Returns a BoundsType from (x1, y1) to (x2, y2).
- */
 export function Corners(x1: number, y1: number, x2: number, y2: number): BoundsType {
     return { x1, y1, x2, y2 };
 }
 
-/**
- * Returns a BoundsType with a corner at (x, y) and a width and height of (width, height).
- */
 export function Dimensions(x: number, y: number, width: number, height: number): BoundsType {
     return { x1: x, y1: y, x2: x + width, y2: y + height };
 }
 
-/**
- * Returns a BoundsType centered at (x, y) with a width of 2 * radius and a height of 2 * radiusY.
- * 
- * radiusY defaults to radius.
- */
 export function CircleBounds(x: number, y: number, radius: number, radiusY?: number): BoundsType {
-    return { x1: x - radius, y1: y - (radiusY ?? radius), x2: x + radius, y2: y + (radiusY ?? radius) };
+    return {
+        x1: x - radius,
+        y1: y - (radiusY ?? radius),
+        x2: x + radius,
+        y2: y + (radiusY ?? radius)
+    };
 }
 
-/**
- * Returns a BoundsType centered at (x, y) with a specific width and height.
- */
 export function CenterBounds(x: number, y: number, width: number, height?: number): BoundsType {
-    return { x1: x - width / 2, y1: y - (height ?? width) / 2, x2: x + width / 2, y2: y + (height ?? width) / 2 };
+    return {
+        x1: x - width / 2,
+        y1: y - (height ?? width) / 2,
+        x2: x + width / 2,
+        y2: y + (height ?? width) / 2
+    };
 }
 
-/**
- * Returns a callback that takes in a number and returns that number + value.
- */
 export function addCallback(value: number): AnimationCallback<number> {
     return (property: number) => property + value;
 }
 
-/**
- * Returns a callback that takes in a PositionType and returns that PositionType with x + value.
- */
 export function addXCallback(value: number): AnimationCallback<PositionType> {
     return (property: PositionType) => Position(property.x + value, property.y);
 }
 
-/**
- * Returns a callback that takes in a PositionType and returns that PositionType with y + value.
- */
 export function addYCallback(value: number): AnimationCallback<PositionType> {
     return (property: PositionType) => Position(property.x, property.y + value);
 }
 
-/**
- * Returns a callback that takes in a PositionType and adds (x, y) to it.
- */
 export function addPositionCallback(x: number, y: number): AnimationCallback<PositionType> {
     return (property: PositionType) => Position(property.x + x, property.y + y);
 }
 
-/**
- * @param bounds BoundsType
- * @returns [x1, y1, width, height] where (x1, y1) is the top left corner of the bounds.
- */
 export function getX1Y1WH(bounds: BoundsType): [number, number, number, number] {
     return [
         -Math.abs(bounds.x1 - bounds.x2) / 2,
         -Math.abs(bounds.y1 - bounds.y2) / 2,
         Math.abs(bounds.x1 - bounds.x2),
         Math.abs(bounds.y1 - bounds.y2)
-    ]
+    ];
 }
 
-/**
- * @param bounds BoundsType
- * @param position PositionType
- * @returns the position relative to the center of the bounds
- */
 export function translatePosition(bounds: BoundsType, position: PositionType): PositionType {
     return Position(
         position.x - bounds.x1 - (bounds.x2 - bounds.x1) / 2,
         position.y - bounds.y1 - (bounds.y2 - bounds.y1) / 2
-    )
+    );
 }
 
-/**
- * @param bounds BoundsType
- * @returns The bounds translated to (0, 0)
- */
-export function translateBounds(bounds: BoundsType) : BoundsType {
+export function translateBounds(bounds: BoundsType): BoundsType {
     return Corners(
         translatePosition(bounds, Position(bounds.x1, bounds.y1)).x,
         translatePosition(bounds, Position(bounds.x1, bounds.y1)).y,
         translatePosition(bounds, Position(bounds.x2, bounds.y2)).x,
         translatePosition(bounds, Position(bounds.x2, bounds.y2)).y
-    )
+    );
 }
 
-// <props> not needing to be defined is Typescript inference magic and I will not question it
-/**
- * Creates an animation object that can be used with Sprites.
- * 
- * @param property The property to animate.
- * @param from The starting value of the property. If null, the current value of the property will be used.
- * @param to The ending value of the property or a callback. If a callback, the callback will be called with the current value of the property and the return value will be used as the ending value.
- * @param duration The duration of the animation in frames. (default: 60)
- * @param delay The delay before the animation starts in frames. (default: 0)
- * @param easing The easing function to use. (default: Easing.LINEAR)
- * @param name Optional. The name of the animation. (default: '')
- * @param details Optional. Details about the animation. (default: [])
- * @returns An animation object.
- */
+export function addPositions(position1: PositionType, position2: PositionType): PositionType {
+    return Position(position1.x + position2.x, position1.y + position2.y);
+}
+
+export function subtractPositions(position1: PositionType, position2: PositionType): PositionType {
+    return Position(position1.x - position2.x, position1.y - position2.y);
+}
+
+export function multiplyPositions(position1: PositionType, position2: PositionType): PositionType {
+    return Position(position1.x * position2.x, position1.y * position2.y);
+}
+
+export function dividePositions(position1: PositionType, position2: PositionType): PositionType {
+    return Position(position1.x / position2.x, position1.y / position2.y);
+}
+
 export function Animate<props>(
-    property: keyof props, 
-    from: (props[keyof props] & (number|Record<string, number>))|null,
-    to: (props[keyof props] & (number|Record<string, number>))|AnimationCallback<props[keyof props] & (number|Record<string, number>)>,
-    duration: number = 60, 
-    delay: number = 0, 
+    property: keyof props,
+    from: (props[keyof props] & (number | Record<string, number>)) | null,
+    to:
+        | (props[keyof props] & (number | Record<string, number>))
+        | AnimationCallback<props[keyof props] & (number | Record<string, number>)>,
+    duration = 60,
+    delay = 0,
     easing: EasingType = Easing.LINEAR,
-    name: string = '',
-    details: (string|number)[] = []): AnimationType<props> {
-        return { property, from, to, duration, delay, easing, name, details };
+    name = ""
+): AnimationType<props> {
+    return { property, from, to, duration, delay, easing, name };
 }
 
-/**
- * Creates an animation object that can be used with Sprites.
- * 
- * The current value of the property will be used as the starting value.
- * 
- * @param property The property to animate.
- * @param to The ending value of the property or a callback. If a callback, the callback will be called with the current value of the property and the return value will be used as the ending value.
- * @param duration The duration of the animation in frames. (default: 60)
- * @param delay The delay before the animation starts in frames. (default: 0)
- * @param easing The easing function to use. (default: Easing.LINEAR)
- * @param name Optional. The name of the animation. (default: '')
- * @param details Optional. Details about the animation. (default: [])
- */
 export function AnimateTo<props>(
     property: keyof props,
-    to: (props[keyof props] & (number|Record<string, number>))|AnimationCallback<props[keyof props] & (number|Record<string, number>)>,
-    duration: number = 60,
-    delay: number = 0,
+    to:
+        | (props[keyof props] & (number | Record<string, number>))
+        | AnimationCallback<props[keyof props] & (number | Record<string, number>)>,
+    duration = 60,
+    delay = 0,
     easing: EasingType = Easing.LINEAR,
-    name: string = '',
-    details: (string|number)[] = []): AnimationType<props> {
-        return { property, from: null, to, duration, delay, easing, name, details };
+    name = ""
+): AnimationType<props> {
+    return { property, from: null, to, duration, delay, easing, name };
 }
 
-/**
- * Contains easing functions for use with animations.
- */
 export const Easing = {
     LINEAR: (x: number) => x,
     EASE_IN: (x: number) => 1 - Math.pow(1 - x, 2),
     EASE_OUT: (x: number) => x * x,
-    EASE_IN_OUT: (x: number) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2,
+    EASE_IN_OUT: (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2),
     EASE_IN_CUBIC: (x: number) => 1 - Math.pow(1 - x, 3),
     EASE_OUT_CUBIC: (x: number) => x * x * x,
-    EASE_IN_OUT_CUBIC: (x: number) => x < 0.5 ? 4 * Math.pow(x, 3) : 1 - Math.pow(-2 * x + 2, 3) / 2,
-    Bounce: (curve: EasingType) => {return (x: number) => x < 0.5 ? curve(x * 2) : curve(2 * (1 - x))},
-}
+    EASE_IN_OUT_CUBIC: (x: number) => (x < 0.5 ? 4 * Math.pow(x, 3) : 1 - Math.pow(-2 * x + 2, 3) / 2),
+    Bounce: (curve: EasingType) => {
+        return (x: number) => (x < 0.5 ? curve(x * 2) : curve(2 * (1 - x)));
+    }
+};
 
-/**
- * Contains all CSS colors as ColorTypes.
- */
 export const Colors = {
     AliceBlue: Color(240, 248, 255),
     AntiqueWhite: Color(250, 235, 215),
@@ -328,5 +279,5 @@ export const Colors = {
     Yellow: Color(255, 255, 0),
     YellowGreen: Color(154, 205, 50),
     None: Color(0, 0, 0, 0),
-    Transparent: Color(0, 0, 0, 0),
+    Transparent: Color(0, 0, 0, 0)
 };

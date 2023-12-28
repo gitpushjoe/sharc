@@ -1,12 +1,13 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "1.0.3-a",
+  "version": "1.0.0-dev-0",
   "type": "module",
   "files": [
     "dist/*"
   ],
   "exports": {
+    "./AnimationUtils.js": "./dist/AnimationUtils.js",
     "./Animation.js": "./dist/Animation.js",
     "./Stage.js": "./dist/Stage.js",
     "./Sprites.js": "./dist/Sprites.js",
@@ -37,6 +38,11 @@
       "require": "./dist/cjs/Utils.js",
       "types": "./dist/Utils.d.ts"
     },
+    "./AnimationUtils": {
+      "import": "./dist/AnimationUtils.js",
+      "require": "./dist/cjs/AnimationUtils.js",
+      "types": "./dist/AnimationUtils.d.ts"
+    },
     "./types/Animation": {
       "import": "./dist/types/Animation.js",
       "require": "./dist/types/Animation.cjs.js",
@@ -52,10 +58,15 @@
       "require": "./dist/types/Channels.cjs.js",
       "types": "./dist/types/Channels.d.ts"
     },
-    "./types/Stage": {
-      "import": "./dist/types/Stage.js",
-      "require": "./dist/types/Stage.cjs.js",
-      "types": "./dist/types/Stage.d.ts"
+    "./types/Events": {
+      "import": "./dist/types/Events.js",
+      "require": "./dist/types/Events.cjs.js",
+      "types": "./dist/types/Events.d.ts"
+    },
+    "./types/Sprites": {
+      "import": "./dist/types/Sprites.js",
+      "require": "./dist/types/Sprites.cjs.js",
+      "types": "./dist/types/Sprites.d.ts"
     }
   },
   "license": "MIT",
@@ -64,9 +75,9 @@
     "hostdev": "vite --host",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "fix": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "preview": "vite preview"
-  },
-  "dependencies": {
   },
   "devDependencies": {
     "@types/react": "^18.2.14",
@@ -77,11 +88,13 @@
     "eslint": "^8.44.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.1",
-    "typescript": "^5.2.2",
     "vite": "^4.4.4"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/gitpushjoe/sharc.git"
+  },
+  "dependencies": {
+    "typescript": "^5.1.3"
   }
 }
