@@ -176,10 +176,10 @@ export default class TextSprite<DetailsType = any>
 
     public static readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: TextProperties): Path2D => {
         const { text, maxWidth } = properties;
-        const metrics = ctx.measureText(text);
+        const metrics = ctx.measureText(text ?? "");
         const textWidth = metrics.width;
         const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-        ctx.fillText(text, -textWidth / 2, height / 2, maxWidth ?? undefined);
+        ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
             const {
                 color,
@@ -198,7 +198,7 @@ export default class TextSprite<DetailsType = any>
             })`;
             ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
             ctx.lineDashOffset = lineDashOffset ?? 0;
-            ctx.strokeText(text, -textWidth / 2, height / 2, maxWidth ?? undefined);
+            ctx.strokeText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         }
 
         const region = new Path2D();

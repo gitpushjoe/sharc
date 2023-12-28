@@ -11,7 +11,7 @@ import StrokeableSprite from "./StrokeableSprite";
 export default class Star<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
-        OmitBaseProps<StarProperties> & { center: PositionType },
+        OmitBaseProps<StarProperties> & { center?: PositionType },
         object,
         StarNormalProperties
     >
@@ -24,15 +24,10 @@ export default class Star<DetailsType = any>
                 startRatio: props.startRatio ?? 0,
                 endRatio: props.endRatio ?? 1,
                 fillRule: props.fillRule ?? "nonzero",
-                innerRadius: props.innerRadius ?? (props.radius * (3 - Math.sqrt(5))) / 2
+                innerRadius: props.innerRadius ?? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2
             },
             props as typeof props & { bounds: BoundsType }
         );
-        const bounds = CircleBounds(this.centerX, this.centerY, this.radius);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
         this.center = { x: props.center?.x ?? 0, y: props.center?.y ?? 0 };
     }
 
@@ -94,7 +89,7 @@ export default class Star<DetailsType = any>
     }
 
     public readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: StarProperties): Path2D => {
-        const radius = properties.radius;
+        const radius = properties.radius ?? 5;
         const innerRadius = properties.innerRadius ?? (radius * (3 - Math.sqrt(5))) / 2;
 
         const pointFromAngle = (angle: number, radius: number) => {

@@ -185,8 +185,8 @@ export type PolygonProperties<DetailsType = any> = {
 export type PolygonNormalProperties = Exclude<keyof OmitBaseProps<PolygonProperties>, "center">;
 
 export type StarProperties<DetailsType = any> = {
-    center: PositionType;
-    radius: number;
+    center?: PositionType;
+    radius?: number;
     innerRadius?: number;
     startRatio?: number;
     endRatio?: number;
@@ -197,7 +197,7 @@ export type StarProperties<DetailsType = any> = {
 export type StarNormalProperties = keyof OmitBaseProps<StarProperties>;
 
 export type TextProperties<DetailsType = any> = {
-    text: string;
+    text?: string;
     position?: PositionType;
     positionIsCenter?: boolean;
     font?: string;
