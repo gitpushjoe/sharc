@@ -26,57 +26,57 @@ export function Usage() {
             bounds: {x1: -200, y1: -100, x2: 250, y2: 100},
             color: {red: 255, green: 0, blue: 0, alpha: 1},
             lineWidth: 10,
-        }, 2);
+        });
 
         stage.root.addChild(sprite);
         
-        stage.loop(1);
+        stage.draw();
 
-        const stage2 = new Stage(canvasRef2.current!, 'centered', Colors.LightSlateGray);
+        // const stage2 = new Stage(canvasRef2.current!, 'centered', Colors.LightSlateGray);
 
-        const myRect = new Rect({
-            bounds: {x1: -100, y1: -100, x2: 100, y2: 100},
-            color: {red: 255, green: 75, blue: 255, alpha: 0.8},
-            rotation: 20,
-            name: 'myRect',
-            alpha: 0.8,
-        });
+        // const myRect = new Rect({
+        //     bounds: {x1: -100, y1: -100, x2: 100, y2: 100},
+        //     color: {red: 255, green: 75, blue: 255, alpha: 0.8},
+        //     rotation: 20,
+        //     name: 'myRect',
+        //     alpha: 0.8,
+        // });
 
-        console.assert(JSON.stringify(myRect.get('color')) === '{"red":255,"green":75,"blue":255,"alpha":0.8}');
-        console.assert(JSON.stringify(myRect.get('scale')) === '{"x":1,"y":1}');
-        console.assert(myRect.get('rotation') === 20);
-        console.assert(myRect.get('alpha') === 0.8);
-        console.assert(myRect.get('green') === 75);
-        console.assert(myRect.get('centerX') === 0);
-        console.assert(myRect.get('name') === 'myRect');
+        // console.assert(JSON.stringify(myRect.get('color')) === '{"red":255,"green":75,"blue":255,"alpha":0.8}');
+        // console.assert(JSON.stringify(myRect.get('scale')) === '{"x":1,"y":1}');
+        // console.assert(myRect.get('rotation') === 20);
+        // console.assert(myRect.get('alpha') === 0.8);
+        // console.assert(myRect.get('green') === 75);
+        // console.assert(myRect.get('centerX') === 0);
+        // console.assert(myRect.get('name') === 'myRect');
 
-        stage2.root.addChildren(myRect);
+        // stage2.root.addChildren(myRect);
 
-        stage2.loop(1);
+        // stage2.loop(1);
 
-        const stage3 = new Stage(canvasRef3.current!, 'centered', Colors.LightSlateGray);
+        // const stage3 = new Stage(canvasRef3.current!, 'centered', Colors.LightSlateGray);
 
-        const myRect2 = new Rect({
-            bounds: {x1: 0, y1: 0, x2: 0, y2: 0}
-        });
+        // const myRect2 = new Rect({
+        //     bounds: {x1: 0, y1: 0, x2: 0, y2: 0}
+        // });
 
-        myRect2.set('color', {red: 255, green: 75, blue: 255, alpha: 0.8});
-        myRect2.set('bounds', {x1: -100, y1: -100, x2: 100, y2: 100});
-        myRect2.set('name', 'myRect');
-        try {
-            myRect2.set('rotation', '', true) // will throw an error
-        } catch (e) {
-            myRect2.set('rotation', 20);
-        }
+        // myRect2.set('color', {red: 255, green: 75, blue: 255, alpha: 0.8});
+        // myRect2.set('bounds', {x1: -100, y1: -100, x2: 100, y2: 100});
+        // myRect2.set('name', 'myRect');
+        // try {
+        //     myRect2.set('rotation', '', true) // will throw an error
+        // } catch (e) {
+        //     myRect2.set('rotation', 20);
+        // }
 
-        stage3.root.addChildren(myRect2);
+        // stage3.root.addChildren(myRect2);
 
-        stage3.loop(1);
+        // stage3.loop(1);
 
         return () => {
             stage.stop();
-            stage2.stop();
-            stage3.stop();
+            // stage2.stop();
+            // stage3.stop();
         }
     }, [canvasRef]);
 
@@ -98,14 +98,14 @@ const mySprite = new Line({
     \tbounds: {x1: -200, y1: -100, x2: 250, y2: 100},
     \tcolor: {red: 255, green: 0, blue: 0, alpha: 1},
     \tlineWidth: 10,
-}, 2);
+});
 
 stage.root.addChild(mySprite);
 
-stage.loop();`} />
+stage.draw();`} />
 
         <br />
-        <h3 id='properties'>Properties</h3>
+        {/* <h3 id='properties'>Properties</h3>
         <p>
             {'Every sprite property can be accessed via '}
             <CodeBlurb blurb={['mySprite.get(property, raiseError = true)']}></CodeBlurb>
@@ -173,6 +173,6 @@ try {
 
 stage.root.addChildren(myRect);
 
-stage.loop(); `} />
+stage.loop(); `} /> */}
     </>
 }

@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
-import { ImageSprite, Ellipse } from "sharc-js/Sprites.js";
-import { Stage } from "sharc-js/Stage.js";
-import { Colors } from "sharc-js/Utils.js";
+import { ImageSprite, Ellipse } from "sharc-js/Sprites";
+import { Stage } from "sharc-js/Stage";
+import { Colors } from "sharc-js/Utils";
 import CodeBlurb from "../../components/Code/Blurb";
 import InlineCode from "../../components/Code/Inline";
 import CodeShowcase from "../../components/Code/Showcase";
@@ -13,81 +13,84 @@ export function ImagePage() {
 
     useEffect(() => {
 
-        const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
+const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
-        const demoImg = new Image();
-        demoImg.src = 'https://i.imgur.com/mXuQAt2.png';
-        
-        demoImg.onload = () => {
-            const image = new ImageSprite({
-                image: demoImg,
-                bounds: ImageSprite.Bounds(-demoImg.width / 8, -demoImg.height / 8, demoImg.width / 4, demoImg.height / 4),
-                srcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
-                scale: {x: 1, y: -1},
-            }); 
-    
-            const sourceImage = new ImageSprite({
-                image: demoImg,
-                bounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
-                scale: {x: 1, y: -1},
-                alpha: 0.25,
-            })
-            
-            const sourceImageSelected = new ImageSprite({
-                image: demoImg,
-                bounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
-                srcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
-                stroke: {
-                    color: Colors.White, 
-                    lineWidth: 5, 
-                    lineDash: 10, 
-                    lineCap: 'round'
-                },
-                scale: {x: 1, y: -1}
-            });
+const demoImg = new Image();
+demoImg.src = 'https://i.imgur.com/mXuQAt2.png';
 
-            stage.root.addChildren(image, sourceImage, sourceImageSelected);
-            
-            for (const idx in Array.from({length: 2})) {
-                const property = ['corner1', 'corner2'][idx];
-                const color = [Colors.Red, Colors.Blue][idx];
+demoImg.onload = () => {
+    const image = new ImageSprite({
+        image: demoImg,
+        bounds: ImageSprite.Bounds(-demoImg.width / 8, -demoImg.height / 8, demoImg.width / 4, demoImg.height / 4),
+        srcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
+        scale: {x: 1, y: -1},
+    }); 
+
+    const sourceImage = new ImageSprite({
+        image: demoImg,
+        bounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
+        scale: {x: 1, y: -1},
+        alpha: 0.25,
+    })
     
-                const demoPosition = image.get(property as 'corner1');
-                stage.root.addChild(new Ellipse({
-                    bounds: Ellipse.Bounds(demoPosition.x, demoPosition.y, 12),
-                    color: color,
-                    stroke: {lineWidth: 3},
-                }).setOnDrag((sprite, _, position) => {
-                    sprite.set('center', position);
-                    image.set(property as 'corner1', position);
-                }));
+    const sourceImageSelected = new ImageSprite({
+        image: demoImg,
+        bounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
+        srcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
+        stroke: {
+            color: Colors.White, 
+            lineWidth: 5, 
+            lineDash: 10, 
+            lineCap: 'round'
+        },
+        scale: {x: 1, y: -1}
+    });
+
+    stage.root.addChildren(image, sourceImage, sourceImageSelected);
     
-                const sourceProperty = ['srcCorner1', 'srcCorner2'][idx];
-                const sourceColor = sourceImage.get(property as 'corner1');
-                stage.root.addChild(new Ellipse({
-                    bounds: Ellipse.Bounds(sourceColor.x, sourceColor.y, 12),
-                    color: color,
-                    stroke: {lineWidth: 3},
-                }).setOnDrag((sprite, _, position) => {
-                    if (sourceImage.get('x1') - 10 <= position.x && 
-                    position.x <= sourceImage.get('x2') + 10 && 
-                    sourceImage.get('y1') - 10 <= position.y && 
-                    position.y <= sourceImage.get('y2') + 10) {
-                        sprite.set('center', position);
-                        sourceImageSelected.set(property as 'corner1', position);
-                        sourceImageSelected.set(sourceProperty as 'srcCorner1', {
-                            x: (position.x - sourceImage.get('x1')) * 5,
-                            y: (sourceImage.get('height') - (position.y - sourceImage.get('y1'))) * 5
-                        })
-                        image.set(sourceProperty as 'srcCorner1', {
-                            x: (position.x - sourceImage.get('x1')) * 5,
-                            y: (sourceImage.get('height') - (position.y - sourceImage.get('y1'))) * 5
-                        })
-                    }
-                }));
+    for (const idx in Array.from({length: 2})) {
+        const property = (['corner1', 'corner2'] as const)[idx];
+        const color = [Colors.Red, Colors.Blue][idx];
+
+        const demoPosition = image[property];
+        stage.root.addChild(new Ellipse({
+            center: demoPosition,
+            radius: 12,
+            color: color,
+            stroke: {lineWidth: 3},
+        }).on('drag', function (_event, position) {
+            this.center = position;
+            image[property] = position;
+        }));
+
+        const sourceProperty = (['srcCorner1', 'srcCorner2'] as const)[idx];
+        const sourceColor = sourceImage[property];
+        stage.root.addChild(new Ellipse({
+            center: sourceColor,
+            radius: 12,
+            color: color,
+            stroke: {lineWidth: 3},
+        }).on('drag', function (_event, position) {
+            if (sourceImage.x1 - 10 <= position.x && 
+            position.x <= sourceImage.x2 + 10 && 
+            sourceImage.y1 - 10 <= position.y && 
+            position.y <= sourceImage.y2 + 10) {
+                this.center = position;
+                sourceImageSelected[property] = position;
+                sourceImageSelected[sourceProperty] = {
+                    x: (position.x - sourceImage.x1) * 5,
+                    y: (sourceImage.height - (position.y - sourceImage.y1)) * 5
+                };
+                image[sourceProperty] = ({
+                    x: (position.x - sourceImage.x1) * 5,
+                    y: (sourceImage.height - (position.y - sourceImage.y1)) * 5
+                });
             }
-        }
-        stage.loop();
+        }));
+    }
+}
+
+stage.loop();
 
         return () => {
             stage.stop();
@@ -112,84 +115,85 @@ const demoImg = new Image();
 demoImg.src = 'https://i.imgur.com/mXuQAt2.png';
 
 demoImg.onload = () => {
-    \tconst image = new ImageSprite({
-        \t\timage: demoImg,
-        \t\tbounds: ImageSprite.Bounds(-demoImg.width / 8, -demoImg.height / 8, demoImg.width / 4, demoImg.height / 4),
-        \t\tsrcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
-        \t\tscale: {x: 1, y: -1},
-    \t});
+	const image = new ImageSprite({
+		image: demoImg,
+		bounds: ImageSprite.Bounds(-demoImg.width / 8, -demoImg.height / 8, demoImg.width / 4, demoImg.height / 4),
+		srcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
+		scale: {x: 1, y: -1},
+	});
 
-    \tconst sourceImage = new ImageSprite({
-        \t\timage: demoImg,
-        \t\tbounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
-        \t\tscale: {x: 1, y: -1},
-        \t\talpha: 0.25,
-    \t})
+	const sourceImage = new ImageSprite({
+		image: demoImg,
+		bounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
+		scale: {x: 1, y: -1},
+		alpha: 0.25,
+	})
+	
+	const sourceImageSelected = new ImageSprite({
+		image: demoImg,
+		bounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
+		srcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
+		stroke: {
+			color: Colors.White,
+			lineWidth: 5,
+			lineDash: 10,
+			lineCap: 'round'
+		},
+		scale: {x: 1, y: -1}
+	});
 
-    \tconst sourceImageSelected = new ImageSprite({
-        \t\timage: demoImg,
-        \t\tbounds: ImageSprite.Bounds(-280, 120, demoImg.width / 5, demoImg.height / 5),
-        \t\tsrcBounds: ImageSprite.Bounds(0, demoImg.height, demoImg.width, -demoImg.height),
-        \t\tstroke: {
-            \t\t\tcolor: Colors.White,
-            \t\t\tlineWidth: 5,
-            \t\t\tlineDash: 10,
-            \t\t\tlineCap: 'round'
-        \t\t},
-        \t\tscale: {x: 1, y: -1}
-    \t});
+	stage.root.addChildren(image, sourceImage, sourceImageSelected);
+	
+	for (const idx in Array.from({length: 2})) {
+		const property = (['corner1', 'corner2'] as const)[idx];
+		const color = [Colors.Red, Colors.Blue][idx];
 
-    \tstage.root.addChildren(image, sourceImage, sourceImageSelected);
+		const demoPosition = image[property];
+		stage.root.addChild(new Ellipse({
+			center: demoPosition,
+			radius: 12,
+			color: color,
+			stroke: {lineWidth: 3},
+		}).on('drag', function (_event, position) {
+			this.center = position;
+			image[property] = position;
+		}));
 
-    \tfor (const idx in Array.from({length: 2})) {
-        \t\tconst property = ['corner1', 'corner2'][idx];
-        \t\tconst color = [Colors.Red, Colors.Blue][idx];
+		const sourceProperty = (['srcCorner1', 'srcCorner2'] as const)[idx];
+		const sourceColor = sourceImage[property];
+		stage.root.addChild(new Ellipse({
+			center: sourceColor,
+			radius: 12,
+			color: color,
+			stroke: {lineWidth: 3},
+		}).on('drag', function (_event, position) {
+			if (sourceImage.x1 - 10 <= position.x &&
+			position.x <= sourceImage.x2 + 10 &&
+			sourceImage.y1 - 10 <= position.y &&
+			position.y <= sourceImage.y2 + 10) {
+				this.center = position;
+				sourceImageSelected[property] = position;
+				sourceImageSelected[sourceProperty] = {
+					x: (position.x - sourceImage.x1) * 5,
+					y: (sourceImage.height - (position.y - sourceImage.y1)) * 5
+				};
+				image[sourceProperty] = ({
+					x: (position.x - sourceImage.x1) * 5,
+					y: (sourceImage.height - (position.y - sourceImage.y1)) * 5
+				});
+			}
+		}));
+	}
+}
 
-        \t\tconst demoPosition = image.get(property as 'corner1');
-        \t\tstage.root.addChild(new Ellipse({
-            \t\t\tbounds: Ellipse.Bounds(demoPosition.x, demoPosition.y, 12),
-            \t\t\tcolor: color,
-            \t\t\tstroke: {lineWidth: 3},
-        \t\t}).setOnDrag((sprite, _, position) => {
-            \t\t\tsprite.set('center', position);
-            \t\t\timage.set(property as 'corner1', position);
-        \t\t}));
-
-        \t\tconst sourceProperty = ['srcCorner1', 'srcCorner2'][idx];
-        \t\tconst sourceColor = sourceImage.get(property as 'corner1');
-        \t\tstage.root.addChild(new Ellipse({
-            \t\t\tbounds: Ellipse.Bounds(sourceColor.x, sourceColor.y, 12),
-            \t\t\tcolor: color,
-            \t\t\tstroke: {lineWidth: 3},
-        \t\t}).setOnDrag((sprite, _, position) => {
-            \t\t\tif (sourceImage.get('x1') - 10 <= position.x &&
-            \t\t\t\tposition.x <= sourceImage.get('x2') + 10 &&
-            \t\t\t\tsourceImage.get('y1') - 10 <= position.y &&
-            \t\t\t\tposition.y <= sourceImage.get('y2') + 10) {
-                \t\t\t\tsprite.set('center', position);
-                \t\t\t\tsourceImageSelected.set(property as 'corner1', position);
-                \t\t\t\tsourceImageSelected.set(sourceProperty as 'srcCorner1', {
-                    \t\t\t\t\tx: (position.x - sourceImage.get('x1')) * 5,
-                    \t\t\t\t\ty: (sourceImage.get('height') - (position.y - sourceImage.get('y1'))) * 5
-                \t\t\t\t})
-                \t\t\t\timage.set(sourceProperty as 'srcCorner1', {
-                    \t\t\t\t\tx: (position.x - sourceImage.get('x1')) * 5,
-                    \t\t\t\t\ty: (sourceImage.get('height') - (position.y - sourceImage.get('y1'))) * 5
-                \t\t\t\t})
-            \t\t\t}
-        \t\t}));
-    \t\t}
-\t}
-
-stage.loop();
-            `} />
+stage.loop();`} />
 
         <h3>ImageProperties</h3>
         <p style={{lineHeight: '2em'}}>
             Inherited from <Hyperlink to='sprites/default/universal-sprite-properties'>Sprite:</Hyperlink>
             {'\u00A0\u00A0\u00A0'}
             {
-                ['bounds', 'color?', 'scale?', 'rotation?', 'alpha?', 'effects?', 'name?', 'details?'].map((prop, idx) => {
+                ['bounds?', 'color?', 'scale?', 'rotation?', 'alpha?', 'blur?', 'gradient?', 'effects?', 'name?', 'enabled?', 'channelCount?', 'details?'].map((prop, idx) => {
                     return <>
                         <CodeBlurb key={idx} blurb={[prop]} />{' '}
                     </>
@@ -203,16 +207,16 @@ stage.loop();
 
         <h5>HiddenImageProperties</h5>
         <p style={{lineHeight: '2em'}}>
-            <CodeBlurb blurb={['useSrcBounds: ','boolean']} /> - whether to use <InlineCode>srcBounds</InlineCode> or to draw the image in its entirety. Defaults to <InlineCode>true</InlineCode> if <InlineCode>srcBounds</InlineCode> is defined, <InlineCode>false</InlineCode> otherwise. Hidden Property.
+            <CodeBlurb blurb={['useSrcBounds: ','boolean']} /> - whether to use <InlineCode>srcBounds</InlineCode> or to draw the image in its entirety. Defaults to <InlineCode>true</InlineCode> if <InlineCode>srcBounds</InlineCode> is defined, <InlineCode>false</InlineCode> otherwise. Normal hidden Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['srcCorner1: ', 'PositionType']} /> - Aggregate Property for <InlineCode>srcX1</InlineCode> and <InlineCode>srcY1</InlineCode>. Hidden Property.
+            <CodeBlurb blurb={['srcCorner1: ', 'PositionType']} /> - Aggregate Property for <InlineCode>srcX1</InlineCode> and <InlineCode>srcY1</InlineCode>. Normal hidden Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['srcCorner2: ', 'PositionType']} /> - Aggregate Property for <InlineCode>srcX2</InlineCode> and <InlineCode>srcY2</InlineCode>. Hidden Property.
+            <CodeBlurb blurb={['srcCorner2: ', 'PositionType']} /> - Aggregate Property for <InlineCode>srcX2</InlineCode> and <InlineCode>srcY2</InlineCode>. Normal hidden Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
             {
                 [['srcX1: ', 'number'], ['srcY1: ', 'number'], ['srcX2: ', 'number'], ['srcY2: ', 'number']].map((prop, idx) => {
                     return <>
-                        <CodeBlurb key={idx} blurb={prop} /> - Hidden Property.
+                        <CodeBlurb key={idx} blurb={prop} /> - Normal hidden Property.
                         <div style={{'width': '1em', 'height': '.5em'}}></div>
                     </>
                 })

@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
 import CodeBlock from "../components/Code/Block";
 import CodeShowcase from "../components/Code/Showcase";
-import { Stage } from '../../sharc/Stage';
-import { BezierCurve, Ellipse, Line, Path, Rect, Star, TextSprite } from '../../sharc/Sprites';
+import { Stage } from 'sharc-js/Stage';
+import { BezierCurve, Ellipse, Line, Path, Rect, Star, TextSprite } from 'sharc-js/Sprites';
 import { useParams } from "react-router";
 import { LinkContainer } from "react-router-bootstrap";
 import CodeHeader from "../components/Code/Header";
 import CodeBlurb from "../components/Code/Blurb";
-import { Colors, Easing } from "../../sharc/Utils";
+import { Colors, Easing } from "sharc-js/Utils";
 import InlineCode from "../components/Code/Inline";
 import { Hyperlink } from "../components/Sidebar/Hyperlink";
 
@@ -25,7 +25,7 @@ export function DefaultPage() {
             <p>
                 {'The Stage class provides an interface for creating and managing an animation loop, as well as pointer events and scroll events on the canvas. ' +
                 'Each stage has a root Sprite. The root is a '}
-                <LinkContainer to='/docs/sprites/nullsprite'><a>NullSprite</a></LinkContainer>
+                <LinkContainer to='/sharc/docs/sprites/nullsprite'><a>NullSprite</a></LinkContainer>
                 {', so it doesn\'t actually render anything. Instead, it serves as a container for all other sprites.'}
             </p>
 
@@ -53,6 +53,12 @@ export function DefaultPage() {
             <div>
                 Starts the animation loop at the specified framerate, resetting the frame counter to 0. If the animation loop is already running, it will be stopped and restarted.     
             </div>
+           
+            <br />
+            <CodeHeader header={'stage.draw() -> void'} />
+            <div>
+                Draws all sprites, advancing their <Hyperlink>animation channels</Hyperlink>. Called automatically by <InlineCode>stage.loop()</InlineCode>.
+            </div>
 
             <br />
             <CodeHeader header={'stage.stop() -> void'} />
@@ -63,7 +69,7 @@ export function DefaultPage() {
             <br />
             <CodeHeader header={'stage.root -> NullSprite'} />
             <span>{'The root sprite. To draw sprites to the stage, they should be either added as '}
-            <LinkContainer to='/docs/sprites/parenting'><a>children</a></LinkContainer>
+            <LinkContainer to='/sharc/docs/sprites/parenting'><a>children</a></LinkContainer>
             {' of the root sprite, or as children of those sprites, and so on and so on.'}</span>
             <br />
             
@@ -92,52 +98,23 @@ export function DefaultPage() {
             </div>
 
             <br />
-            <CodeHeader header={'stage.bgColor: ColorType'} />
+            <CodeHeader header={'stage.addEventListener(event: string, callback: Function)'} />
             <div>
-                The color to clear the canvas to before each render. 
+                {'See '}<Hyperlink to='stage/event-listeners'>Event Listeners</Hyperlink>{'.'}
             </div>
 
             <br />
-            <CodeHeader header={'stage.onPointerDown: (stage: Stage, event: PointerEvent, position: PositionType) => void'} />
+            <CodeHeader header={'stage.on(event: string, callback: Function)'} />
             <div>
-                {'See '}
-                <Hyperlink to='stage/handling-user-input'>Handling User Input</Hyperlink>.
+                {'See '}<Hyperlink to='stage/event-listeners'>Event Listeners</Hyperlink>{'.'}
             </div>
 
             <br />
-            <CodeHeader header={'stage.onPointerUp: (stage: Stage, event: PointerEvent, position: PositionType) => void'} />
+            <CodeHeader header={'stage.removeEventListener(event: string, callback?: Function)'} />
             <div>
-                {'See '}
-                <Hyperlink to='stage/handling-user-input'>Handling User Input</Hyperlink>.
+                {'See '}<Hyperlink to='stage/event-listeners'>Event Listeners</Hyperlink>{'.'}
             </div>
 
-            <br />
-            <CodeHeader header={'stage.onPointerMove: (stage: Stage, event: PointerEvent, position: PositionType) => void'} />
-            <div>
-                {'See '}
-                <Hyperlink to='stage/handling-user-input'>Handling User Input</Hyperlink>.
-            </div>
-
-            <br />
-            <CodeHeader header={'stage.onScroll: (stage: Stage, event: WheelEvent) => void'} />
-            <div>
-                {'See '}
-                <Hyperlink to='stage/handling-user-input'>Handling User Input</Hyperlink>.
-            </div>
-
-            <br />
-            <CodeHeader header={'stage.beforeDraw: (stage: Stage) => void'} />
-            <div>
-                {'See '}
-                <Hyperlink>Working with the Animation Loop</Hyperlink>.
-            </div>
-
-            <br />
-            <CodeHeader header={'stage.afterDraw: (stage: Stage) => void'} />
-            <div>
-                {'See '}
-                <Hyperlink>Working with the Animation Loop</Hyperlink>.
-            </div>
         </div>
     </>;
 }
@@ -159,7 +136,8 @@ export function Usage() {
         const stage1 = new Stage(canvasRef1.current!, 'classic', Colors.LightSlateGray);
 
         const circle = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 10),
+            center : {x: 0, y: 0},
+            radius: 10,
             color: Colors.Gold,
             stroke: {color: Colors.White, lineWidth: 3},
         });
@@ -174,12 +152,12 @@ export function Usage() {
             })
         )
 
-        stage1.onPointerMove = (_stage, _event, position) => {
-            circle.set('center', position);
-            circle.children[0].set('text', `(${
+        stage1.on('move', (_event, position) => {
+            circle.center = position;
+            (circle.children[0] as TextSprite).text = `(${
                 Math.round(position.x)}, ${
-                Math.round(position.y)})`);
-        }
+                Math.round(position.y)})`;
+        });
 
         stage1.root.addChild(circle);
         stage1.loop();
@@ -187,28 +165,27 @@ export function Usage() {
         const stage2 = new Stage(canvasRef2.current!, 'centered', Colors.LightSlateGray);
 
         const circle2 = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 10),
+            radius: 10,
             color: Colors.Gold,
             stroke: {color: Colors.White, lineWidth: 3},
         });
 
         circle2.addChild(
             new TextSprite({
+                position: {x: 10, y: -40},
                 text: '(0, 0)',
                 fontSize: 30,
                 bold: true,
                 color: Colors.Gold,
-                position: {x: 10, y: -40},
-                scale: {x: 1, y: -1},
             })
         )
 
-        stage2.onPointerMove = (_stage, _event, position) => {
-            circle2.set('center', position);
-            circle2.children[0].set('text', `(${
+        stage2.on('move', (_event, position) => {
+            circle2.center = position;
+            (circle2.children[0] as TextSprite).text = `(${
                 Math.round(position.x)}, ${
-                Math.round(position.y)})`);
-        }
+                Math.round(position.y)})`;
+        });
 
         stage2.root.addChildren(
             new Line({
@@ -250,8 +227,8 @@ export function Usage() {
         stage3.root.createChannels(1);
 
         stage3.root.distribute([
-            [{property: 'rotation', from: 0, to: 360, duration: 180, delay: 0, easing: Easing.LINEAR}],
-            [{property: 'scale', from: {x: 1, y: -1}, to: {x: 2, y: -2}, duration: 180, delay: 0, easing: Easing.LINEAR}],
+            [{property: 'rotation', from: 0, to: 360, duration: 180}],
+            [{property: 'scale', from: {x: 1, y: -1}, to: {x: 2, y: -2}, duration: 180}],
         ], {loop: true, delay: 0});
 
         stage3.loop();
@@ -271,7 +248,7 @@ export function Usage() {
         <LinkContainer to='/docs/stage'><a>previous chapter</a></LinkContainer>
         {`, there are two root styles: `}<em>'classic'</em>{', and '}<em>'centered'</em>{'. With classic root nodes, the root is placed in the top-left corner. '}
         {'If there\'s no scaling, a positive y-value is lower on the canvas than a negative y-value. Move your mouse around in the canvas below to see a demo of how this works. To better understand how to make this demo, see '}
-        <Hyperlink to='stage/handling-user-input'>Handling User Input</Hyperlink>
+        <Hyperlink to='stage/event-listeners'>Event Listeners</Hyperlink>
         {'.'}</p>
         <CodeShowcase canvasRef={canvasRef1} code={
             `import { Stage } from 'sharc/Stage';
@@ -282,7 +259,8 @@ export function Usage() {
             const stage = new Stage(canvas, 'classic', Colors.LightSlateGray);
 
             const circle = new Ellipse({
-                        \tbounds: Ellipse.Bounds(0, 0, 10),
+                        \tcenter: {x: 0, y: 0},
+                        \tradius: 10,
             \tcolor: Colors.Gold,
             \tstroke: {color: Colors.White, lineWidth: 3},
             });
@@ -299,13 +277,12 @@ export function Usage() {
 
             stage.root.addChild(circle);
 
-            stage.onPointerMove = (_stage, _event, position) => {
-                \tcircle.set('center', position);
-                \tcircle.children[0].set('text', \`(
+            stage.on('move', (_, position) => {
+                \tcircle.center = position;
+                \t(circle.children[0] as TextSprite).text = \`(
                     \t\t$\{Math.round(position.x)}, 
-                    \t\t$\{Math.round(position.y)})
-                \t\`); 
-            }
+                    \t\t$\{Math.round(position.y)})\`;
+            });
 
             stage.loop();
         `} />
@@ -327,14 +304,13 @@ export function Usage() {
             });
 
             circle.addChild(
-            \tnew TextSprite({
-            \t\ttext: '(0, 0)',
-            \t\tfontSize: 30,
-            \t\tbold: true,
-            \t\tcolor: Colors.Gold,
-            \t\tposition: {x: 10, y: -40},
-            \t\tscale: {x: 1, y: -1},
-            \t})
+                \tnew TextSprite({
+                    \t\tposition: {x: 10, y: -40},
+                    \t\ttext: '(0, 0)',
+                    \t\tfontSize: 30,
+                    \t\tbold: true,
+                    \t\tcolor: Colors.Gold,
+                \t})
             )
 
             stage.root.addChildren(
@@ -352,13 +328,12 @@ export function Usage() {
             
             stage.root.addChild(circle);
 
-            stage.onPointerMove = (_stage, _event, position) => {
-                \tcircle.set('center', position);
-                \tcircle.children[0].set('text', \`(
+            stage.on('move', (_, position) => {
+                \tcircle.center = position;
+                \t(circle.children[0] as TextSprite).text = \`(
                     \t\t$\{Math.round(position.x)}, 
-                    \t\t$\{Math.round(position.y)})
-                \t\`);    
-            }
+                    \t\t$\{Math.round(position.y)})\`;
+            });
 
             stage.loop();`} />
 
@@ -412,8 +387,8 @@ export function Usage() {
         stage.root.createChannels(1);
 
         stage.root.distribute([
-            \t[{property: 'rotation', from: 0, to: 360, duration: 180, delay: 0, easing: Easing.LINEAR}],
-            \t[{property: 'scale', from: {x: 1, y: -1}, to: {x: 2, y: -2}, duration: 180, delay: 0, easing: Easing.LINEAR}], // -1 and -2 since the root is flipped on the y-axis
+            \t[{property: 'rotation', from: 0, to: 360, duration: 180, }],
+            \t[{property: 'scale', from: {x: 1, y: -1}, to: {x: 2, y: -2}, duration: 180}], // -1 and -2 since the root is flipped on the y-axis
         ], {loop: true, delay: 0});
 
         stage.loop();`
@@ -429,7 +404,7 @@ export function React() {
         const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
         stage.root.addChild(new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 100),
+            radius: 100,
             color: Colors.Aqua,
         }));
 
@@ -461,7 +436,7 @@ export function React() {
                     \t\tconst stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
                     \t\tstage.root.addChild(new Ellipse({
-                        \t\t\tbounds: Ellipse.Bounds(0, 0, 100),
+                        \t\t\tradius: 100,
                         \t\t\tcolor: Colors.Aqua,
                     \t\t}));
 
@@ -485,7 +460,7 @@ export function Angular() {
         const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
         stage.root.addChild(new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 100),
+            radius: 100,
             color: Colors.Aqua,
         }));
 
@@ -522,7 +497,7 @@ export function Angular() {
                 \t\tthis.stage = new Stage(this.canvasRef.nativeElement, 'centered', Colors.LightSlateGray);
                 
                 \t\tthis.stage.root.addChild(new Ellipse({
-                    \t\t\tbounds: Ellipse.Bounds(0, 0, 100),
+                    \t\t\tradius: 100,
                     \t\t\tcolor: Colors.Aqua,
                 \t\t}));
 
@@ -536,21 +511,22 @@ export function Angular() {
     </>
 }
 
-export function HandlingUserInput() {
+export function EventListeners() {
 
     const canvasRef1 = useRef<HTMLCanvasElement>(null);
     const canvasRef2 = useRef<HTMLCanvasElement>(null);
+    const canvasRef3 = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
 
         const stage = new Stage(canvasRef1.current!, 'centered', Colors.LightSlateGray);
         const stage2 = new Stage(canvasRef2.current!, 'centered', Colors.LightSlateGray);
+        const stage3 = new Stage(canvasRef3.current!, 'centered', Colors.LightSlateGray);
 
         const text = new TextSprite({
             text: 'Click me!',
             position: {x: -275, y: -175},
             color: Colors.White,
-            scale: {x: 1, y: -1},
             fontSize: 35,
             bold: true,
         });
@@ -571,7 +547,8 @@ export function HandlingUserInput() {
             
             stage.root.addChildren(
                 new Ellipse({
-                    bounds: Ellipse.Bounds(0, 0, 10),
+                    // bounds: Ellipse.Bounds(0, 0, 10),
+                    radius: 10,
                     color: Colors.Gold,
                     stroke: {color: Colors.White, lineWidth: 3},
                 })
@@ -579,25 +556,27 @@ export function HandlingUserInput() {
                 
         stage.root.addChild(text);
 
-        stage.onPointerDown = (stage, event, position) => {
+        // stage.onPointerDown = (stage, event, position) => {
+        stage.on('click', (event, position) => {
             const button = event.button === 0 ? 'Left' : event.button === 1 ? 'Middle' : 'Right';
-            stage.root.children[3].set('text', `${button} click at (${Math.round(position.x)}, ${Math.round(position.y)})`);
-            stage.root.children[2].set('center', position);
-        }
+            const text = `${button} click at (${Math.round(position.x)}, ${Math.round(position.y)})`;
+            (stage.root.children[3] as TextSprite).text = text;
+            stage.root.children[2].center = position;
+        });
         
         stage.loop();
         
         const sliderText = new TextSprite({
             text: 'Slider',
             position: {x: -155, y: -15},
-            scale: {x: 1, y: -1},
             color: Colors.White,
             fontSize: 40,
             textAlign: 'right',
         });
 
         const slider = new Ellipse({
-            bounds: Ellipse.Bounds(-130, 0, 12),
+            center: { x: -130, y: 0 },
+            radius: 12,
             color: Colors.DarkBlue,
             stroke: {color: Colors.White, lineWidth: 4},
         });
@@ -611,43 +590,63 @@ export function HandlingUserInput() {
 
         stage2.root.addChildren(sliderText, sliderLine, slider);
 
-        stage2.onScroll = (stage, event) => {
+        stage2.on('scroll', (event) => {
             const delta = event.deltaY;
-            const sliderX = slider.get('centerX');
+            const sliderX = slider.centerX;
             if (delta < 0) {
-                slider.set('centerX', Math.min(sliderX + 10, 275));
+                slider.centerX = Math.min(sliderX + 10, 275);
             } else if (delta > 0) {
-                slider.set('centerX', Math.max(sliderX - 10, -130));
+                slider.centerX = Math.max(sliderX - 10, -130);
             }
-            const percentage = (slider.get('centerX') + 130) / 405;
-            sliderText.set('red', (1 - percentage) * 200);
-            sliderText.set('blue', (1 - percentage) * 200);
-            sliderText.set('bold', percentage === 1);
-            sliderText.set('text', `${Math.round(percentage * 100)}%`);
-        }
+            const percentage = (slider.centerX + 130) / 405;
+            sliderText.red = (1 - percentage) * 200;
+            sliderText.blue = (1 - percentage) * 200;
+            sliderText.bold = percentage === 1;
+            sliderText.text = `${Math.round(percentage * 100)}%`;
+        });
         
         stage2.loop();
+        
+        stage3.root.addChild(new TextSprite({
+            position: {x: 0, y: 10},
+            color: Colors.White,
+            text: 'even frame',
+            positionIsCenter: true,
+            fontSize: 60,
+            bold: true,
+        }));
+        
+        stage3.on('beforeDraw', function (_stage, frame) {
+            this.bgColor = frame % 2 === 0 ? Colors.DarkBlue : Colors.DarkRed;
+            (this.root.children[0] as TextSprite).text = (frame % 2 === 0 ? 'even' : 'odd') + ' frame';
+        });
+
+        stage3.loop(0.25);
         
         return () => {
             stage.stop();
             stage2.stop();
+            stage3.stop();
         }
     }, [canvasRef1]);
 
     return <>
-        <h1>Handling User Input</h1>
-        <p>{'In order to detect user input like left clicks and scrolling, you can modify any of four of the stage\'s public variables. Detecting pointer events work like this: '}
-        {'you change one of the Stage\'s variables to a function that take in three parameters: a Stage object, a PointerEvent object, and a '}
-        <LinkContainer to='/docs/types/common/positiontype'><a>PositionType</a></LinkContainer>
-        {' object. Then, whenever the user interacts the canvas, the stage will call the function with the Stage set to itself, the PointerEvent set to the event that triggered the function, '}
-        {' and the PositionType set to the position of the pointer relative to the canvas. '}
+        <h1>Event Listeners</h1>
+        <p>{'The Stage class provides event handling capabilities using event listeners. You can attach a callback function to the '}
+        {'Stage using '} <CodeBlurb blurb={['stage.on(event, callback)']} /> {' or '} <CodeBlurb blurb={['stage.addEventListener(event, callback)']} /> {'. '}
+        {'These functions are identical. In order to remove an event listener, use '} <CodeBlurb blurb={['stage.removeEventListener(event, callback?)']} /> {'.'}
+        {' If the callback parameter is omitted, all event listeners for the specified event will be removed. '}
+        {'When the event is triggered, the Stage will call the callback function on itself, using the Stage itself as '} <InlineCode>this</InlineCode>{'. '}
+        {'As a result, if you want to modify the Stage from within the callback, '}<strong>you must use named functions and not anonymous/arrow functions.</strong>
+        {' Depending on which event was triggered, the callback will be passed different parameters. The following events are supported:'}
         </p>
 
         <br />
-        <CodeHeader header={'stage.onPointerDown: '} />
+        <CodeHeader header={"stage.on('click', function (this: Stage, event: PointerEvent, position: PositionType) { ... })"} />
         <p>
             {'This callback is called whenever the user presses down on the canvas with the left or right mouse button, or with a touch screen. '}
-            {'This demo also uses the data from the pointer event to display which button was pressed.'}
+            {'The Stage will pass the PointerEvent object as'} <InlineCode>event</InlineCode>{' and the location of the click as '} <InlineCode>position</InlineCode>{', '}
+            <strong>relative to the canvas.</strong>
         </p>
         <CodeShowcase canvasRef={canvasRef1} code={
             `import { Stage } from 'sharc/Stage';
@@ -659,10 +658,9 @@ export function HandlingUserInput() {
             const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
             const text = new TextSprite({
-                \ttext: 'Click me!',
                 \tposition: {x: -275, y: -175},
+                \ttext: 'Click me!',
                 \tcolor: Colors.White,
-                \tscale: {x: 1, y: -1},
                 \tfontSize: 35,
                 \tbold: true,
             });
@@ -690,37 +688,34 @@ export function HandlingUserInput() {
                     
             stage.root.addChild(text);
     
-            stage.onPointerDown = (stage: Stage, event: PointerEvent, position: PositionType) => {
+            stage.on('click', (event, position) => {
                 \tconst button = event.button === 0 ? 'Left' : event.button === 1 ? 'Middle' : 'Right';
-                \tstage.root.children[3].set('text', \`$\{button} click at (\
-                    \t\t$\{Math.round(position.x)},
-                    \t\t$\{Math.round(position.y)})
-                \t\`);
-                \tstage.root.children[2].set('center', position);
-            }
+                \tconst text = \`\${button} click at (\${Math.round(position.x)}, \${Math.round(position.y)})\`;
+                \t(stage.root.children[3] as TextSprite).text = text;
+                \tstage.root.children[2].center = position;
+            });
             
             stage.loop();`
         } />
 
         <br />
-        <CodeHeader header={'stage.onPointerUp'} />
+        <CodeHeader header={"stage.on('move', function (this: Stage, event: PointerEvent, position: PositionType) { ... })"} />
         <p>
-            {'This callback is triggered whenever the user releases the left or right mouse button, or lifts their finger from a touch screen. '}
-            {'The syntax is the same as in the demo above.'}
+            {'This callback is triggered whenever the user moves their pointer. '}
+            {'The event listener works the same way as the one above, except that it is triggered on every frame that the pointer is moved.'}
         </p>
 
         <br />
-        <CodeHeader header={'stage.onPointerMove'} />
+        <CodeHeader header={"stage.on('release', function (this: Stage, event: PointerEvent, position: PositionType) { ... })"} />
         <p>
-            {'This callback is triggered whenever the user releases the left or right mouse button, or lifts their finger from a touch screen. '}
-            {'The syntax is the same as in the demo above.'}
+            {'This callback is triggered whenever the user releases their pointer. '}
+            {'The event listener works the same way as the one above, except that it is triggered when the user releases their pointer.'}
         </p>
 
         <br />
-        <CodeHeader header={'stage.onScroll'} />
+        <CodeHeader header={"stage.on('scroll', function (this: Stage, event: WheelEvent) { ... })"} />
         <p>
-            {'This callback is triggered whenever the user scrolls the mouse wheel. Unlike the previous two functions, this one only takes two parameters: a Stage object and a '}
-            {'WheelEvent object.'}
+            {'This callback is triggered whenever the user scrolls the mouse wheel. Unlike the previous two functions, this one only takes one parameters: a WheelEvent object.'}
         </p>
         <CodeShowcase canvasRef={canvasRef2} code={
             `import { Stage } from 'sharc/Stage';
@@ -733,14 +728,14 @@ export function HandlingUserInput() {
             const sliderText = new TextSprite({
                 \ttext: 'Slider',
                 \tposition: {x: -155, y: -15},
-                \tscale: {x: 1, y: -1},
                 \tcolor: Colors.White,
                 \tfontSize: 40,
                 \ttextAlign: 'right',
             });
     
             const slider = new Ellipse({
-                \tbounds: Ellipse.Bounds(-130, 0, 12),
+                \tcenter: { x: -130, y: 0 },
+                \tradius: 12,
                 \tcolor: Colors.DarkBlue,
                 \tstroke: {color: Colors.White, lineWidth: 4},
             });
@@ -754,114 +749,55 @@ export function HandlingUserInput() {
     
             stage.root.addChildren(sliderText, sliderLine, slider);
     
-            stage.onScroll = (stage, event) => {
+            stage.on('scroll', (event) => {
                 \tconst delta = event.deltaY;
-                \tconst sliderX = slider.get('centerX');
+                \tconst sliderX = slider.centerX;
                 \tif (delta < 0) {
-                    \t\tslider.set('centerX', Math.min(sliderX + 10, 275));
-                    \t} else if (delta > 0) {
-                    \t\tslider.set('centerX', Math.max(sliderX - 10, -130));
-                    \t}
-                    \tconst percentage = (slider.get('centerX') + 130) / 405;
-                    \tsliderText.set('red', (1 - percentage) * 200);
-                    \tsliderText.set('blue', (1 - percentage) * 200);
-                    \tsliderText.set('bold', percentage === 1);
-                    \tsliderText.set('text', \`$\{Math.round(percentage * 100)}%\`);
-            }
+                    \t\tslider.centerX = Math.min(sliderX + 10, 275);
+                \t} else if (delta > 0) {
+                    \t\tslider.centerX = Math.max(sliderX - 10, -130);
+                \t}
+                \tconst percentage = (slider.centerX + 130) / 405;
+                \tsliderText.red = (1 - percentage) * 200;
+                \tsliderText.blue = (1 - percentage) * 200;
+                \tsliderText.bold = percentage === 1;
+                \tsliderText.text = \`\${Math.round(percentage * 100)}%\`;
+            });
             
             stage.loop();`
         } />
-    </>
-}
 
-export function WorkingWithTheAnimationLoop() {
 
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    useEffect(() => {
-
-        const stage = new Stage(canvasRef.current!, 'centered', Colors.DarkBlue);
-        
-        stage.beforeDraw = (stage) => {
-            if (stage.currentFrame % 2 === 0) {
-                stage.bgColor = Colors.DarkRed;
-            } else {
-                stage.bgColor = Colors.DarkBlue;
-            }
-        }
-
-        stage.root.addChild(new TextSprite({
-            text: 'even frame',
-            color: Colors.White,
-            positionIsCenter: true,
-            position: {x: 0, y: 10},
-            scale: {x: 1, y: -1},
-            fontSize: 60,
-            bold: true,
-        }));
-
-        stage.afterDraw = (stage) => {
-            if (stage.currentFrame % 2 === 0) {
-                stage.root.children[0].set('text', 'odd frame');
-            } else {
-                stage.root.children[0].set('text', 'even frame');
-            }
-        }
-
-        stage.loop(0.25);
-
-        return () => {
-            stage.stop();
-        }
-    }, [canvasRef]);
-
-    return <>
-        <h1>Working with the Animation Loop</h1>
+        <br />
+        <CodeHeader header={"stage.on('beforeDraw', function (this: Stage, stage: Stage, frame: number) { ... })"} />
         <p>
-            {'The animation loop is a function that is called every frame. It clears the canvas, '}
-            <Hyperlink to='animation'>animates</Hyperlink>
-            {' all of the sprites, and then renders them. The Stage class provides two public variables that allows you to add custom code before and after the animation loop. They are  '}
-            <InlineCode> stage.beforeDraw </InlineCode>
-            {' and '}
-            <InlineCode> stage.afterDraw</InlineCode>
-            {'. They both work the same way, you set them to a function that takes in a Stage object. The function will then be called before or after the animation loop, respectively.'}
-            {'The following demo has its frame rate set all the way down to 1 frame every four seconds, and it changes the background color to red on odd frames and blue on even frames.'}
+            {'This callback is triggered before the animation loop. The callback is passed the Stage object and the current frame number.'}
+            {' The Stage object is passed twice for parity with the Sprite class. This callback is useful for modifying the Stage before it is drawn.'}
+            {' In the demo below, the background color is changed every other frame. The framerate is slowed down to 1 frame every 4 seconds to prevent flickering.'}
         </p>
-        <CodeShowcase canvasRef={canvasRef} code={
+        <CodeShowcase canvasRef={canvasRef3} code={
             `import { Stage } from 'sharc/Stage';
-        import { TextSprite } from 'sharc/Sprites';
-        import { Colors } from 'sharc/Utils';
+            import { TextSprite } from 'sharc/Sprites';
+            import { Colors } from 'sharc/Utils';
 
-        const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-        const stage = new Stage(canvas, 'centered', Colors.DarkBlue);
-        
-        stage.beforeDraw = (stage) => {
-            \tif (stage.currentFrame % 2 === 0) {
-                \t\tstage.bgColor = Colors.DarkRed;
-                \t} else {
-                    \t\tstage.bgColor = Colors.DarkBlue;
-                    \t}
-        }
+            const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+            const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
+            
+            stage.root.addChild(new TextSprite({
+                \tposition: {x: 0, y: 10},
+                \ttext: 'even frame',
+                \tcolor: Colors.White,
+                \tpositionIsCenter: true,
+                \tfontSize: 60,
+                \tbold: true,
+            }));
+            
+            stage.on('beforeDraw', function (_stage, frame) {
+                \tthis.bgColor = frame % 2 === 0 ? Colors.DarkBlue : Colors.DarkRed;
+                \t(this.root.children[0] as TextSprite).text = (frame % 2 === 0 ? 'even' : 'odd') + ' frame';
+            });
 
-        stage.root.addChild(new TextSprite({
-            \ttext: 'even frame',
-            \tcolor: Colors.White,
-            \tpositionIsCenter: true,
-            \tposition: {x: 0, y: 10},
-            \tscale: {x: 1, y: -1},
-            \tfontSize: 60,
-            \tbold: true,
-        }));
-
-        stage.afterDraw = (stage) => {
-            \tif (stage.currentFrame % 2 === 0) {
-                \t\tstage.root.children[0].set('text', 'odd frame');
-                \t} else {
-                    \t\tstage.root.children[0].set('text', 'even frame');
-                    \t}
-        }
-
-        stage.loop(0.25);`
-        } />    
+            stage.loop(0.25);`
+        } />
     </>
 }

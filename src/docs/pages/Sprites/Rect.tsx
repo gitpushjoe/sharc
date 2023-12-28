@@ -30,37 +30,36 @@ export function RectPage() {
             text: 'Scroll to change corner radius',
             color: Colors.White,
             position: {x: 0, y: -150},
-            scale: {x: 1, y: -1},
             positionIsCenter: true,
             fontSize: 30,
         });
 
         stage.root.addChildren(rect, text);
 
-        const properties = ['corner1', 'corner2'];
+        const properties = ['corner1', 'corner2'] as const;
         const colors = [Colors.Red, Colors.Blue];
 
         for (const idx in properties) {
             const property = properties[idx];
             const color = colors[idx];
-            const position = rect.get(property as 'corner1');
+            const position = rect[property];
             const handle = new Ellipse({
-                bounds: Ellipse.Bounds(position.x, position.y, 12),
+                center: position,
+                radius: 12,
                 color: color,
                 stroke: {lineWidth: 3},
             });
-            handle.onDrag = (sprite, _, position) => {
-                sprite.set('center', position);
-                rect.set(property as 'corner1', position);
-            }
+            handle.on('drag', function (_event, position) {
+                this.center = position;
+                rect[property] = position;
+            });
             stage.root.addChild(handle);
         }
 
-        stage.onScroll = (_, event) => {
-            const radius = rect.get('radius') as number[];
-            const newRadius = radius[0] + event.deltaY / 30;
-            rect.set('radius', [Math.max(0, Math.min(500, newRadius))]);
-        };
+        stage.on('scroll', function (event) {
+            const newRadius = rect.radius[0] + event.deltaY / 30;
+            rect.radius = [Math.max(0, Math.min(500, newRadius))];
+        });
 
         stage.loop();
 
@@ -97,37 +96,36 @@ export function RectPage() {
                 \ttext: 'Scroll to change corner radius',
                 \tcolor: Colors.White,
                 \tposition: {x: 0, y: -150},
-                \tscale: {x: 1, y: -1},
                 \tpositionIsCenter: true,
                 \tfontSize: 30,
             });
 
             stage.root.addChildren(rect, text);
 
-            const properties = ['corner1', 'corner2'];
+            const properties = ['corner1', 'corner2'] as const;
             const colors = [Colors.Red, Colors.Blue];
             
             for (const idx in properties) {
                 \tconst property = properties[idx];
                 \tconst color = colors[idx];
-                \tconst position = rect.get(property as 'corner1');
+                \tconst position = rect[property];
                 \tconst handle = new Ellipse({
-                    \t\tbounds: Ellipse.Bounds(position.x, position.y, 12),
+                    \t\tcenter: position,
+                    \t\tradius: 12,
                     \t\tcolor: color,
                     \t\tstroke: {lineWidth: 3},
                     \t});
-                \thandle.onDrag = (sprite, _, position) => {
-                    \t\tsprite.set('center', position);
-                    \t\trect.set(property as 'corner1', position);
-                    \t}
+                \thandle.on('drag', function (_event, position) {
+                    \t\tthis.center = position;
+                    \t\trect[property] = position;
+                    \t});
                 \tstage.root.addChild(handle);
             }
 
-            stage.onScroll = (_, event) => {
-                \tconst radius = rect.get('radius') as number[];
-                \tconst newRadius = radius[0] + event.deltaY / 30;
-                \trect.set('radius', [Math.max(0, Math.min(500, newRadius))]);
-            };
+            stage.on('scroll', function (event) {
+                \tconst newRadius = rect.radius[0] + event.deltaY / 30;
+                \trect.radius = [Math.max(0, Math.min(500, newRadius))];
+            });
 
             stage.loop();`} />
         <br />
@@ -136,7 +134,7 @@ export function RectPage() {
             Inherited from <Hyperlink to='sprites/default/universal-sprite-properties'>Sprite:</Hyperlink>
             {'\u00A0\u00A0\u00A0'}
             {
-                ['bounds?', 'color?', 'scale?', 'rotation?', 'alpha?', 'effects?', 'name?', 'details?'].map((prop, idx) => {
+                ['bounds?', 'color?', 'scale?', 'rotation?', 'alpha?', 'blur?', 'gradient?', 'effects?', 'name?', 'enabled?', 'channelCount?', 'details?'].map((prop, idx) => {
                     return <>
                         <CodeBlurb key={idx} blurb={[prop]} />{' '}
                     </>
@@ -153,14 +151,9 @@ export function RectPage() {
                 })
             }
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['startAngle?: ', 'number']} /> - the angle at which the ellipse's path begins in degrees. Defaults to 0. Normal Property.
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['endAngle?: ', 'number']} /> - the angle at which the ellipse's path ends in degrees. Defaults to 360. Normal Property.
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
                 <CodeBlurb blurb={['radius?: ', 'RadiusType']} /> - the radii length of the rectangle's corners.{' '}
-                <Hyperlink to='types/sprites/radiustype'>RadiusType.</Hyperlink> Defaults to [0]. Normal Property.
+                <Hyperlink to='types/sprites/radiustype'>RadiusType.</Hyperlink> Defaults to <InlineCode>[0]</InlineCode>. Normal Property.
         </p>
-        <br />
         <br />
         <CodeHeader header="Rect.Bounds(x: number, y: number, w: number, h: number) -> BoundsType" />
         <p>

@@ -12,7 +12,7 @@ export function Types() {
             <ul>
                 <li><Hyperlink to='types/common'>Common</Hyperlink></li>
                 <li><Hyperlink to='types/animation'>Animation</Hyperlink></li>
-                <li><Hyperlink to='types/stage'>Stage</Hyperlink></li>
+                <li><Hyperlink to='types/events'>Events</Hyperlink></li>
                 <li><Hyperlink to='types/sprites'>Sprites</Hyperlink></li>
             </ul>
         </p>
@@ -96,7 +96,7 @@ export function AnimationPage () {
         <br />
         <h4 id="animationtype">AnimationType</h4>
         <CodeBlock code={
-            `export type AnimationType<Properties> = {
+            `export type AnimationType<Properties> = NonNullable<{
                 \t[K in keyof Properties]: {
                     \t\tproperty: K, 
                     \t\tfrom: (Properties[K] & (number|Record<string, number>))|null,
@@ -104,10 +104,9 @@ export function AnimationPage () {
                     \t\tduration: number,
                     \t\tdelay: number,
                     \t\teasing: EasingType,
-                    \t\tname?: string,
-                    \t\tdetails?: (string|number)[],
+                    \t\tname?: string
                 \t}
-            }[keyof Properties]` } />
+            }[keyof Properties]>` } />
 
         <br />
         <h4>PrivateAnimationType</h4>
@@ -120,12 +119,11 @@ export function AnimationPage () {
                     \t\tproperty: K, 
                     \t\tfrom: (Properties[K] & (number|Record<string, number>))|null, 
                     \t\tto: (Properties[K] & (number|Record<string, number>))|AnimationCallback<Properties[K] & (number|Record<string, number>)>,
-                    \t\tduration: number,
-                    \t\tdelay: number,
-                    \t\teasing: EasingType,
+                    \t\tduration?: number,
+                    \t\tdelay?: number,
+                    \t\teasing?: EasingType,
                     \t\tframe?: number,
                     \t\tchannel?: number,
-                    \t\tdetails?: (string|number)[],
                     \t\tname?: string,
                     \t\t_from?: Properties[K] & (number|Record<string, number>), // used by sprites to store the original value
                     \t\t_to?: Properties[K] & (number|Record<string, number>),
@@ -148,36 +146,56 @@ export function AnimationPage () {
             \tanimations: PrivateAnimationType<Properties>[],
             \tparams: AnimationParams
         }` } />
-
-        <br />
-        <h4>AcceptedTypesOf</h4>
-        <p>
-            Used by <InlineCode>sprite.set()</InlineCode> to do a weak type check on the properties passed to it.
-        </p>
-        <CodeBlock code={
-            `export type AcceptedTypesOf<Properties> = Properties[keyof Properties]`
-        } />
     </>
 }
 
-export function StagePage() {
+export function EventsPage() {
     return <>
-        <h1>Stage</h1>
+        <h1>Events</h1>
         <p>
-            Found in <InlineCode>sharc-js/types/stage</InlineCode>.
+            Found in <InlineCode>sharc-js/types/events</InlineCode>.
         </p>
 
         <br />
-        <h4>PointerEventsCollection</h4>
-        <p>
-            Used to manage pointer events.
-        </p>
+        <h4>PointerEventCallback</h4>
         <CodeBlock code={
-            `export type PointerEventsCollection = {
-                \tdown: PointerEvent[],
-                \tup: PointerEvent[],
-                \tmove: PointerEvent[],
-            }` } />
+`export type PointerEventCallback<thisType> = (this: thisType, event: PointerEvent, translatedPoint: PositionType) => void;` } />
+    
+        <br />
+        <h4>ScrollEventCallback</h4>
+        <CodeBlock code={`export type ScrollEventCallback<thisType> = (this: thisType, event: WheelEvent) => void;` } />
+
+        <br />
+        <h4>StageEventCallback</h4>
+        <CodeBlock code={`export type StageEventCallback<thisType> = (this: thisType, stage: Stage, frame: number) => void;` } />
+
+        <br />
+        <h4>AnimationFinishCallback</h4>
+        <CodeBlock code={`export type AnimationFinishCallback<thisType, PrivateAnimationType> = (this: thisType, animation: PrivateAnimationType) => void;` } />
+
+        <br />
+        <h4>SpriteEventListeners</h4>
+        <CodeBlock code={`export type SpriteEventListeners<thisType=undefined, Properties=any> = {
+            \tclick: PointerEventCallback<thisType>[],
+            \tdrag: PointerEventCallback<thisType>[],
+            \trelease: PointerEventCallback<thisType>[],
+            \thover: PointerEventCallback<thisType>[],
+            \thoverEnd: PointerEventCallback<thisType>[],
+            \tscroll: ScrollEventCallback<thisType>[],
+            \tbeforeDraw: StageEventCallback<thisType>[],
+            \tanimationFinish: AnimationFinishCallback<thisType, PrivateAnimationType<Properties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>>[],
+        };` } />
+
+        <br />
+        <h4>StageEventListeners</h4>
+        <CodeBlock code={`export type StageEventListeners<thisType=Stage> = {
+            \tclick: PointerEventCallback<thisType>[],
+            \trelease: PointerEventCallback<thisType>[],
+            \tmove: PointerEventCallback<thisType>[],
+            \tscroll: ScrollEventCallback<thisType>[],
+            \tbeforeDraw: StageEventCallback<thisType>[],
+        }; ` } />
+
     </>
 }
 
@@ -219,6 +237,6 @@ export function SpritesPage() {
                 \tcontrol1: PositionType,
                 \tcontrol2: PositionType,
                 \tend: PositionType,
-            }` } />
+            }` } />   
     </>
 }

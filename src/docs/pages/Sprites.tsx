@@ -5,15 +5,16 @@ import CodeHeader from "../components/Code/Header";
 import InlineCode from "../components/Code/Inline";
 import { Hyperlink } from "../components/Sidebar/Hyperlink";
 import CodeShowcase from "../components/Code/Showcase";
-import { Stage } from "../../sharc/Stage";
-import { Animate, Colors, Easing } from "../../sharc/Utils";
-import { BezierCurve, Ellipse, ImageSprite, Line, NullSprite, Path, Polygon, Rect, Star, TextSprite } from "../../sharc/Sprites";
+import { Stage } from "sharc-js/Stage";
+import { Animate, Colors, Easing } from "sharc-js/Utils";
+import { BezierCurve, Ellipse, ImageSprite, Line, NullSprite, Path, Polygon, Rect, Star, TextSprite } from "sharc-js/Sprites";
 import { useParams } from "react-router";
 
 export { Usage } from "./Sprites/Usage"
 export { Properties } from "./Sprites/Properties"
 export { Parenting } from "./Sprites/Parenting"
 export { HandlingUserInput } from "./Sprites/HandlingUserInput"
+export { EventListeners } from "./Sprites/EventListeners"
 export { Strokeable } from "./Sprites/Strokeable"
 export { LinePage } from "./Sprites/Line"
 export { RectPage } from "./Sprites/Rect"
@@ -23,8 +24,11 @@ export { PathPage } from "./Sprites/Path"
 export { PolygonPage } from "./Sprites/Polygon"
 export { StarPage } from "./Sprites/Star"
 export { TextPage } from "./Sprites/Text"
+export { LabelPage } from "./Sprites/Label"
 export { ImagePage } from "./Sprites/Image"
 export { NullSpritePage } from "./Sprites/NullSprite"
+export { Details } from "./Sprites/Details"
+export { ShapePage as Shape } from "./Sprites/Shape"
 
 export function Sprites() {
 
@@ -43,31 +47,19 @@ export function Sprites() {
         <p>
             {'Sprites are the building blocks of sharc. They are the objects that are drawn to the canvas. '}
             {'Sprites can be added to the stage\'s root, or to other sprites. '}
-            {'Sprites can be moved, rotated, scaled, and more. '}
-            {'Sprites are instantiated like so: '}
+            {'Sprites can be moved, rotated, scaled, animated, and more. '}
+            {'For each Sprite subclass, there is a corresponding '} <Hyperlink to='sprites/properties'>Properties</Hyperlink> {' type. '}
+            {'Each sprite supports these function:'}
         </p>
+
         <br />
-        <CodeHeader header={`new Sprite(props: Properties, channels: number = 1)`} />
-        <p>
-            <InlineCode>props</InlineCode>
-            {' is an object that contains the properties of the sprite you are trying to create. '}
-            {'Different sprites will have different '}
-            <InlineCode>Properties</InlineCode> 
-            {' types. You can read about the four different types of properties '}<Hyperlink to='sprites/properties'>here</Hyperlink>.{' '}
-            {'The second parameter, '}
-            <InlineCode>channels</InlineCode>
-            {', is the number of '}
-            <Hyperlink to='animation/channels'>animation channels</Hyperlink>
-            {' that the sprite will have. It defaults to 1. '}
-            <br />
-            <br />
-        </p>
+
         <CodeHeader header={`sprite.draw(ctx: CanvasRenderingContext2D, properties?: Properties, isRoot?: boolean)`} />
         <p>
             This function draws the sprite to the canvas. It is automatically called by the <InlineCode>Stage</InlineCode> class.{' '}
             <InlineCode>ctx</InlineCode> is the canvas context to draw the sprite to.{' '}
             <InlineCode>properties</InlineCode> is an object that contains the properties of the sprite you are trying to draw.{' '}
-            (Each sprite is a subclass of the base <InlineCode>Sprite</InlineCode> class, so, for example, <InlineCode>Line</InlineCode> will set its <InlineCode>Properties</InlineCode> type to a special <InlineCode>LineProperties</InlineCode> type.){' '}
+            Each subclass of <InlineCode>Sprite</InlineCode> has its own properties type, and will automatically fill this parameter with the sprite's properties.{' '}
             <InlineCode>isRoot</InlineCode> is a boolean that defaults to <InlineCode>true</InlineCode>. It's used for determining priority in pointer events.{' '}
         </p>
 
@@ -78,46 +70,35 @@ export function Sprites() {
         </p>
 
         <br />
-        <CodeHeader header={`sprite.get(property: KeysOf<Properties>|keyof HiddenProperties, raiseError = true) -> any`} />
-        <p>
-            See <Hyperlink to='sprites/usage/properties'>Sprites/Usage/Properties</Hyperlink>. (This function will be type-checked at runtime.)
-        </p>
-        <br />
-        <CodeHeader header={`sprite.set(property: KeysOf<Properties>|keyof HiddenProperties, value: AcceptedTypesOf<Properties & HiddenProperties>, raiseError = true) -> boolean`} />
-        <p>
-            See <Hyperlink to='sprites/usage/properties'>Sprites/Properties</Hyperlink>. (This function will be type-checked at runtime, and <InlineCode>value</InlineCode> will be soft type-checked.)
-        </p>
-
-        <br />
-        <CodeHeader header={`sprite.addChild(child: Sprite) -> Sprite`} />
+        <CodeHeader header={`sprite.addChild(child: Shape) -> Shape`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.addChildren(children: Sprite[]) -> Sprite`} />
+        <CodeHeader header={`sprite.addChildren(children: Shape[]) -> Shape`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.removeChild(child: Sprite) -> Sprite`} />
+        <CodeHeader header={`sprite.removeChild(child: Shape) -> Shape`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.removeChildren(children: Sprite[]) -> Sprite`} />
+        <CodeHeader header={`sprite.removeChildren(children: Shape[]) -> Shape`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.children -> Sprite[]`} />
+        <CodeHeader header={`sprite.children -> Shape[]`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.r_getChildren() -> Sprite[]`} />
+        <CodeHeader header={`sprite.r_getChildren() -> Shape[]`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.parent -> Sprite|undefined`} />
+        <CodeHeader header={`sprite.parent -> Shape|undefined`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.root -> Sprite`} />
+        <CodeHeader header={`sprite.root -> Shape`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
@@ -125,75 +106,47 @@ export function Sprites() {
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.findChild(name: string) -> Sprite|undefined`} />
+        <CodeHeader header={`sprite.findChild(name: string) -> Shape|undefined`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.findChildren(name: string) -> Sprite[]`} />
+        <CodeHeader header={`sprite.findChildren(name: string) -> Shape[]`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.r_findChild(name: string) -> Sprite|undefined`} />
+        <CodeHeader header={`sprite.r_findChild(name: string) -> Shape|undefined`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.r_findChildren(name: string) -> Sprite[]`} />
+        <CodeHeader header={`sprite.r_findChildren(name: string) -> Shape[]`} />
         <p>See <Hyperlink to='sprites/parenting'>Sprites/Parenting</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.onClick: (sprite: Sprite, event: PointerEvent, position: PositionType) => void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
+        <CodeHeader header={`sprite.addEventListener(event: string, callback: Function) -> this`} />
+        <p>See <Hyperlink to='sprites/event-listeners'>Sprites/Event Listeners</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.onDrag: (sprite: Sprite, event: PointerEvent, position: PositionType) => void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
+        <CodeHeader header={`sprite.removeEventListener(event: string, callback?: Function) -> this`} />
+        <p>See <Hyperlink to='sprites/event-listeners'>Sprites/Event Listeners</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.onRelease: (sprite: Sprite, event: PointerEvent, position: PositionType) => void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
+        <CodeHeader header={`sprite.on(event: string, callback: Function) -> this`} />
+        <p>See <Hyperlink to='sprites/event-listeners'>Sprites/Event Listeners</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.onHover: (sprite: Sprite, event: PointerEvent, position: PositionType) => void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.onHoverEnd: (sprite: Sprite, event: PointerEvent, position: PositionType) => void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.setOnClick(callback: (sprite: Sprite, event: PointerEvent, position: PositionType) => void) -> void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.setOnDrag(callback: (sprite: Sprite, event: PointerEvent, position: PositionType) => void) -> void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.setOnRelease(callback: (sprite: Sprite, event: PointerEvent, position: PositionType) => void) -> void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.setOnHover(callback: (sprite: Sprite, event: PointerEvent, position: PositionType) => void) -> void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.setOnHoverEnd(callback: (sprite: Sprite, event: PointerEvent, position: PositionType) => void) -> void`} />
-        <p>See <Hyperlink to='sprites/handling-user-input'>Sprites/Handling User Input</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.getChannel(index: number) -> Channel`} />
+        <CodeHeader header={`sprite.channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[]`} />
         <p>See <Hyperlink to='animation/channels'>Animation/Channels</Hyperlink>.</p>
 
         <br />
-        <CodeHeader header={`sprite.distribute(animations: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES>[][], params: AnimationParams = { loop: false, iterations: 1, delay: 0}) -> this`} />
+        <CodeHeader header={`sprite.distribute(animations: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[][], params: AnimationParams = { loop: false, iterations: 1, delay: 0}) -> this`} />
         <p>See <Hyperlink to='animation/distribute'>Animation/Distribute</Hyperlink>.</p>
-
-        <br />
-        <CodeHeader header={`sprite.copy(): Sprite<Properties, HiddenProperties>`} />
-        <p>Returns a deep copy of the sprite.</p>
 
         <br />
         <CodeHeader header={`sprite.createChannels(count: number) -> this`} />
         <p>Creates <InlineCode>count</InlineCode> new animation channels.</p>
+
+        <br />
+        <CodeHeader header={`sprite.copy() -> this`} />
+        <p>Returns a deep copy of the sprite.</p>
     </>
 }

@@ -11,6 +11,9 @@ export default new Map([
     ['BezierCurve', 'sprites/beziercurve'],
     ['Path', 'sprites/path'],
     ['Polygon', 'sprites/polygon'],
+    ['Ellipse', 'sprites/ellipse'],
+    ['LabelSprite', 'sprites/label'],
+    ['TextSprite', 'sprites/text'],
     ['Text', 'sprites/text'],
     ['Stage', 'stage'],
     ['Sprites', 'sprites'],
@@ -21,4 +24,5 @@ export default new Map([
     ['Types/Animation/AnimationParams', 'types/animation/animationparams'],
     ['Sprites/Parenting', 'sprites/parenting'],
     ['animation', 'animation'],
+    ['universal sprite properties', 'sprites/properties/universal-sprite-properties'],
 ])

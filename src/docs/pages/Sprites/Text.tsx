@@ -15,32 +15,32 @@ export function TextPage() {
 
         const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
-        const text = new TextSprite({
-            text: 'Hello, World!',
-            position: {x: 0, y: 0},
-            fontSize: 80,
-            scale: {x: 1, y: -1},
-            positionIsCenter: true,
-            bold: true,
-            color: Colors.White,
-            effects: (ctx) => {
-                ctx.shadowColor = 'black';
-                ctx.shadowBlur = 15;
-            }
-        });
+const text = new TextSprite({
+    text: 'Hello, World!',
+    fontSize: 80,
+    positionIsCenter: true,
+    bold: true,
+    color: Colors.White,
+    effects: (ctx) => {
+        ctx.shadowColor = 'black';
+        ctx.shadowBlur = 15;
+    }
+});
 
-        text.getChannel(0).push({
-            property: 'color', from: null, to: () => {return {
-                red: Math.random() * 100 + 155,
-                green: Math.random() * 100 + 155,
-                blue: Math.random() * 100 + 155,
-                alpha: 1
-            }}, duration: 120, delay: 0, easing: Easing.EASE_IN_OUT
-        }, {loop: true});
-        
-        stage.root.addChild(text);
+text.channels[0].push({
+    property: 'color', from: null, to: () => {return {
+        red: Math.random() * 100 + 155,
+        green: Math.random() * 100 + 155,
+        blue: Math.random() * 100 + 155,
+        alpha: 1
+    }}, 
+    duration: 120, 
+    easing: Easing.EASE_IN_OUT
+}, {loop: true});
 
-        stage.loop();
+stage.root.addChild(text);
+
+stage.loop();
 
         return () => {
             stage.stop();
@@ -49,7 +49,7 @@ export function TextPage() {
     return <>
         <h1>Text</h1>
         <p>
-            Draws text. If you're using a centered-style root node, you will have to set the text's <InlineCode>scaleY</InlineCode> value to a negative number for the text to display correctly. Does <strong>not</strong> use <Hyperlink>bounds</Hyperlink> in its constructor, but properties such as <InlineCode>center</InlineCode>, <InlineCode>centerX</InlineCode> and <InlineCode>centerY</InlineCode> can still be accessed and modified.{' '}
+            Draws text. When a TextSprite is drawn to a canvas with a centered root node, its scale is automatically flipped on the y-axis. Does <strong>not</strong> use <Hyperlink>bounds</Hyperlink> in its constructor, but properties such as <InlineCode>center</InlineCode>, <InlineCode>centerX</InlineCode> and <InlineCode>centerY</InlineCode> can still be accessed and modified.{' '}
             It is not recommended to modify properties such as <InlineCode>bounds</InlineCode>, <InlineCode>x1</InlineCode> and <InlineCode>y2</InlineCode>, because the area of the bounds may not match the area of the text, which can cause unexpected behavior.
         </p>
 
@@ -62,26 +62,28 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 const text = new TextSprite({
-    \ttext: 'Hello, World!',
-    \tposition: {x: 0, y: 0},
-    \tpositionIsCenter: true,
-    \tfontSize: 80,
-    \tscale: {x: 1, y: -1},
-    \tbold: true,
-    \tcolor: Colors.White,
-    \teffects: (ctx) => {
-        \t\tctx.shadowColor = 'black';
-        \t\tctx.shadowBlur = 15;
-    \t}
+	text: 'Hello, World!',
+	fontSize: 80,
+	positionIsCenter: true,
+	bold: true,
+	color: Colors.White,
+	effects: (ctx) => {
+		ctx.shadowColor = 'black';
+		ctx.shadowBlur = 15;
+	}
 });
 
-text.getChannel(0).push({
-    \tproperty: 'color', from: null, to: () => {return {
-        \t\tred: Math.random() * 100 + 155,
-        \t\tgreen: Math.random() * 100 + 155,
-        \t\tblue: Math.random() * 100 + 155,
-        \t\talpha: 1
-    \t}}, duration: 120, delay: 0, easing: Easing.EASE_IN_OUT
+text.channels[0].push({
+	property: 'color', 
+	from: null, 
+	to: () => { return {
+		red: Math.random() * 100 + 155,
+		green: Math.random() * 100 + 155,
+		blue: Math.random() * 100 + 155,
+		alpha: 1
+	}},
+	duration: 120,
+	easing: Easing.EASE_IN_OUT
 }, {loop: true});
 
 stage.root.addChild(text);
@@ -93,7 +95,7 @@ stage.loop();`} />
             Inherited from <Hyperlink to='sprites/default/universal-sprite-properties'>Sprite:</Hyperlink>
             {'\u00A0\u00A0\u00A0'}
             {
-                ['color?', 'scale?', 'rotation?', 'alpha?', 'effects?', 'name?', 'details?'].map((prop, idx) => {
+                ['color?', 'scale?', 'rotation?', 'alpha?', 'blur?', 'gradient?', 'effects?', 'name?', 'enabled?', 'channelCount?', 'details?'].map((prop, idx) => {
                     return <>
                         <CodeBlurb key={idx} blurb={[prop]} />{' '}
                     </>
@@ -110,9 +112,9 @@ stage.loop();`} />
                 })
             }
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['text: ', 'string']} /> - the text to be drawn. Normal Property.
+            <CodeBlurb blurb={['text?: ', 'string']} /> - the text to be drawn. Defaults to <InlineCode>""</InlineCode>. Normal Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['position: ', 'PositionType']} /> - the position of the text. See <InlineCode>positionIsCenter</InlineCode> below. Aggregate Property for <InlineCode>positionX</InlineCode> and <InlineCode>positionY</InlineCode>. Normal Property.
+            <CodeBlurb blurb={['position?: ', 'PositionType']} /> - the position of the text. See <InlineCode>positionIsCenter</InlineCode> below. Defaults to <InlineCode>{'{x: 0, y: 0}'}</InlineCode>. Aggregate Property for <InlineCode>positionX</InlineCode> and <InlineCode>positionY</InlineCode>. 
             <div style={{'width': '1em', 'height': '.5em'}}></div>
             <CodeBlurb blurb={['positionIsCenter?: ', 'boolean']} /> - If <InlineCode>true</InlineCode>, <InlineCode>position</InlineCode> will be the center of the text. If <InlineCode>false</InlineCode>, <InlineCode>position</InlineCode> will be the bottom-left corner of the text. Defaults to <InlineCode>false</InlineCode>. Normal Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
@@ -136,9 +138,9 @@ stage.loop();`} />
 
         <h5>HiddenTextProperties</h5>
         <p style={{lineHeight: '2em'}}>
-            <CodeBlurb blurb={['positionX: ', 'number']} /> - the x-coordinate of the text position. Hidden Property.
+            <CodeBlurb blurb={['positionX: ', 'number']} /> - the x-coordinate of the text position. Normal hidden Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['positionY: ', 'number']} /> - the y-coordinate of the text position. Hidden Property.
+            <CodeBlurb blurb={['positionY: ', 'number']} /> - the y-coordinate of the text position. Normal hidden Property.
         </p>
 
     </>

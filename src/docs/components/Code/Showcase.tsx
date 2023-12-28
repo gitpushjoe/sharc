@@ -2,7 +2,7 @@ import { MutableRefObject, useEffect, useState } from "react";
 import styles from './Showcase.module.css'
 import { useRef } from "react";
 
-export default function CodeShowcase(props: {code: string, canvasRef: any, replaces?: string[][], tsOnly?: boolean}) {
+export default function CodeShowcase(props: {code: string, canvasRef: any, replaces?: ([string,string]|['regex',RegExp,string])[], tsOnly?: boolean}) {
 
     const copyButtonRef = useRef<HTMLButtonElement>(null);
     const [showcaseExpanded, setShowcaseExpanded] = useState(false);
@@ -27,18 +27,35 @@ export default function CodeShowcase(props: {code: string, canvasRef: any, repla
         [`width!`, `width`],
         [`height!`, `height`],
         ['src: PositionType', 'src'],
+        ['<PhysicsDetails>', ''],
+        ['regex', /type \w+ = {(\n(.*?))*?};\n\n/g, ''],
+        ['!.', '.'],
+        [': PositionType', ''],
+        [': Ellipse)', ')'],
+        [': Ellipse,', ','],
+        ['function (this)', 'function ()'],
+        ['regex', /import {.*Type.*\n/g, ''],
+        ['regex', /\((.*) as (\w*)\)/g, '$1'],
+        ['(r as [number, number])', 'r'],
+        [': Shape', ''],
+        [' as const', ''],
+        [' as any', '']
     ])
     
     const tsReplaces = [
         [`from 'sharc/`, `from 'sharc-js/`],
-    ];
+    ] as ([string,string]|['regex',RegExp,string])[];
 
-    const prepareCode = (code: string, replaces: string[][]) => {
-        let newCode = code.replaceAll('\t', '\u00A0\u00A0\u00A0\u00A0');
+    const prepareCode = (code: string, replaces: ([string,string]|['regex',RegExp,string])[]) => {
+        let newCode = code;
         replaces.forEach(replace => {
-            newCode = newCode.replaceAll(replace[0], replace[1]);
+            if (replace.length === 3 && replace[1] instanceof RegExp) {
+                newCode = newCode.replace(replace[1], replace[2]);
+                return;
+            }
+            newCode = newCode.replaceAll(replace[0], replace[1] as string);
         });
-        return newCode;
+        return newCode.replaceAll('\t', '\u00A0\u00A0\u00A0\u00A0');
     }
 
     return <div className="code-showcase d-flex flex-wrap flex-row align-content-around container align-items-left mw-100 p-0">
@@ -75,7 +92,7 @@ export default function CodeShowcase(props: {code: string, canvasRef: any, repla
             </>}
         </div>
         <div>
-            <canvas className={styles.canvas} ref={props.canvasRef} width="600" height="400" style={{border: '5px solid black', marginLeft: '0em'}}></canvas>
+            <canvas className={styles.showcase} ref={props.canvasRef} width="600" height="400" style={{border: '5px solid black', marginLeft: '0em'}}></canvas>
         </div>
         
     </div>

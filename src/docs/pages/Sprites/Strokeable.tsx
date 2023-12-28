@@ -11,6 +11,8 @@ export function Strokeable() {
         <p>
             {'Every sprite (except for '}
             <Hyperlink to='sprites/line'>Line</Hyperlink>
+            {' and '}
+            <Hyperlink to='sprites/nullsprite'>NullSprite</Hyperlink>
             {') inherits from an abstract class called '}
             <InlineCode>StrokeableSprite</InlineCode>
             {', which allows you to draw a stroke around the sprite. '}

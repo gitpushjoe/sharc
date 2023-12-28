@@ -24,22 +24,23 @@ export function LinePage() {
 
         stage.root.addChild(line);
 
-        const properties = ['corner1', 'corner2'];
+        const properties = ['corner1', 'corner2'] as const;
         const colors = [Colors.Red, Colors.Blue];
 
         for (const idx in properties) {
             const property = properties[idx];
             const color = colors[idx];
-            const position = line.get(property as 'corner1');
+            const position = line[property];
             const handle = new Ellipse({
-                bounds: Ellipse.Bounds(position.x, position.y, 12),
+                center: position,
+                radius: 12,
                 color: color,
                 stroke: {lineWidth: 3},
             });
-            handle.onDrag = (sprite, _, position) => {
-                sprite.set('center', position);
-                line.set(property as 'corner1', position);
-            }
+            handle.on('drag', function (_event, position) {
+                this.center = position;
+                line[property] = position;
+            });
             stage.root.addChild(handle);
         }
 
@@ -72,22 +73,23 @@ const line = new Line({
 
 root.addChild(line);
 
-const properties = ['corner1', 'corner2'];
+const properties = ['corner1', 'corner2'] as const;
 const colors = [Colors.Red, Colors.Blue];
 
 for (const idx in properties) {
     \tconst property = properties[idx];
     \tconst color = colors[idx];
-    \tconst position = line.get(property as 'corner1');
+    \tconst position = line[property];
     \tconst handle = new Ellipse({
-        \t\tbounds: Ellipse.Bounds(position.x, position.y, 12),
+        \t\tcenter: position,
+        \t\tradius: 12,
         \t\tcolor: color,
         \t\tstroke: {lineWidth: 3},
         \t});
-    \thandle.onDrag = (sprite, _, position) => {
-        \t\tsprite.set('center', position);
-        \t\tline.set(property as 'corner1', position);
-        \t}
+    \thandle.on('drag', function (_event, position) {
+        \t\tthis.center = position;
+        \t\tline[property] = position;
+        \t});
     \troot.addChild(handle);
 }
 
@@ -98,7 +100,7 @@ stage.loop();` } />
             Inherited from <Hyperlink to='sprites/default/universal-sprite-properties'>Sprite:</Hyperlink>
             {'\u00A0\u00A0\u00A0'}
             {
-                ['bounds', 'color?', 'scale?', 'rotation?', 'alpha?', 'effects?', 'name?', 'details?'].map((prop, idx) => {
+                ['bounds?', 'color?', 'scale?', 'rotation?', 'alpha?', 'blur?', 'gradient?', 'effects?', 'name?', 'enabled?', 'channelCount?', 'details?'].map((prop, idx) => {
                     return <>
                         <CodeBlurb key={idx} blurb={[prop]} />{' '}
                     </>

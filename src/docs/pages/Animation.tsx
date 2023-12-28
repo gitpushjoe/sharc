@@ -4,11 +4,11 @@ import CodeBlurb from "../components/Code/Blurb";
 import CodeHeader from "../components/Code/Header";
 import InlineCode from "../components/Code/Inline";
 import { Hyperlink } from "../components/Sidebar/Hyperlink";
-import { Stage } from "../../sharc/Stage";
-import { Colors, Easing } from "../../sharc/Utils";
-import { Ellipse, TextSprite } from "../../sharc/Sprites";
+import { Stage } from "sharc-js/Stage";
+import { Colors, Easing } from "sharc-js/Utils";
+import { Ellipse, TextSprite } from "sharc-js/Sprites";
 import CodeShowcase from "../components/Code/Showcase";
-import { PositionType } from "../../sharc/types/Common";
+import { PositionType } from "sharc-js/types/Common";
 import { useParams } from "react-router";
 
 export function DefaultPage() {
@@ -24,19 +24,18 @@ export function DefaultPage() {
             Notice that animations use the type <InlineCode>AnimationType</InlineCode>, the full definition of which can be found <Hyperlink to='types/animation/animationtype'>here</Hyperlink>.
         </p>
         <CodeBlock code={
-`import { AnimationType } from 'sharc/types/Animation'
-import { NullSprite } from 'sharc/Sprites'
-import { Colors, Easing } from 'sharc/Utils'
+`import { AnimationType } from 'sharc-js/types/Animation'
+import { NullSprite } from 'sharc-js/Sprites'
+import { Colors, Easing } from 'sharc-js/Utils'
 
 const animation: AnimationType<NullSprite> = {
     \tproperty: 'position', \t\t// a string representing the property to animate (required)
     \tfrom: {x: 0, y: 0},\t \t\t// the original value (required)
     \tto: {x: 100, y: 100},\t\t // the target value (required)
-    \tduration: 1000,\t\t\t\t// the duration of the animation in frames (required)
-    \tdelay: 0,\t\t\t\t\t // the number of frames to wait before starting the animation (required)
-    \teasing: Easing.LINEAR,\t\t// the easing function to use (required)
-    \tname: 'move',\t\t\t\t // a name for the animation (optional)
-    \tdetails: [0, 0, 100, 100]\t // an array of additional information (optional)
+    \tduration: 1000,\t\t\t\t// the duration of the animation in frames (defaults to 60)
+    \tdelay: 0,\t\t\t\t\t // the number of frames to wait before starting the animation (defaults to 0)
+    \teasing: Easing.LINEAR,\t\t// the easing function to use (defaults to Easing.LINEAR)
+    \tname: 'move',\t\t\t\t // a name for the animation (defaults to '')
 };`} />
             <p>
                 Note that <InlineCode>AnimationType</InlineCode> is a generic type, meaning that it requires a type argument.{' '}
@@ -48,9 +47,9 @@ const animation: AnimationType<NullSprite> = {
             <CodeBlock code={
                 `import { Line } from 'sharc/Sprites'
                 
-                const myLine = new Line({bounds: Line.Bounds(0, 0, 0, 0)});
+                const myLine = new Line({});
 
-                myLine.getChannel(0).push({
+                myLine.channels[0].push({
                     \tproperty: 'sides', \t// Type '"sides"' is not assignable to type "bounds" | "color" | "alpha" ...
                 \t. . .
                 };`} />
@@ -58,7 +57,7 @@ const animation: AnimationType<NullSprite> = {
                 Furthermore, if you were to try to animate the color of a line (which is a valid property), but you were to use an invalid color, you would get an error like this:
             </p>
             <CodeBlock code={
-                `myLine.getChannel(0).push({
+                `myLine.channels[0].push({
                     \tproperty: 'color',
                     \tfrom: Colors.Red,
                     \tto: 'blue', \t// Type 'string' is not assignable to type '... | (ColorType & Record<string, number>) | ...'.
@@ -81,35 +80,33 @@ export function Channels() {
     useEffect(() => {
         const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
-        const circle = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 30),
-            color: Colors.Red,
-            stroke: {lineWidth: 5},
-        });
+const circle = new Ellipse({
+    radius: 30,
+    color: Colors.Red,
+    stroke: {lineWidth: 5},
+});
 
-        stage.root.addChild(circle);
+stage.root.addChild(circle);
 
-        stage.onPointerMove = (_stage, _event, position) => {
-            circle.getChannel(0).enqueue([
-            {
-                property: 'center',
-                from: null,
-                to: position,
-                duration: 10,
-                delay: 0,
-                easing: Easing.EASE_IN_OUT,
-            },
-            {
-                property: 'radius',
-                from: null,
-                to: (num: number) => num * 0.8,
-                duration: 10,
-                delay: 0,
-                easing: Easing.Bounce(Easing.LINEAR)
-            }], 1);
-        }
+stage.on('move', function(_event, position) {
+    circle.channels[0].enqueue([
+    {
+        property: 'center',
+        from: null,
+        to: position,
+        duration: 10,
+        easing: Easing.EASE_IN_OUT,
+    },
+    {
+        property: 'radius',
+        from: null,
+        to: (r) => { return [(r as [number, number])[0] * 0.8, (r as [number, number])[1] * 0.8] as any;},
+        duration: 10,
+        easing: Easing.Bounce(Easing.LINEAR)
+    }], 1);
+});
 
-        stage.loop();
+stage.loop();
 
         return () => {
             stage.stop();
@@ -122,7 +119,7 @@ export function Channels() {
         <p>
             Every sprite comes with any number of channels, which are basically parallel animation queues. All of the channels are initialized knowing the properties of the sprite it came from. Every time the sprite is rendered, all of its channels will advance by one step, and the sprite will be updated accordingly.{' '}
             Once the current animation in a channel completes, it will be removed from the queue.{' '}
-            In order to access a sprite's channels, you use <CodeBlurb blurb={[`sprite.getChannel(n)`]} /> function, where <InlineCode>n</InlineCode> is the index of the channel you want to access.{' '}
+            In order to access a sprite's channels, you use <CodeBlurb blurb={[`sprite.channels`]} />.
         </p>
         <br />
         <p><em>
@@ -197,43 +194,37 @@ export function Channels() {
             arrive there within 20 frames, but no animation package will ever be interrupted by another animation package.
         
         <CodeShowcase canvasRef={canvasRef} code={
-            `import { Stage } from 'sharc/Stage'
-            import { Ellipse } from 'sharc/Sprites'
-            import { Colors, Easing } from 'sharc/Utils'
+`import { Stage } from 'sharc/Stage'
+import { Ellipse } from 'sharc/Sprites'
+import { Colors, Easing } from 'sharc/Utils'
 
-            const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-            const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
+const circle = new Ellipse({
+	radius: 30,
+	color: Colors.Red,
+	stroke: {lineWidth: 5},
+});
 
-            const circle = new Ellipse({
-                \tbounds: Ellipse.Bounds(0, 0, 30),
-                \tcolor: Colors.Red,
-                \tstroke: {lineWidth: 5},
-            });
+stage.root.addChild(circle);
 
-            stage.root.addChild(circle);
+stage.on('move', function(_event, position) {
+	circle.channels[0].enqueue([
+	{
+		property: 'center',
+		from: null,
+		to: position,
+		duration: 10,
+		easing: Easing.EASE_IN_OUT,
+	},
+	{
+		property: 'radius',
+		from: null,
+		to: (r) => { return [(r as [number, number])[0] * 0.8, (r as [number, number])[1] * 0.8] as any;},
+		duration: 10,
+		easing: Easing.Bounce(Easing.LINEAR)
+	}], 1);
+});
 
-            stage.onPointerMove = (_stage, _event, position) => {
-                \tcircle.getChannel(0).enqueue([
-                \t\t{
-                    \t\t\tproperty: 'center',
-                    \t\t\tfrom: null,
-                    \t\t\tto: position,
-                    \t\t\tduration: 10,
-                    \t\t\tdelay: 0,
-                    \t\t\teasing: Easing.EASE_IN_OUT,
-                    \t\t},
-                    \t\t{
-                        \t\t\tproperty: 'radius',
-                        \t\t\tfrom: null,
-                        \t\t\tto: (num: number) => num * 0.8,
-                        \t\t\tduration: 10,
-                        \t\t\tdelay: 0,
-                        \t\t\teasing: Easing.Bounce(Easing.LINEAR)
-                        \t\t}
-                    \t], 1);
-            }
-
-            stage.loop();
+stage.loop();
             `
         } />
     </>
@@ -254,63 +245,59 @@ export function SmartAnimations() {
         
         const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
-        const get_random_position = () => {return {
-            x: (Math.random() - 0.5) * stage.width!,
-            y: (Math.random() - 0.5) * stage.height!,
-        } as PositionType}
+const get_random_position = () => {return {
+    x: (Math.random() - 0.5) * stage.width!,
+    y: (Math.random() - 0.5) * stage.height!,
+} as PositionType}
 
-        const smart_circle = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 25),
-            color: Colors.Aqua,
-            stroke: {lineWidth: 5},
-        }).setOnClick((sprite) => {
-            sprite.getChannel(0).enqueue([
-                {
-                    property: 'center',
-                    from: null,
-                    to: get_random_position(),
-                    duration: 15,
-                    delay: 0,
-                    easing: Easing.EASE_IN_OUT,
-                }
-            ], 1);
-        }).addChild(new TextSprite({
-            text: 'from: null',
-            color: Colors.Aqua,
-            position: {x: 0, y: 55},
-            scale: {x: 1, y: -1},
-            positionIsCenter: true,
-            fontSize: 30,
-            bold: true,
-        }));
+const smart_circle = new Ellipse({
+    radius: 25,
+    color: Colors.Aqua,
+    stroke: {lineWidth: 5},
+}).on('click', function () {
+    this.channels[0].enqueue([
+        {
+            property: 'center',
+            from: null,
+            to: get_random_position(),
+            duration: 15,
+            easing: Easing.EASE_IN_OUT,
+        }
+    ], 1);
+}).addChild(new TextSprite({
+    text: 'from: null',
+    color: Colors.Aqua,
+    position: {x: 0, y: 55},
+    positionIsCenter: true,
+    fontSize: 30,
+    bold: true,
+}));
 
-        const normal_circle = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 25),
-            color: Colors.DarkMagenta,
-            stroke: {lineWidth: 5},
-        }).setOnClick((sprite) => {
-            sprite.getChannel(0).enqueue([
-                {
-                    property: 'center',
-                    from: {x: 0, y: 0},
-                    to: get_random_position(),
-                    duration: 15,
-                    delay: 0,
-                    easing: Easing.EASE_IN_OUT,
-                }
-            ], 1);
-        }).addChild(new TextSprite({
-            text: 'from: (0, 0)',
-            color: Colors.DarkMagenta,
-            position: {x: 0, y: -55},
-            scale: {x: 1, y: -1},
-            positionIsCenter: true,
-            fontSize: 30,
-            bold: true,
-        }));
+const normal_circle = new Ellipse({
+    radius: 25,
+    color: Colors.DarkMagenta,
+    stroke: {lineWidth: 5},
+}).on('click', function () {
+    this.channels[0].enqueue([
+        {
+            property: 'center',
+            from: {x: 0, y: 0},
+            to: get_random_position(),
+            duration: 15,
+            easing: Easing.EASE_IN_OUT,
+        }
+    ], 1);
+}).addChild(new TextSprite({
+    text: 'from: (0, 0)',
+    color: Colors.DarkMagenta,
+    position: {x: 0, y: -55},
+    positionIsCenter: true,
+    fontSize: 30,
+    bold: true,
+}));
 
-        stage.root.addChildren(normal_circle, smart_circle);
-        stage.loop();
+stage.root.addChildren(normal_circle, smart_circle);
+stage.loop();
 
         //
 
@@ -318,32 +305,31 @@ export function SmartAnimations() {
 
         {
         const stage = stage2;
-        const circle = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 25),
-            color: Colors.Aqua,
-            stroke: {lineWidth: 5},
-        }).setOnClick((sprite) => {
-            sprite.getChannel(0).enqueue([
-                {
-                    property: 'center',
-                    from: null,
-                    to: (src: PositionType) => {
-                        const dest = {
-                            x: Math.round((Math.random() - 0.5) * stage.width!),
-                            y: Math.round((Math.random() - 0.5) * stage.height!),
-                        }
-                        alert(`Moving from (${src.x}, ${src.y}) to (${dest.x}, ${dest.y})`)
-                        return dest;
-                    },
-                    duration: 15,
-                    delay: 0,
-                    easing: Easing.EASE_IN_OUT,
+const circle = new Ellipse({
+    radius: 25,
+    color: Colors.Aqua,
+    stroke: {lineWidth: 5},
+}).on('click', function () {
+    this.channels[0].enqueue([
+        {
+            property: 'center',
+            from: null,
+            to: (src: PositionType) => {
+                const dest = {
+                    x: Math.round((Math.random() - 0.5) * stage.width!),
+                    y: Math.round((Math.random() - 0.5) * stage.height!),
                 }
-            ], 1);
-        });
+                alert(`Moving from (${src.x}, ${src.y}) to (${dest.x}, ${dest.y})`)
+                return dest;
+            },
+            duration: 15,
+            easing: Easing.EASE_IN_OUT,
+        }
+    ], 1);
+});
 
-        stage.root.addChild(circle);
-        stage.loop();
+stage.root.addChild(circle);
+stage.loop();
         }
 
         return () => {
@@ -375,58 +361,54 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 const get_random_position = () => {return {
-    \tx: (Math.random() - 0.5) * stage.width!,
-    \ty: (Math.random() - 0.5) * stage.height!,
-} as PositionType;}
+	x: (Math.random() - 0.5) * stage.width!,
+	y: (Math.random() - 0.5) * stage.height!,
+} as PositionType}
 
 const smart_circle = new Ellipse({
-    \tbounds: Ellipse.Bounds(0, 0, 25),
-    \tcolor: Colors.Aqua,
-    \tstroke: {lineWidth: 5},
-}).setOnClick((sprite) => {
-    \tsprite.getChannel(0).enqueue([
-    \t\t{
-        \t\t\tproperty: 'center',
-        \t\t\tfrom: null,
-        \t\t\tto: get_random_position(),
-        \t\t\tduration: 15,
-        \t\t\tdelay: 0,
-        \t\t\teasing: Easing.EASE_IN_OUT,
-    \t\t}
-\t], 1);
+	radius: 25,
+	color: Colors.Aqua,
+	stroke: {lineWidth: 5},
+}).on('click', function () {
+	this.channels[0].enqueue([
+		{
+			property: 'center',
+			from: null,
+			to: get_random_position(),
+			duration: 15,
+			easing: Easing.EASE_IN_OUT,
+		}
+	], 1);
 }).addChild(new TextSprite({
-    \ttext: 'from: null',
-    \tcolor: Colors.Aqua,
-    \tposition: {x: 0, y: 55},
-    \tscale: {x: 1, y: -1},
-    \tpositionIsCenter: true,
-    \tfontSize: 30,
-    \tbold: true,
+	text: 'from: null',
+	color: Colors.Aqua,
+	position: {x: 0, y: 55},
+	positionIsCenter: true,
+	fontSize: 30,
+	bold: true,
 }));
 
 const normal_circle = new Ellipse({
-    \tbounds: Ellipse.Bounds(0, 0, 25),
-    \tcolor: Colors.DarkMagenta,
-    \tstroke: {lineWidth: 5},
-}).setOnClick((sprite) => {
-    \tsprite.getChannel(0).enqueue([
-        \t\t{
-            \t\t\tproperty: 'center',
-            \t\t\tfrom: {x: 0, y: 0},
-            \t\t\tto: get_random_position(),
-            \t\t\tduration: 15,
-            \t\t\tdelay: 0,
-            \t\t\teasing: Easing.EASE_IN_OUT,
-        \t\t}
-    \t], 1);
+	radius: 25,
+	color: Colors.DarkMagenta,
+	stroke: {lineWidth: 5},
+}).on('click', function () {
+	this.channels[0].enqueue([
+		{
+			property: 'center',
+			from: {x: 0, y: 0},
+			to: get_random_position(),
+			duration: 15,
+			easing: Easing.EASE_IN_OUT,
+		}
+	], 1);
 }).addChild(new TextSprite({
-    \ttext: 'from: (0, 0)',
-    \tcolor: Colors.DarkMagenta,
-    \tposition: {x: 0, y: -55},
-    \tscale: {x: 1, y: -1},
-    \tpositionIsCenter: true,
-    \tfontSize: 30,
-    \tbold: true,
+	text: 'from: (0, 0)',
+	color: Colors.DarkMagenta,
+	position: {x: 0, y: -55},
+	positionIsCenter: true,
+	fontSize: 30,
+	bold: true,
 }));
 
 stage.root.addChildren(normal_circle, smart_circle);
@@ -449,27 +431,26 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 const circle = new Ellipse({
-    \tbounds: Ellipse.Bounds(0, 0, 25),
-    \tcolor: Colors.Aqua,
-    \tstroke: {lineWidth: 5},
-}).setOnClick((sprite) => {
-    \tsprite.getChannel(0).enqueue([
-        \t\t{
-            \t\t\tproperty: 'center',
-            \t\t\tfrom: null,
-            \t\t\tto: (src: PositionType) => {
-                \t\t\t\tconst dest = {
-                    \t\t\t\t\tx: Math.round((Math.random() - 0.5) * stage.width!),
-                    \t\t\t\t\ty: Math.round((Math.random() - 0.5) * stage.height!),
-                \t\t\t\t};
-                \t\t\t\talert(\`Moving from (\${src.x}, \${src.y}) to (\${dest.x}, \${dest.y})\`);
-                \t\t\t\treturn dest as PositionType;
-            \t\t\t},
-            \t\t\tduration: 15,
-            \t\t\tdelay: 0,
-            \t\t\teasing: Easing.EASE_IN_OUT,
-        \t\t}
-    \t], 1);
+	radius: 25,
+	color: Colors.Aqua,
+	stroke: {lineWidth: 5},
+}).on('click', function () {
+	this.channels[0].enqueue([
+		{
+			property: 'center',
+			from: null,
+			to: (src: PositionType) => {
+				const dest = {
+					x: Math.round((Math.random() - 0.5) * stage.width!),
+					y: Math.round((Math.random() - 0.5) * stage.height!),
+				}
+				alert(\`Moving from (\${src.x}, \${src.y}) to (\${dest.x}, \${dest.y})\`)
+				return dest;
+			},
+			duration: 15,
+			easing: Easing.EASE_IN_OUT,
+		}
+	], 1);
 });
 
 stage.root.addChild(circle);
@@ -484,42 +465,43 @@ export function Distribute() {
 
     useEffect(() => {
 
-        const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
+const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
-        const circle = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 30),
-            color: Colors.Aqua,
-            stroke: {lineWidth: 5},
-        }, 2); // <-- don't forget to set the number of channels!
+const circle = new Ellipse({
+    radius: 30,
+    color: Colors.Aqua,
+    stroke: {lineWidth: 5},
+    channelCount: 2,
+});
 
-        circle.distribute(
-            [
-                [ // channel 0
-                    {
-                        property: 'centerX',
-                        from: -stage.width! / 2 + 15,
-                        to: stage.width! / 2 - 15,
-                        duration: 100,
-                        delay: 0,
-                        easing: Easing.Bounce(Easing.LINEAR),
-                    }
-                ], 
-                [ // channel 1
-                    {
-                        property: 'centerY',
-                        from: 20,
-                        to: -stage.height! / 2 + 25,
-                        duration: 40,
-                        delay: 0,
-                        easing: Easing.Bounce(Easing.EASE_OUT),
-                    }
-                ],
-            ], 
-        {loop: true});
+circle.distribute(
+    [
+        [ // channel 0
+            {
+                property: 'centerX',
+                from: -stage.width! / 2 + 15,
+                to: stage.width! / 2 - 15,
+                duration: 100,
+                delay: 0,
+                easing: Easing.Bounce(Easing.LINEAR),
+            }
+        ], 
+        [ // channel 1
+            {
+                property: 'centerY',
+                from: 20,
+                to: -stage.height! / 2 + 25,
+                duration: 40,
+                delay: 0,
+                easing: Easing.Bounce(Easing.EASE_OUT),
+            }
+        ],
+    ], 
+{loop: true});
 
-        stage.root.addChild(circle);
+stage.root.addChild(circle);
 
-        stage.loop();
+stage.loop();
 
         return () => {
             stage.stop();
@@ -549,36 +531,36 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 const circle = new Ellipse({
-    \tbounds: Ellipse.Bounds(0, 0, 30),
-    \tcolor: Colors.Aqua,
-    \tstroke: {lineWidth: 5},
-}, 2); // <-- don't forget to set the number of channels!
+	radius: 30,
+	color: Colors.Aqua,
+	stroke: {lineWidth: 5},
+	channelCount: 2,
+});
 
 circle.distribute(
-    \t[
-        \t\t[ // channel 0
-            \t\t\t{
-                \t\t\t\tproperty: 'centerX',
-                \t\t\t\tfrom: -stage.width! / 2 + 15,
-                \t\t\t\tto: stage.width! / 2 - 15,
-                \t\t\t\tduration: 100,
-                \t\t\t\tdelay: 0,
-                \t\t\t\teasing: Easing.Bounce(Easing.LINEAR),
-            \t\t\t}
-        \t\t],
-        \t\t[ // channel 1
-            \t\t\t{
-                \t\t\t\tproperty: 'centerY',
-                \t\t\t\tfrom: 20,
-                \t\t\t\tto: -stage.height! / 2 + 25,
-                \t\t\t\tduration: 40,
-                \t\t\t\tdelay: 0,
-                \t\t\t\teasing: Easing.Bounce(Easing.EASE_OUT),
-            \t\t\t}
-        \t\t],
-    \t],
-    \t{loop: true}
-);
+	[
+		[ // channel 0
+			{
+				property: 'centerX',
+				from: -stage.width! / 2 + 15,
+				to: stage.width! / 2 - 15,
+				duration: 100,
+				delay: 0,
+				easing: Easing.Bounce(Easing.LINEAR),
+			}
+		],
+		[ // channel 1
+			{
+				property: 'centerY',
+				from: 20,
+				to: -stage.height! / 2 + 25,
+				duration: 40,
+				delay: 0,
+				easing: Easing.Bounce(Easing.EASE_OUT),
+			}
+		],
+	],
+{loop: true});
 
 stage.root.addChild(circle);
 
@@ -591,13 +573,13 @@ export function EasingPage() {
         <h1>Easing</h1>
         <p>
             Every animation requires an <InlineCode>EasingType</InlineCode> function, which is a function that takes in a number (which will be from 0 to 1 inclusive) and returns a number{' '}
-            (also from 0 to 1 inclusive). You can write your own easing function or use the ones provided in <InlineCode>sharc/Utils</InlineCode>.{' '}
+            (also from 0 to 1 inclusive). You can write your own easing function or use the ones provided in <InlineCode>sharc-js/Utils</InlineCode>.{' '}
             Also, <InlineCode>Easing.Bounce(curve: EasingType)</InlineCode> takes in an easing function and returns a new easing function that plays the original easing function in reverse after the halfway point,{' '}
             thus "bouncing" the animation. You can see a demonstration of that <Hyperlink to='animation/distribute'>here</Hyperlink>.{' '}
         </p>
 
         <CodeBlock code={
-            ` // sharc/Utils.ts
+            ` // sharc-js/Utils
 
             export const Easing = {
                 \tLINEAR: (x: number) => x,

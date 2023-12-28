@@ -7,14 +7,15 @@ export const SidebarItems = {
         'Usage',
         'React',
         'Angular',
-        'Handling User Input',
-        'Working with the Animation Loop'
+        'Event Listeners',
     ],
     'Sprites': [
         'Usage',
         'Properties',
+        'Details',
         'Parenting',
-        'Handling User Input',
+        'The Base Shape Class',
+        'Event Listeners',
         'StrokeableSprite',
         'Line',
         'Rect',
@@ -24,6 +25,7 @@ export const SidebarItems = {
         'Polygon',
         'Star',
         'Text',
+        'Label',
         'Image',
         'NullSprite'
     ],
@@ -36,9 +38,10 @@ export const SidebarItems = {
     'Types': [
         'Common',
         'Animation',
-        'Stage',
+        'Events',
         'Sprites'
     ],
     'Utils': [
+        'Animation',
     ],
 }

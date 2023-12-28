@@ -20,7 +20,7 @@ export default function Utils () {
     return <>
         <h1>Utils</h1>
         <p>
-            Found in <InlineCode>sharc/utils</InlineCode>.{' '}
+            Found in <InlineCode>sharc-js/utils</InlineCode>.{' '}
             Contains utility functions and more.
         </p>
 
@@ -242,5 +242,417 @@ export default function Utils () {
                 \treturn [bounds.x1, bounds.y1, bounds.x2 - bounds.x1, bounds.y2 - bounds.y1]
             }` } />
 
+        
+        <br />
+        <h4>addPositions</h4>
+        <p>
+            Takes in two <InlineCode>PositionType</InlineCode> objects and returns a <InlineCode>PositionType</InlineCode> object with the sum of the two positions.
+        </p>
+        <CodeBlock code={
+            `export function addPositions(position1: PositionType, position2: PositionType): PositionType {
+                \treturn Position(position1.x + position2.x, position1.y + position2.y);
+            }` } />
+
+        <br />
+        <h4>subtractPositions</h4>
+        <p>
+            Takes in two <InlineCode>PositionType</InlineCode> objects and returns a <InlineCode>PositionType</InlineCode> object with the difference of the two positions.
+        </p>
+        <CodeBlock code={
+            `export function subtractPositions(position1: PositionType, position2: PositionType): PositionType {
+                \treturn Position(position1.x - position2.x, position1.y - position2.y);
+            }` } />
+
+        <br />
+        <h4>multiplyPositions</h4>
+        <p>
+            Takes in two <InlineCode>PositionType</InlineCode> objects and returns a <InlineCode>PositionType</InlineCode> object with the product of the two positions.
+        </p>
+        <CodeBlock code={
+            `export function multiplyPositions(position1: PositionType, position2: PositionType): PositionType {
+                \treturn Position(position1.x * position2.x, position1.y * position2.y);
+            }` } />
+
+        <br />
+        <h4>dividePositions</h4>
+        <p>
+            Takes in two <InlineCode>PositionType</InlineCode> objects and returns a <InlineCode>PositionType</InlineCode> object with the quotient of the two positions.
+        </p>
+        <CodeBlock code={
+            `export function dividePositions(position1: PositionType, position2: PositionType): PositionType {
+                \treturn Position(position1.x / position2.x, position1.y / position2.y);
+            }` } />
+
     </>
+}
+
+export function AnimationUtils() {
+	return <>
+	<h1>AnimationUtils</h1>
+	<p>
+	    Found in <InlineCode>sharc-js/AnimationUtils</InlineCode>.{' '}
+	    Contains utility functions for animations. For each function, like <InlineCode>FadeIn</InlineCode>, that returns an <InlineCode>AnimationType</InlineCode> object,{' '}
+	    there is a coding <InlineCode>FadeInSprite</InlineCode> object, which takes in a sprite as its first argument, adds the animation to the sprite using <InlineCode>sprite.distribute</InlineCode>,{' '}
+	    and returns the animation.
+	</p>
+	<br />
+	<h4>FadeIn</h4>
+	<p>
+	    Fades in the sprite.
+	</p>
+	<CodeBlock code={
+`export function FadeIn(
+durationOrSprite: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = 0,
+to: number|AnimationCallback<number> = 1,
+name: string = '',):
+AnimationType<{ alpha: number }> {
+	return { property: 'alpha', from, to, duration: durationOrSprite, delay, easing, name };
+}
+
+export function FadeInSprite(
+sprite: Shape,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = 0,
+to: number|AnimationCallback<number> = 1,
+name: string = '',):
+AnimationType<{ alpha: number }> {
+	const property = FadeIn(duration, delay, easing, from, to, name);
+	sprite.distribute([[property]]);
+	return property;
+}
+
+` } /> 
+	<br />
+	<h4>FadeOut</h4>
+	<p>
+	    Fades out the sprite.
+	</p>
+	<CodeBlock code={
+`export function FadeOut(
+durationOrSprite: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = 1,
+to: number|AnimationCallback<number> = 0,
+name: string = '',):
+AnimationType<{ alpha: number }> {
+	return { property: 'alpha', from, to, duration: durationOrSprite, delay, easing, name };
+}
+
+export function FadeOutSprite(
+sprite: Shape,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = 1,
+to: number|AnimationCallback<number> = 0,
+name: string = '',):
+AnimationType<{ alpha: number }> {
+	const property = FadeOut(duration, delay, easing, from, to, name);
+	sprite.distribute([[property]]);
+	return property;
+}` } /> 
+	<br />
+	<h4>Translate</h4>
+	<p>
+	    Moves the center of the sprite to a specific <InlineCode>PositionType</InlineCode>.
+	</p>
+	<CodeBlock code={
+`const randomPosition = () => { return {x: Math.random() * 100, y: Math.random() * 100 } };
+
+export function Translate(
+to: PositionType|AnimationCallback<PositionType> = randomPosition,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: PositionType|null = null,
+name: string = '',):
+AnimationType<{ center: PositionType }> {
+	return { property: 'center', from, to, duration, delay, easing, name };
+}
+
+export function TranslateSprite(
+sprite: Shape,
+to: PositionType|AnimationCallback<PositionType> = randomPosition,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: PositionType|null = null,
+name: string = '',):
+AnimationType<{ center: PositionType }> {
+	const property = Translate(to, duration, delay, easing, from, name);
+	sprite.distribute([[property]]);
+	return property;
+}` } /> 
+	<br />
+	<h4>Grow</h4>
+	<p>
+	    Scales the sprite by a specific factor.
+	</p>
+	<CodeBlock code={
+`export function Grow(
+to: number = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',):
+AnimationType<{ scale: PositionType}> {
+	return {
+		property: 'scale',
+		from: (from ? Position(from, from) : null),
+		to: (pos: PositionType) => Position(pos.x * to, pos.y * to),
+		duration,
+		delay,
+		name,
+	};
+}
+
+export function GrowSprite(
+sprite: Shape,
+to: number = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',):
+AnimationType<{ scale: PositionType }> {
+	const property = Grow(to, duration, delay, easing, from, name);
+	sprite.distribute([[property]]);
+	return property;
+}` } />
+
+	<br />
+	<h4>Shrink</h4>
+	<p>
+	    Scales the sprite by a specific factor.
+	</p>
+	<CodeBlock code={
+`export function Shrink(
+to: number = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',):
+AnimationType<{scale: PositionType}> {
+	return Grow(1 / to, duration, delay, easing, from, name);
+}
+
+export function ShrinkSprite(
+sprite: Shape,
+to: number = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ scale: PositionType }> {
+	return GrowSprite(sprite, 1 / to, duration, delay, easing, from, name);
+}` } />
+
+	<br />
+	<h4>Rotate</h4>
+	<p>
+	    Rotates the sprite by a specific angle.
+	</p>
+	<CodeBlock code={
+`export function Rotate(
+to: number|AnimationCallback<number> = 360,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ rotation: number }> {
+	return { property: 'rotation', from, to, duration, delay, easing, name };
+}
+
+export function RotateSprite(
+sprite: Shape,
+to: number|AnimationCallback<number> = 360,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ rotation: number }> {
+	const property = Rotate(to, duration, delay, easing, from, name);
+	sprite.distribute([[property]]);
+	return property;
+}` } />
+
+	<br />
+	<h4>Scale</h4>
+	<p>
+	    Sets the scale of the sprite. 
+	</p>
+	<CodeBlock code={
+`export function Scale(
+to: number|AnimationCallback<number> = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ scale: number }> {
+	return { property: 'scale', from, to, duration, delay, easing, name };
+}
+
+export function ScaleSprite(
+sprite: Shape,
+to: number|AnimationCallback<number> = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ scale: number }> {
+	const property = Scale(to, duration, delay, easing, from, name);
+	sprite.distribute([[property]]);
+	return property;
+}` } />
+
+	<br />
+	<h4>ScaleX</h4>
+	<p>
+	    Sets the horizontal scale of the sprite.
+	</p>
+	<CodeBlock code={
+`export function ScaleX(
+to: number|AnimationCallback<number> = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ scaleX: number }> {
+	return { property: 'scaleX', from, to, duration, delay, easing, name };
+}
+
+export function ScaleXSprite(
+sprite: Shape,
+to: number|AnimationCallback<number> = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ scaleX: number }> {
+	const property = ScaleX(to, duration, delay, easing, from, name);
+	sprite.distribute([[property]]);
+	return property;
+}` } />
+
+	<br />
+	<h4>ScaleY</h4>
+	<p>
+	    Sets the vertical scale of the sprite.
+	</p>
+	<CodeBlock code={
+`export function ScaleY(
+to: number|AnimationCallback<number> = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ scaleY: number }> {
+	return { property: 'scaleY', from, to, duration, delay, easing, name };
+}
+
+export function ScaleYSprite(
+sprite: Shape,
+to: number|AnimationCallback<number> = 2,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ scaleY: number }> {
+	const property = ScaleY(to, duration, delay, easing, from, name);
+	sprite.distribute([[property]]);
+	return property;
+}` } />
+
+    <br />
+    <h4>BlurSprite</h4>
+    <p>
+        Blurs the sprite.
+    </p>
+    <CodeBlock code={
+`export function Blur(
+to: number|AnimationCallback<number> = 10,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ blur: number }> {
+	return { property: 'blur', from, to, duration, delay, easing, name };
+}
+
+export function BlurSprite(
+sprite: Shape,
+to: number|AnimationCallback<number> = 10,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = null,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ blur: number }> {
+	const property = Blur(to, duration, delay, easing, from, name);
+	sprite.distribute([[property]]);
+	return property;
+}`} />
+
+    <br />
+    <h4>UnblurSprite</h4>
+    <p>
+        Removes the blur from the sprite.
+    </p>
+    <CodeBlock code={
+`export function Unblur(
+to: number|AnimationCallback<number> = 0,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = 10,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ blur: number }> {
+    return Blur(to, duration, delay, easing, from, name);
+}
+
+export function UnblurSprite(
+sprite: Shape,
+to: number|AnimationCallback<number> = 0,
+duration: number = 30,
+delay: number = 0,
+easing: EasingType = Easing.LINEAR,
+from: number|null = 10,
+name: string = '',
+details: (string|number)[] = []):
+AnimationType<{ blur: number }> {
+    const property = Unblur(to, duration, delay, easing, from, name);
+    sprite.distribute([[property]]);
+    return property;
+}` } />
+</>
 }

@@ -3,89 +3,109 @@ import CodeBlock from "../../components/Code/Block";
 import CodeBlurb from "../../components/Code/Blurb";
 import InlineCode from "../../components/Code/Inline";
 import { Hyperlink } from "../../components/Sidebar/Hyperlink";
+import { useParams } from "react-router";
 
 export function Properties() {
 
-    useEffect(() => {window.scrollTo(0, 0)}, []);
+    const params = useParams();
+    useEffect(() => {
+        switch (params.section) {
+            case 'universal-sprite-properties':
+                const element = document.getElementById(params.section!);
+                element ? element.scrollIntoView() : window.scrollTo(0, 0);
+                break;
+        }
+    }, []);
     return <>
         <h1>Properties</h1>
         <p>
             <InlineCode>Properties</InlineCode> defines the attributes and attribute types that a sprite can have. For example, the type <InlineCode>LineProperties</InlineCode> contains <InlineCode>{'{lineWidth?: number}'}</InlineCode>{' '}
-            and the type <InlineCode>Polygon</InlineCode> contains <InlineCode>{'{sides: number}'}</InlineCode>. Properties can be divided into four (not mutually-exclusive) types:
+            and the type <InlineCode>Polygon</InlineCode> contains <InlineCode>{'{sides: number}'}</InlineCode>. Each sprite type <a href="https://www.typescriptlang.org/docs/handbook/2/classes.html#implements-clauses">implements</a>{' '}
+            its own <InlineCode>Properties</InlineCode> type (<InlineCode>Line</InlineCode> implements <InlineCode>LineProperties</InlineCode>, <InlineCode>Rect</InlineCode> implements <InlineCode>RectProperties</InlineCode>, etc.).{' '}
+            This means you can access and modify these properties directly on the sprite, and if you're using Typescript, they will be typed correctly.{' '}
+
+            <CodeBlock code={
+            `const circle = new Ellipse({});
+            circle.color = {red: 255, green: 0, blue: 0, alpha: 1};
+            const radius = circle.radius; 
+            circle.radius = radius + '10'; // Type 'string' is not assignable to type 'number | [number, number]'.
+            `} />
         </p>
 
         <br />
-        <h3>Normal, Aggregate, Calculated, and Hidden Properties</h3>
-        <br />
+        <h3>Property Visibility and Type</h3>
+        <div style={{'width': '1em', 'height': '.5em'}}></div>
         <p>
-        <strong>Normal Properties </strong>
-                {'are passed into the constructor of the sprite and are not related to any other properties. '}
-                <em>alpha</em>
-                {' is an example of a normal property. '}
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <strong>Aggregate Properties </strong>{'take in objects, and map to hidden properties. For example, '}
-            <em>color</em>
-            {' is an aggregate property that maps to '}
-            <em>red</em>, <em>green</em>, <em>blue</em>, and <em>alpha</em>.
-            {' This means that '}
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlock code={`mySprite.set('color', {red: 255, green: 0, blue: 0, alpha: 0)})`} />
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            {'is the same as '}
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlock code={`mySprite.set('red', 255);
-            mySprite.set('green', 0);
-            mySprite.set('blue', 0);
-            mySprite.set('alpha', 0);`} />
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            {'Aggregate properties are useful for setting multiple properties at once. '}
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <p>
-                <strong>Calculated Properties</strong>
-                {' are properties that are calculated from other properties. For example, when you make a path, you don\'t pass the center of the path to the constructor. '}
-                {'Instead, you pass the coordinates of every point along the path. However, if you want to find the center of the path, you can do '}
-                <InlineCode>myPath.get('center')</InlineCode>
-                {' and it will return the center of the path as a '}
-                <Hyperlink>PositionType</Hyperlink>
-                {' object. '}
-            </p>
-            <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <p>
-                <strong>Hidden Properties</strong>
-                {' are properties that do not get passed into the constructor, but are still accessible, like '}
-                <em>red</em>
-                {', '}
-                <em>scaleY</em>
-                {', and '}
-                <em>rotation</em>
-                {'. They can be retrieved, modified, and animated, just like any other property. A property can be both hidden and calculated. '}
-            </p>
-            <br />
-            <p>
-                {'Often this distinction is not important to actually using sprites in sharc, but knowing how aggregate and hidden properties work might save time and clear confusion '}
-                {'when modifying '}
-                <Hyperlink>bounds</Hyperlink>
-                {' or color.'}
-            </p>
-            <p>
-                {'The second parameter, '}
-                <InlineCode>channels</InlineCode>
-                {', is the number of '}
-                <Hyperlink>animation channels</Hyperlink>
-                {' that the sprite will have. It defaults to 1. '}
-            </p>
+            Many of the properties seem to overlap with each other (for example, the <InlineCode>color</InlineCode> property and the <InlineCode>red</InlineCode> property) so{' '}
+            it may be unclear how this information is actually stored or retrieved. Because of this, every property has been given a <strong>visibility</strong> and a <strong>type</strong>.{' '}
+        </p>
+        <div style={{'width': '1em', 'height': '.5em'}}></div>
+        <p>
+        <h4>Property Visibility</h4>
+        <p>
+            <strong>Visible Properties</strong> are passed into the constructor. For example, all of the properties in <InlineCode>TextProperties</InlineCode> are visible, since{' '}
+            in order to make a <InlineCode>TextSprite</InlineCode>, you must first pass in a <InlineCode>TextProperties</InlineCode> object.{' '}For the rest of this documentation,{' '}
+            every property that is not explicitly stated as hidden is visible.{' '}
+        </p>
+        <p>
+            <strong>Hidden Properties</strong> are not passed into the constructor, but are still accessible. For example, if you want to make a <InlineCode>Rect</InlineCode>,{' '}
+            you can specify the <InlineCode>color</InlineCode> by passing in a color object, which contains values for <InlineCode>red</InlineCode>, <InlineCode>green</InlineCode>, <InlineCode>blue</InlineCode>, and <InlineCode>alpha</InlineCode>.{' '}
+            Then, if you want to change the <InlineCode>green</InlineCode> property specifically, you can do that as well.
+            <CodeBlock code={
+            `const rect = new Rect({color: {red: 255, green: 0, blue: 0, alpha: 1}});
+            rect.green = 255;
+            `} />
+        </p>
+        <div style={{'width': '1em', 'height': '.5em'}}></div>
+        <h4>Property Type</h4>
+        <p>
+            <strong>Normal Properties</strong> are atomic. They are stored as-is, and do not affect any other normal properties. For example, here is the source code for the property <InlineCode>x1</InlineCode>:
+            <CodeBlock code={
+            `public get x1(): number { return this.properties.x1; }
+            public set x1(value: number) { this.properties.x1 = value; }
+            `} />
+        </p>
+        <div style={{'width': '1em', 'height': '.5em'}}></div>
+        <p>
+            <strong>Aggregate Properties</strong> are properties that consist of other normal properties. Retrieving or modifying an aggregate property will retrieve or modify the normal properties that make it up.{' '}
+            For example, here is the source code for the property <InlineCode>bounds</InlineCode>:
+            <CodeBlock code={
+            `public get bounds(): BoundsType { return Corners(this.x1, this.y1, this.x2, this.y2); }
+            public set bounds(value: BoundsType) { 
+                \tthis.x1 = value.x1;
+                \tthis.y1 = value.y1;
+                \tthis.x2 = value.x2;
+                \tthis.y2 = value.y2;
+            }
+            `} />
+        </p>
+        <div style={{'width': '1em', 'height': '.5em'}}></div>
+        <p>
+            <strong>Calculated Properties</strong> are calculated from other properties. They aren't simply made up of other properties, but are calculated from them.{' '}For example, here is the source code for the property <InlineCode>width</InlineCode>:
+            <CodeBlock code={
+                `public get width(): number { return Math.abs(this.x2 - this.x1); }
+                public set width(value: number) { 
+                    \tconst centerX = this.centerX;
+                    \tthis.x1 = centerX - value / 2;
+                    \tthis.x2 = centerX + value / 2;
+                }`} />
+        </p>
 
             <br />
-            <h3>Universal Sprite Properties</h3>
-            <br />
+            <h3 id='universal-sprite-properties'>Universal Sprite Properties</h3>
             <p>
-                <CodeBlurb blurb={['bounds: ', 'BoundsType']} /> - the <Hyperlink>bounds</Hyperlink> of the sprite. Aggregate Property for <em>x1</em>, <em>y1</em>, <em>x2</em>, and <em>y2</em>.
+                (Note: This correlates to the types <InlineCode>DEFAULT_PROPERTIES</InlineCode> and <InlineCode>HIDDEN_SHAPE_PROPERTIES</InlineCode>.)
+            </p>
+            <p>
+                <CodeBlurb blurb={['bounds>: ', 'BoundsType']} /> - the <Hyperlink>bounds</Hyperlink> of the sprite. Defaults to <InlineCode>{`{x1: 0, y1: 0, x2: 0, y2: 0}`}</InlineCode>. Aggregate Property for <em>x1</em>, <em>y1</em>, <em>x2</em>, and <em>y2</em>.
                 <br />
                 <em>{' * Note that '}
                 <Hyperlink>BezierCurve</Hyperlink>{', '}
                 <Hyperlink>Path</Hyperlink>{', '}
+                <Hyperlink>Ellipse</Hyperlink>{', '}
                 <Hyperlink>Polygon</Hyperlink>{', and '}
-                <Hyperlink>Text</Hyperlink>{' do not use bounds in their constructors, but instead calculate the bounds once instantiated. Bounds are required for all other sprites.'}</em>
+                <Hyperlink>TextSprite</Hyperlink>{', and '}
+                <Hyperlink>LabelSprite</Hyperlink>{' do not use bounds in their constructors, but instead calculate the bounds once instantiated. Bounds are explicitly required for all other sprites.'}</em>
                 <br />
                 <br />
                 <CodeBlurb blurb={['color?: ', 'ColorType']} />
@@ -104,13 +124,25 @@ export function Properties() {
                 <CodeBlurb blurb={['alpha?: ', 'number']} /> - the opacity of the sprite from 0 to 1. Defaults to 1. Normal Property.
                 <br />
                 <br />
-                <CodeBlurb blurb={['effects?: ', '(ctx: CanvasRenderingContext2D) => void']} /> - This function will be called on the canvas context before the sprite is drawn. Useful for things like blurs and drop shadows. Normal Property.
+                <CodeBlurb blurb={['blur?: ', 'number']} /> - the blur amount of the sprite in pixels. Defaults to 0. Normal Property.
+                <br />
+                <br />
+                <CodeBlurb blurb={['gradient?: ', 'CanvasGradient|null']} /> - the gradient of the sprite. <InlineCode>ctx.fillStyle</InlineCode> will be set to this gradient if present, overwriting <InlineCode>color</InlineCode>. Defaults to <InlineCode>null</InlineCode>. Normal Property. 
+                <br />
+                <br />
+                <CodeBlurb blurb={['effects?: ', '(ctx: CanvasRenderingContext2D) => void']} /> - This function will be called on the canvas context before the sprite is drawn. Useful for things like blurs and drop shadows. Normal Property. Defaults to <InlineCode>{'() => {}'}</InlineCode>.
                 <br />
                 <br />
                 <CodeBlurb blurb={['name?: ', 'string']} /> - the name of the sprite. Does not need to be unique. It can be useful for debugging and finding specific child sprites. Defaults to <InlineCode>""</InlineCode>. Normal Property.
                 <br />
                 <br />
-                <CodeBlurb blurb={['details?: ', '(string|number)[]']} /> - an array of strings or numbers. Can be used to store any information you want on the sprite. Defaults to <InlineCode>[]</InlineCode>. Normal Property.
+                <CodeBlurb blurb={['enabled?: ', 'boolean']} /> - whether or not the sprite is enabled. If it is not enabled, it and its children will not be drawn. Defaults to <InlineCode>true</InlineCode>. Normal Property.
+                <br />
+                <br />
+                <CodeBlurb blurb={['channelCount?: ', 'number']} /> - the number of <Hyperlink to='animation/channels'>animation channels</Hyperlink> the sprite has. Defaults to 0. Normal Property.
+                <br />
+                <br />
+                <CodeBlurb blurb={['details?: ', 'DetailsType']} /> - See <Hyperlink to='sprites/details'>Sprites/Details</Hyperlink>. Defaults to <InlineCode>undefined</InlineCode>.
                 <br />
                 <br />
                 <h4>Hidden Universal Properties</h4>

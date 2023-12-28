@@ -21,7 +21,7 @@
     // "noUnusedParameters": true,
     // "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*"],
+//   "include": ["src/**/*"],
   "exclude": [
     ".git",
     "node_modules",

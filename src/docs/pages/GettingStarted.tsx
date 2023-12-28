@@ -2,11 +2,11 @@ import { MutableRefObject, useEffect, useRef } from "react";
 import CodeBlock from "../components/Code/Block";
 import CodeShowcase from "../components/Code/Showcase";
 import { Hyperlink } from "../components/Sidebar/Hyperlink";
-import { Stage } from '../../sharc/Stage';
-import { BezierCurve, Ellipse, Line, Rect, Star } from '../../sharc/Sprites';
+import { Stage } from "sharc-js/Stage";
+import { BezierCurve, Ellipse, Line, Rect, Star } from 'sharc-js/Sprites';
 import { useParams } from "react-router";
 import { LinkContainer } from "react-router-bootstrap";
-import { Colors, Corners } from "../../sharc/Utils";
+import { Colors, Corners } from "sharc-js/Utils";
 
 export function GettingStarted() {
     return <>
@@ -41,7 +41,7 @@ export function GettingStarted() {
             `$ npm install sharc-js`
         }/>
         <p>
-            This works for both Javascript and Typescript projects.
+            This works for both Javascript and Typescript projects. (For Typescript you need Typescript version ^5.1.3)
         </p>
 
         <br />
@@ -88,13 +88,15 @@ export function GS_Overview() {
         const stage2 = new Stage(canvas2, 'classic', Colors.LightSlateGray);
 
         const ellipse1 = new Ellipse({
-            bounds: Ellipse.Bounds(100, 100, 50),
+            center: { x: 100, y: 100 },
+            radius: 50,
             color: Colors.Aqua,
         });
 
         const ellipse2 = new Ellipse({
-            bounds: Ellipse.Bounds(400, 200, 75),
-            color: Colors.Lime,
+           center: { x: 400, y: 200 },
+           radius: 75,
+           color: Colors.Lime,
         });
 
         stage2.root.addChildren(ellipse1, ellipse2);
@@ -145,7 +147,7 @@ export function GS_Overview() {
             <p>{'Now, that we have a canvas, we can create a stage. More details on how the Stage works can be found '}  
             <Hyperlink to='stage'>here</Hyperlink>
             {', but basically a Stage is a container for sprites that automatically handles the animation loop, with a few other features. The first argument to the Stage constructor is the canvas we just created.' + 
-            'The second argument is the rootStyle, which you can read more about '}
+            ' The second argument is the rootStyle, which you can read more about '}
             <Hyperlink to='stage/usage/root-style'>here</Hyperlink>
             {'. The third argument is the background color, which accepts a '}
             <Hyperlink to='types/common/colortype'>ColorType</Hyperlink>
@@ -174,12 +176,14 @@ export function GS_Overview() {
             const root = stage.root;
 
             const ellipse1 = new Ellipse({
-            \tbounds: Ellipse.Bounds(100, 100, 50),
+            \tcenter: { x: 100, y: 100 },
+            \tradius: 50,
             \tcolor: Colors.Aqua,
             });
 
             const ellipse2 = new Ellipse({
-            \tbounds: Ellipse.Bounds(400, 200, 75),
+            \tcenter: { x: 400, y: 200 },
+            \tradius: 75,
             \tcolor: Colors.Lime,
             });
 
@@ -199,12 +203,14 @@ export function GS_Overview() {
             const ctx = canvas.getContext('2d');
 
             const ellipse1 = new Ellipse({
-            \tbounds: Ellipse.Bounds(100, 100, 50),
+            \tcenter: { x: 100, y: 100 },
+            \tradius: 50,
             \tcolor: Colors.Aqua,
             });
 
             const ellipse2 = new Ellipse({
-            \tbounds: Ellipse.Bounds(400, 200, 75),
+            \tcenter: { x: 400, y: 200 },
+            \tradius: 75,
             \tcolor: Colors.Lime,
             });
 
@@ -230,76 +236,77 @@ export function GS_Terminology() {
         if (!canvas) return;
         const stage = new Stage(canvas, 'classic', Colors.LightSlateGray);
 
-        const line = new Line({
-            bounds: Line.Bounds(50, 50, 175, 150),
-            color: Colors.Aqua,
-            lineWidth: 5,
-            lineCap: 'round',
-        });
+const line = new Line({
+    bounds: Line.Bounds(50, 50, 175, 150),
+    color: Colors.Aqua,
+    lineWidth: 5,
+    lineCap: 'round',
+});
 
-        const boundsStyle = {
-            color: Colors.Transparent,
-            stroke: {color: Colors.White, lineWidth: 5, lineDash: 5},
-        }
+const boundsStyle = {
+    color: Colors.Transparent,
+    stroke: {color: Colors.White, lineWidth: 5, lineDash: 5},
+}
 
-        const lineBounds = new Rect({
-            bounds: line.get('bounds'), 
-            ...boundsStyle,
-        });
+const lineBounds = new Rect({
+    bounds: line.bounds,
+    ...boundsStyle,
+});
 
-        const rect = new Rect({
-            bounds: Rect.Bounds(250, 50, 150, 100),
-            color: Colors.Aqua,
-        });
+const rect = new Rect({
+    bounds: Rect.Bounds(250, 50, 150, 100),
+    color: Colors.Aqua,
+});
 
-        const rectBounds = new Rect({
-            bounds: rect.get('bounds'), 
-            ...boundsStyle,
-        });
+const rectBounds = new Rect({
+    bounds: rect.bounds, 
+    ...boundsStyle,
+});
 
-        const ellipse = new Ellipse({
-            bounds: Ellipse.Bounds(525, 225, 50, 100),
-            color: Colors.Aqua,
-        });
+const ellipse = new Ellipse({
+    center: {x: 525, y: 225},
+    radius: 67.5,
+    color: Colors.Aqua,
+});
 
-        const ellipseBounds = new Rect({
-            bounds: ellipse.get('bounds'),
-            ...boundsStyle,
-        });
+const ellipseBounds = new Rect({
+    bounds: ellipse.bounds,
+    ...boundsStyle,
+});
 
-        const star = new Star({
-            center: {x: 112.5, y: 275},
-            radius: 67.5,
-            color: Colors.Aqua,
-        });
+const star = new Star({
+    center: {x: 112.5, y: 275},
+    radius: 67.5,
+    color: Colors.Aqua,
+});
 
-        const curve = new BezierCurve({
-            start: {x: 250, y: 212.5},
-            points: [
-                {control1: {x: 300, y: 250}, control2: {x: 267.5, y: 325}, end: {x: 375, y: 380}},
-                {control1: {x: 350, y: 280}, control2: {x: 225, y: 290}, end: {x: 400, y: 300}},
-            ],
-            color: Colors.Transparent,
-            stroke: {color: Colors.Aqua, lineWidth: 5},
-        });
+const curve = new BezierCurve({
+    start: {x: 250, y: 212.5},
+    points: [
+        {control1: {x: 300, y: 250}, control2: {x: 267.5, y: 325}, end: {x: 375, y: 380}},
+        {control1: {x: 350, y: 280}, control2: {x: 225, y: 290}, end: {x: 400, y: 300}},
+    ],
+    color: Colors.Transparent,
+    stroke: {color: Colors.Aqua, lineWidth: 5},
+});
 
-        const curveBounds = new Rect({
-            bounds: Corners(
-                curve.get('x1'),
-                curve.get('y1'),
-                curve.get('x2'),
-                curve.get('y2'),
-            ),
-            ...boundsStyle,
-        });
+const curveBounds = new Rect({
+    bounds: Corners(
+        curve.x1,
+        curve.y1,
+        curve.x2,
+        curve.y2,
+    ),
+    ...boundsStyle,
+});
 
-        const starBounds = new Rect({
-            bounds: star.get('bounds'),
-            ...boundsStyle,
-        });
+const starBounds = new Rect({
+    bounds: star.bounds,
+    ...boundsStyle,
+});
 
-        stage.root.addChildren(line, lineBounds, rect, rectBounds, ellipse, ellipseBounds, star, starBounds, curve, curveBounds);
-        stage.loop(1);
+stage.root.addChildren(line, lineBounds, rect, rectBounds, ellipse, ellipseBounds, star, starBounds, curve, curveBounds);
+stage.draw();
 
         return () => {
             stage.stop();
@@ -341,23 +348,22 @@ export function GS_Terminology() {
         <LinkContainer to='/docs/types/common/bounds'><a>BoundsType</a></LinkContainer>
         {' object. The rotation and scale of a sprite is always relative to the center of a shape, so the shape\'s bounds are used to determine its center. For example, '}
         <LinkContainer to='/docs/sprites/line'><a>Line, </a></LinkContainer>
-        <LinkContainer to='/docs/sprites/rect'><a>Rect, </a></LinkContainer>
-        <LinkContainer to='/docs/sprites/ellipse'><a>Ellipse, </a></LinkContainer>{'and '}
+        <LinkContainer to='/docs/sprites/rect'><a>Rect, </a></LinkContainer>{'and '}
         <LinkContainer to='/docs/sprites/image'><a>Image</a></LinkContainer> 
         {' require a BoundsType object in their constructor. For the other sprites, the bounds are calculated right before the sprite is drawn. ' + 
         'In order to modify the bounds of a sprite, you can set the bounds like this:  '}
         <div className='code-block' style={{margin: '1em 0'}}>
             <code style={{color: 'darkgreen', padding: '0em', fontWeight: 600}}>
-                {`mySprite.set('bounds', {x1: 0, y1: 0, x2: 100, y2: 100});`}
+                {`mySprite.bounds = {x1: 0, y1: 0, x2: 100, y2: 100};`}
             </code>
         </div>
         {' or set each property individually: '}
         <div className='code-block' style={{margin: '1em 0'}}>
             <code style={{color: 'darkgreen', padding: '0em', fontWeight: 600}}>
-                mySprite.set('x1', 0); <br/>
-                mySprite.set('y1', 0); <br/>
-                mySprite.set('x2', 100); <br/>
-                mySprite.set('y2', 100); <br/>
+                mySprite.x1 = 0; <br/>
+                mySprite.y1 = 0; <br/>
+                mySprite.x2 = 100; <br/>
+                mySprite.y2 = 100; <br/>
             </code>
         </div>
         {'This demo visualizes the bounds of some sprites using a dotted line:'}
@@ -371,75 +377,76 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'classic', Colors.LightSlateGray);
 
 const line = new Line({
-    \tbounds: Line.Bounds(50, 50, 175, 150),
-    \tcolor: Colors.Aqua,
-    \tlineWidth: 5,
-    \tlineCap: 'round',
+	bounds: Line.Bounds(50, 50, 175, 150),
+	color: Colors.Aqua,
+	lineWidth: 5,
+	lineCap: 'round',
 });
 
 const boundsStyle = {
-    \tcolor: Colors.Transparent,
-    \tstroke: {color: Colors.White, lineWidth: 5, lineDash: 5},
+	color: Colors.Transparent,
+	stroke: {color: Colors.White, lineWidth: 5, lineDash: 5},
 }
 
 const lineBounds = new Rect({
-    \tbounds: line.get('bounds'), 
-    \t...boundsStyle,
+	bounds: line.bounds,
+	...boundsStyle,
 });
 
 const rect = new Rect({
-    \tbounds: Rect.Bounds(250, 50, 150, 100),
-    \tcolor: Colors.Aqua,
+	bounds: Rect.Bounds(250, 50, 150, 100),
+	color: Colors.Aqua,
 });
 
 const rectBounds = new Rect({
-    \tbounds: rect.get('bounds'), 
-    \t...boundsStyle,
+	bounds: rect.bounds,
+	...boundsStyle,
 });
 
 const ellipse = new Ellipse({
-    \tbounds: Ellipse.Bounds(525, 225, 50, 100),
-    \tcolor: Colors.Aqua,
+	center: {x: 525, y: 225},
+	radius: 67.5,
+	color: Colors.Aqua,
 });
 
 const ellipseBounds = new Rect({
-    \tbounds: ellipse.get('bounds'),
-    \t...boundsStyle,
+	bounds: ellipse.bounds,
+	...boundsStyle,
 });
 
 const star = new Star({
-    \tcenter: {x: 112.5, y: 275},
-    \tradius: 67.5,
-    \tcolor: Colors.Aqua,
+	center: {x: 112.5, y: 275},
+	radius: 67.5,
+	color: Colors.Aqua,
 });
 
 const curve = new BezierCurve({
-    \tstart: {x: 250, y: 212.5},
-    \tcurves: [
-        \t\t{control1: {x: 300, y: 250}, control2: {x: 267.5, y: 325}, end: {x: 375, y: 380}},
-        \t\t{control1: {x: 350, y: 280}, control2: {x: 225, y: 290}, end: {x: 400, y: 300}},
-        \t],
-    \tcolor: Colors.Transparent,
-    \tstroke: {color: Colors.Aqua, lineWidth: 5},
+	start: {x: 250, y: 212.5},
+	points: [
+		{control1: {x: 300, y: 250}, control2: {x: 267.5, y: 325}, end: {x: 375, y: 380}},
+		{control1: {x: 350, y: 280}, control2: {x: 225, y: 290}, end: {x: 400, y: 300}},
+	],
+	color: Colors.Transparent,
+	stroke: {color: Colors.Aqua, lineWidth: 5},
 });
 
 const curveBounds = new Rect({
-\tbounds: Corners(
-\t\tcurve.get('x1'),
-\t\tcurve.get('y1'),
-\t\tcurve.get('x2'),
-\t\tcurve.get('y2'),
-\t),
-\t...boundsStyle,
+	bounds: Corners(
+		curve.x1,
+		curve.y1,
+		curve.x2,
+		curve.y2,
+	),
+	...boundsStyle,
 });
 
 const starBounds = new Rect({
-\tbounds: star.get('bounds'),
-\t...boundsStyle,
+	bounds: star.bounds,
+	...boundsStyle,
 });
 
 stage.root.addChildren(line, lineBounds, rect, rectBounds, ellipse, ellipseBounds, star, starBounds, curve, curveBounds);
-stage.loop();`}/>
+stage.draw();`}/>
 
         <br />
         <h2>calculated property</h2>
@@ -464,6 +471,12 @@ stage.loop();`}/>
         </p>
 
         <br />
+        <h2>event listener</h2>
+        <p>
+            See <LinkContainer to='/docs/stage/event-listeners'><a>Stage/Event Listeners</a></LinkContainer> or <LinkContainer to='/docs/sprites/event-listeners'><a>Sprites/Event Listeners</a></LinkContainer>.
+        </p>
+
+        <br />
         <h2>hidden property</h2>
         <p>See <Hyperlink>Sprites/Properties</Hyperlink>.
         </p>
@@ -477,6 +490,12 @@ stage.loop();`}/>
         <h2>property</h2>
         <p>{'Any aspect of a sprite that can be modified is called a property. This includes things like color, rotation, strokeColor, radius, details, alpha, center, etc. '}
         {'See '} <Hyperlink>Sprites</Hyperlink>.
+        </p>
+
+        <br/>
+        <h2>shape</h2>
+        <p>See 
+        <LinkContainer to='/docs/sprites/the-base-shape-class'><a> Sprites/The Base Shape Class.</a></LinkContainer>
         </p>
 
         <br/>

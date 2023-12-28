@@ -16,30 +16,32 @@ export function EllipsePage() {
         const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
         const ellipse = new Ellipse({
-            bounds: Ellipse.Bounds(0, 0, 100),
+            radius: 100,
             color: Colors.White,
             stroke: {
                 lineWidth: 5,
                 lineJoin: 'round',
             }
         });
-
-        const properties = ['corner1', 'corner2'];
+        
+        stage.root.addChildren(ellipse);
+        const properties = ['corner1', 'corner2'] as const;
         const colors = [Colors.Red, Colors.Blue];
 
         for (const idx in properties) {
             const property = properties[idx];
             const color = colors[idx];
-            const position = ellipse.get(property as 'corner1');
+            const position = ellipse[property];
             const handle = new Ellipse({
-                bounds: Ellipse.Bounds(position.x, position.y, 12),
+                center: position,
+                radius: 12,
                 color: color,
                 stroke: {lineWidth: 3},
             });
-            handle.onDrag = (sprite, _, position) => {
-                sprite.set('center', position);
-                ellipse.set(property as 'corner1', position);
-            }
+            handle.on('drag', function (_event, position) {
+                this.center = position;
+                ellipse[property] = position;
+            });
             stage.root.addChild(handle);
         }
         
@@ -56,49 +58,50 @@ export function EllipsePage() {
             lineWidth: 5,
             name: 'angleLine',
         }), new Ellipse({
-            bounds: Ellipse.Bounds(-250, 0, 12),
+            center: {x: -250, y: 0},
+            radius: 12,
             color: Colors.GoldenRod,
             stroke: {lineWidth: 3},
             name: 'startAngle',
         }), new Ellipse({
-            bounds: Ellipse.Bounds(250, 0, 12),
+            center: {x: 250, y: 0},
+            radius: 12,
             color: Colors.Gold,
             stroke: {lineWidth: 3},
             name: 'endAngle',
         }));
-
-        stage.root.addChildren(ellipse, sliderLayer);
         
-
         function updateSlider() {
             const sliderLine = sliderLayer.findChild('angleLine') as Line;
-            sliderLine.set('corner1', sliderLayer.findChild('startAngle')!.get('center'));
-            sliderLine.set('corner2', sliderLayer.findChild('endAngle')!.get('center'));
-            let startAngle = sliderLayer.findChild('startAngle')!.get('centerX') as number;
-            let endAngle = sliderLayer.findChild('endAngle')!.get('centerX') as number;
+            sliderLine.corner1 = sliderLayer.findChild('startAngle')!.center;
+            sliderLine.corner2 = sliderLayer.findChild('endAngle')!.center;
+            let startAngle = sliderLayer.findChild('startAngle')!.centerX;
+            let endAngle = sliderLayer.findChild('endAngle')!.centerX;
             startAngle = (startAngle + 250) / 500 * 360;
             endAngle = (endAngle + 250) / 500 * 360;
-            ellipse.set('startAngle', startAngle);
-            ellipse.set('endAngle', endAngle);
+            ellipse.startAngle = startAngle;
+            ellipse.endAngle = endAngle;
         }
 
-        sliderLayer.findChild('startAngle')!.onDrag = (sprite, _, position) => {
+        sliderLayer.findChild('startAngle')!.on('drag', function (_event, position) {
             const endAngle = sliderLayer.findChild('endAngle')!;
             let posX = Math.max(-250, Math.min(250, position.x));
             posX = Math.round(posX);
-            posX = Math.min(posX, endAngle.get('centerX') - 24);
-            sprite.set('centerX', posX);
+            posX = Math.min(posX, endAngle.centerX - 24);
+            this.centerX = posX;
             updateSlider();
-        }
+        });
 
-        sliderLayer.findChild('endAngle')!.onDrag = (sprite, _, position) => {
+        sliderLayer.findChild('endAngle')!.on('drag', function (_event, position) {
             const startAngle = sliderLayer.findChild('startAngle')!;
             let posX = Math.max(-250, Math.min(250, position.x));
             posX = Math.round(posX);
-            posX = Math.max(posX, startAngle.get('centerX') + 24);
-            sprite.set('centerX', posX);
+            posX = Math.max(posX, startAngle.centerX + 24);
+            this.centerX = posX;
             updateSlider();
-        }
+        });
+
+        stage.root.addChild(sliderLayer);
 
         stage.loop();
 
@@ -110,7 +113,7 @@ export function EllipsePage() {
     return <>
         <h1>Ellipse</h1>
         <p>
-            Draws an ellipse based on the sprites' <Hyperlink>bounds</Hyperlink>. It can also be used to draw arcs.
+            Draws an ellipse. Does <strong>not</strong> use <Hyperlink>bounds</Hyperlink> in its constructor, but properties such as <InlineCode>center</InlineCode>, <InlineCode>centerX</InlineCode> and <InlineCode>centerY</InlineCode> can still be accessed and modified.
         </p>
 
         <CodeShowcase canvasRef={canvasRef} code={
@@ -122,30 +125,33 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 const ellipse = new Ellipse({
-    \tbounds: Ellipse.Bounds(0, 0, 100),
     \tcolor: Colors.White,
     \tstroke: {
         \t\tlineWidth: 5,
         \t\tlineJoin: 'round',
-        \t}
+    \t},
+    \tradius: 100
 });
 
-const properties = ['corner1', 'corner2'];
+stage.root.addChildren(ellipse);
+
+const properties = ['corner1', 'corner2'] as const;
 const colors = [Colors.Red, Colors.Blue];
 
 for (const idx in properties) {
     \tconst property = properties[idx];
     \tconst color = colors[idx];
-    \tconst position = ellipse.get(property as 'corner1');
+    \tconst position = ellipse[property];
     \tconst handle = new Ellipse({
-        \t\tbounds: Ellipse.Bounds(position.x, position.y, 12),
+        \t\tcenter: position,
+        \t\tradius: 12,
         \t\tcolor: color,
         \t\tstroke: {lineWidth: 3},
     \t});
-    \thandle.onDrag = (sprite, _, position) => {
-        \t\tsprite.set('center', position);
-        \t\tellipse.set(property as 'corner1', position);
-    \t}
+    \thandle.on('drag', function (_event, position) {
+        \t\tthis.center = position;
+        \t\tellipse[property] = position;
+    \t});
     \tstage.root.addChild(handle);
 }
 
@@ -162,57 +168,64 @@ sliderLayer.addChildren(new Line({
     \tlineWidth: 5,
     \tname: 'angleLine',
 }), new Ellipse({
-    \tbounds: Ellipse.Bounds(-250, 0, 12),
+    \tcenter: {x: -250, y: 0},
+    \tradius: 12,
     \tcolor: Colors.GoldenRod,
     \tstroke: {lineWidth: 3},
     \tname: 'startAngle',
 }), new Ellipse({
-    \tbounds: Ellipse.Bounds(250, 0, 12),
+    \tcenter: {x: 250, y: 0},
+    \tradius: 12,
     \tcolor: Colors.Gold,
     \tstroke: {lineWidth: 3},
     \tname: 'endAngle',
 }));
 
-stage.root.addChildren(ellipse, sliderLayer);
-
 function updateSlider() {
     \tconst sliderLine = sliderLayer.findChild('angleLine') as Line;
-    \tsliderLine.set('corner1', sliderLayer.findChild('startAngle')!.get('center'));
-    \tsliderLine.set('corner2', sliderLayer.findChild('endAngle')!.get('center'));
-    \tlet startAngle = sliderLayer.findChild('startAngle')!.get('centerX') as number;
-    \tlet endAngle = sliderLayer.findChild('endAngle')!.get('centerX') as number;
+    \tsliderLine.corner1 = sliderLayer.findChild('startAngle')!.center;
+    \tsliderLine.corner2 = sliderLayer.findChild('endAngle')!.center;
+    \tlet startAngle = sliderLayer.findChild('startAngle')!.centerX;
+    \tlet endAngle = sliderLayer.findChild('endAngle')!.centerX;
     \tstartAngle = (startAngle + 250) / 500 * 360;
     \tendAngle = (endAngle + 250) / 500 * 360;
-    \tellipse.set('startAngle', startAngle);
-    \tellipse.set('endAngle', endAngle);
+    \tellipse.startAngle = startAngle;
+    \tellipse.endAngle = endAngle;
 }
 
-sliderLayer.findChild('startAngle')!.onDrag = (sprite, _, position) => {
+sliderLayer.findChild('startAngle')!.on('drag', function (_event, position) {
     \tconst endAngle = sliderLayer.findChild('endAngle')!;
     \tlet posX = Math.max(-250, Math.min(250, position.x));
     \tposX = Math.round(posX);
-    \tposX = Math.min(posX, endAngle.get('centerX') - 24);
-    \tsprite.set('centerX', posX);
+    \tposX = Math.min(posX, endAngle.centerX - 24);
+    \tthis.centerX = posX;
     \tupdateSlider();
-}
+});
 
-sliderLayer.findChild('endAngle')!.onDrag = (sprite, _, position) => {
+sliderLayer.findChild('endAngle')!.on('drag', function (_event, position) {
     \tconst startAngle = sliderLayer.findChild('startAngle')!;
     \tlet posX = Math.max(-250, Math.min(250, position.x));
     \tposX = Math.round(posX);
-    \tposX = Math.max(posX, startAngle.get('centerX') + 24);
-    \tsprite.set('centerX', posX);
+    \tposX = Math.max(posX, startAngle.centerX + 24);
+    \tthis.centerX = posX;
     \tupdateSlider();
-}
+});
+
+stage.root.addChild(sliderLayer);
 
 stage.loop();`} />
+
+        <h3>Ellipse.Bounds</h3>
+        <p>
+            Returns the bounds of an ellipse based on its center and radius.
+        </p>
 
         <h3>EllipseProperties</h3>
         <p style={{lineHeight: '2em'}}>
             Inherited from <Hyperlink to='sprites/default/universal-sprite-properties'>Sprite:</Hyperlink>
             {'\u00A0\u00A0\u00A0'}
             {
-                ['bounds', 'color', 'scale', 'rotation', 'alpha', 'effects', 'name', 'details'].map((prop, idx) => {
+                ['color?', 'scale?', 'rotation?', 'alpha?', 'blur?', 'gradient?', 'effects?', 'name?', 'enabled?', 'channelCount?', 'details?'].map((prop, idx) => {
                     return <>
                         <CodeBlurb key={idx} blurb={[prop]} />{' '}
                     </>
@@ -229,21 +242,22 @@ stage.loop();`} />
                 })
             }
             <div style={{'width': '1em', 'height': '.5em'}}></div>
+            <CodeBlurb blurb={['center?: ', 'BoundsType']} /> - the center of the ellipse. Defaults to <InlineCode>{'{x: 0, y: 0}'}</InlineCode>. Aggregate Property for <InlineCode>centerX</InlineCode> and <InlineCode>centerY</InlineCode>.
+            <div style={{'width': '1em', 'height': '.5em'}}></div>
+            <CodeBlurb blurb={['radius?: ','number|[number, number]']} /> - the radius of the ellipse. (If two numbers are provided, the first is the radius of the x-axis and the second is the radius of the y-axis.) Defaults to <InlineCode>[5, 5]</InlineCode>. Aggregate Property for <InlineCode>radiusX</InlineCode> and <InlineCode>radiusY</InlineCode>.
+            <div style={{'width': '1em', 'height': '.5em'}}></div>
             <CodeBlurb blurb={['startAngle?: ', 'number']} /> - the angle at which the ellipse's path begins in degrees. Defaults to 0. Normal Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
             <CodeBlurb blurb={['endAngle?: ', 'number']} /> - the angle at which the ellipse's path ends in degrees. Defaults to 360. Normal Property.
         </p>
-
+        <br />
         <h5>HiddenEllipseProperties</h5>
         <p>
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['radius: ', 'number']} /> - the mean of the ellipse's x-axis and y-axis radii. Setting <InlineCode>radius</InlineCode> will set both radii to the same value. Calculated hidden property.
+            <CodeBlurb blurb={['radiusX: ', 'number']} /> - the radius of the ellipse's x-axis. Normal hidden property.
             <br />
             <br />
-            <CodeBlurb blurb={['radiusX: ', 'number']} /> - the radius of the ellipse's x-axis. Calculated hidden property.
-            <br />
-            <br />
-            <CodeBlurb blurb={['radiusY: ', 'number']} /> - the radius of the ellipse's y-axis. Calculated hidden property.
+            <CodeBlurb blurb={['radiusY: ', 'number']} /> - the radius of the ellipse's y-axis. Normal hidden property.
         </p>
 
     </>

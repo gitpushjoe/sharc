@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './Home.module.css';
-import { Stage } from '../src/sharc/Stage'
-import { Ellipse, Line, NullSprite } from '../src/sharc/Sprites'
-import { Animate, Color, Colors, Easing, addXCallback } from '../src/sharc/Utils'
+import { Stage } from 'sharc-js/Stage'
+import { Ellipse, Line, NullSprite } from 'sharc-js/Sprites'
+import { Animate, Color, Colors, Easing, addXCallback } from 'sharc-js/Utils'
 import { renderIntoDocument } from 'react-dom/test-utils'
 import { LinkContainer } from 'react-router-bootstrap';
 
@@ -21,7 +21,8 @@ function App() {
             const parent = new NullSprite({});
 
             const ellipse = new Ellipse({
-                bounds: Ellipse.Bounds(i * 75, 0, 30),
+                center: { x: i * 75, y: 0 },
+                radius: 30,
                 color: {
                     red: Math.random() * 175 + 55,
                     green: Math.random() *  175 + 55,
@@ -32,33 +33,33 @@ function App() {
                     color: Colors.White,
                     lineWidth: 5,
                 }
-            }).setOnHover(() => {
+            }).on('hover', () => {
                 canvasRef.current!.style.cursor = 'pointer';
-            }).setOnHoverEnd(() => {
+            }).on('hoverEnd', () => {
                 canvasRef.current!.style.cursor = 'default';
-            }).setOnRelease((sprite) => {
+            }).on('release', function () {
                 if (root.name !== 'animating') {
                     const randomEllipse = root.children[Math.floor(Math.random() * root.children.length)].children[0];
-                    sprite.getChannel(0).push(Animate('centerX', sprite.get('centerX'), randomEllipse.get('centerX'), 20));
-                    randomEllipse.getChannel(0).push(Animate('centerX', randomEllipse.get('centerX'), sprite.get('centerX'), 20));
-                    root.set('name', 'animating');
+                    this.channels[0].push(Animate('centerX', this.centerX, randomEllipse.centerX, 20));
+                    randomEllipse.channels[0].push(Animate('centerX', randomEllipse.centerX, this.centerX, 20));
+                    root.name = 'animating';
                 }
             });
 
-            ellipse.onAnimationFinish = () => {
-                root.set('name', '');
-            }
+            ellipse.on('animationFinish', function () {
+                root.name = '';
+            });
 
             parent.addChild(ellipse);
 
-            parent.getChannel(0).push(Animate('rotation', 0, -360, 300 * (i * 0.7)), {loop: true});
+            parent.channels[0].push(Animate('rotation', 0, -360, 300 * (i * 0.7)), {loop: true});
 
             root.addChild(parent);
         }
 
-        stage.afterDraw = () => {
+        stage.on('beforeDraw', () => {
             stage.bgColor = Color(5, 10, 50, .01);
-        }
+        });
 
         stage.loop(90);
 

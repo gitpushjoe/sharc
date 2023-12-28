@@ -15,92 +15,93 @@ export function PathPage() {
     useEffect(() => {
         const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
 
-        const path = new Path({
-            path: [
-                {x: -100, y: -100},
-                {x: -50, y: 50},
-                {x: 50, y: -50},
-                {x: 100, y: 100},
-            ],
-            color: Colors.White,
-            stroke: {lineWidth: 5},
-            closePath: false,
-        });
+const path = new Path({
+    path: [
+        {x: -100, y: -100},
+        {x: -50, y: 50},
+        {x: 50, y: -50},
+        {x: 100, y: 100},
+    ],
+    color: Colors.White,
+    stroke: {lineWidth: 5},
+    closePath: false,
+});
 
-        const properties = ['point-0', 'point-1', 'point-2', 'point-3'];
-        const colors = [Colors.Red, Colors.Yellow, Colors.Purple, Colors.Blue];
+const colors = [Colors.Red, Colors.Yellow, Colors.Purple, Colors.Blue];
 
-        stage.root.addChildren(path);
-        for (const idx in properties) {
-            const property = properties[idx];
-            const color = colors[idx];
-            const position = path.get(property as 'corner1');
-            const handle = new Ellipse({
-                bounds: Ellipse.Bounds(position.x, position.y, 12),
-                color: color,
-                stroke: {lineWidth: 3},
-            });
-            handle.onDrag = (sprite, _, position) => {
-                sprite.set('center', position);
-                path.set(property as 'corner1', position);
-            }
-            stage.root.addChild(handle);
-        }
-        
-        const sliderLayer = new NullSprite({position: {x: 0, y: -167.5}});
-        
+stage.root.addChildren(path);
+for (const idx in colors) {
+    const color = colors[idx];
+    const position = path.path[idx];
+    const handle = new Ellipse({
+        center: position,
+        radius: 12,
+        color: color,
+        stroke: {lineWidth: 3},
+    });
+    handle.on('drag', function (_event, position) {
+        this.center = position;
+        path.path[idx] = position;
+    });
+    stage.root.addChild(handle);
+}
 
-        sliderLayer.addChildren(new Line({
-            bounds: Line.Bounds(-250, 0, 250, 0),
-            color: Colors.LightGrey,
-            lineWidth: 5,
-            lineCap: 'round'
-        }), new Line({
-            bounds: Line.Bounds(-250, 0, 250, 0),
-            color: Colors.White,
-            lineWidth: 5,
-            name: 'ratioLine',
-        }), new Ellipse({
-            bounds: Ellipse.Bounds(-250, 0, 12),
-            color: Colors.GoldenRod,
-            stroke: {lineWidth: 3},
-            name: 'startRatio',
-        }), new Ellipse({
-            bounds: Ellipse.Bounds(250, 0, 12),
-            color: Colors.Gold,
-            stroke: {lineWidth: 3},
-            name: 'endRatio',
-        }));
+const sliderLayer = new NullSprite({position: {x: 0, y: -167.5}});
 
-        stage.root.addChildren(sliderLayer);
 
-        function updateSlider() {
-            const sliderLine = sliderLayer.findChild('ratioLine') as Line;
-            sliderLine.set('corner1', sliderLayer.findChild('startRatio')!.get('center'));
-            sliderLine.set('corner2', sliderLayer.findChild('endRatio')!.get('center'));
-            let startRatio = sliderLayer.findChild('startRatio')!.get('centerX') as number;
-            let endRatio = sliderLayer.findChild('endRatio')!.get('centerX') as number;
-            startRatio = (startRatio + 250) / 500;
-            endRatio = (endRatio + 250) / 500;
-            path.set('start', startRatio);
-            path.set('end', endRatio);
-        }
+sliderLayer.addChildren(new Line({
+    bounds: Line.Bounds(-250, 0, 250, 0),
+    color: Colors.LightGrey,
+    lineWidth: 5,
+    lineCap: 'round'
+}), new Line({
+    bounds: Line.Bounds(-250, 0, 250, 0),
+    color: Colors.White,
+    lineWidth: 5,
+    name: 'ratioLine',
+}), new Ellipse({
+    center: {x: -250, y: 0},
+    radius: 12,
+    color: Colors.GoldenRod,
+    stroke: {lineWidth: 3},
+    name: 'startRatio',
+}), new Ellipse({
+    center: {x: 250, y: 0},
+    radius: 12,
+    color: Colors.Gold,
+    stroke: {lineWidth: 3},
+    name: 'endRatio',
+}));
 
-        sliderLayer.findChild('startRatio')!.onDrag = (sprite, _, position) => {
-            let posX = Math.max(-250, Math.min(250, position.x));
-            posX = Math.round(posX);
-            sprite.set('centerX', posX);
-            updateSlider();
-        }
+stage.root.addChildren(sliderLayer);
 
-        sliderLayer.findChild('endRatio')!.onDrag = (sprite, _, position) => {
-            let posX = Math.max(-250, Math.min(250, position.x));
-            posX = Math.round(posX);
-            sprite.set('centerX', posX);
-            updateSlider();
-        }
+function updateSlider() {
+    const sliderLine = sliderLayer.findChild('ratioLine')!;
+    sliderLine.corner1 = sliderLayer.findChild('startRatio')!.center;
+    sliderLine.corner2 = sliderLayer.findChild('endRatio')!.center;
+    let startRatio = sliderLayer.findChild('startRatio')!.centerX;
+    let endRatio = sliderLayer.findChild('endRatio')!.centerX;
+    startRatio = (startRatio + 250) / 500;
+    endRatio = (endRatio + 250) / 500;
+    path.startRatio = startRatio;
+    path.endRatio = endRatio;
+}
 
-        stage.loop();
+sliderLayer.findChild('startRatio')!.on('drag', function (_event, position) {
+    let posX = Math.max(-250, Math.min(250, position.x));
+    posX = Math.round(posX);
+    this.centerX = posX;
+    updateSlider();
+});
+
+sliderLayer.findChild('endRatio')!.on('drag', function (_event, position) {
+    let posX = Math.max(-250, Math.min(250, position.x));
+    posX = Math.round(posX);
+    this.centerX = posX;
+    updateSlider();
+});
+
+stage.loop(90);
         
         return () => {
             stage.stop();
@@ -124,89 +125,90 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 const path = new Path({
-    \tpath: [
-        \t\t{x: -100, y: -100},
-        \t\t{x: -50, y: 50},
-        \t\t{x: 50, y: -50},
-        \t\t{x: 100, y: 100},
-    \t],
-    \tcolor: Colors.White,
-    \tstroke: {lineWidth: 5},
-    \tclosePath: false,
+	path: [
+		{x: -100, y: -100},
+		{x: -50, y: 50},
+		{x: 50, y: -50},
+		{x: 100, y: 100},
+	],
+	color: Colors.White,
+	stroke: {lineWidth: 5},
+	closePath: false,
 });
 
-const properties = ['point-0', 'point-1', 'point-2', 'point-3'];
 const colors = [Colors.Red, Colors.Yellow, Colors.Purple, Colors.Blue];
 
 stage.root.addChildren(path);
-
-for (const idx in properties) {
-    \tconst property = properties[idx];
-    \tconst color = colors[idx];
-    \tconst position = path.get(property as 'corner1');
-    \tconst handle = new Ellipse({
-        \t\tbounds: Ellipse.Bounds(position.x, position.y, 12),
-        \t\tcolor: color,
-        \t\tstroke: {lineWidth: 3},
-    \t});
-    \thandle.onDrag = (sprite, _, position) => {
-        \t\tsprite.set('center', position);
-        \t\tpath.set(property as 'corner1', position);
-    \t}
-    \tstage.root.addChild(handle);
+for (const idx in colors) {
+	const color = colors[idx];
+	const position = path.path[idx];
+	const handle = new Ellipse({
+		center: position,
+		radius: 12,
+		color: color,
+		stroke: {lineWidth: 3},
+	});
+	handle.on('drag', function (_event, position) {
+		this.center = position;
+		path.path[idx] = position;
+	});
+	stage.root.addChild(handle);
 }
 
 const sliderLayer = new NullSprite({position: {x: 0, y: -167.5}});
 
+
 sliderLayer.addChildren(new Line({
-    \tbounds: Line.Bounds(-250, 0, 250, 0),
-    \tcolor: Colors.LightGrey,
-    \tlineWidth: 5,
-    \tlineCap: 'round'
+	bounds: Line.Bounds(-250, 0, 250, 0),
+	color: Colors.LightGrey,
+	lineWidth: 5,
+	lineCap: 'round'
 }), new Line({
-    \tbounds: Line.Bounds(-250, 0, 250, 0),
-    \tcolor: Colors.White,
-    \tlineWidth: 5,
-    \tname: 'ratioLine',
+	bounds: Line.Bounds(-250, 0, 250, 0),
+	color: Colors.White,
+	lineWidth: 5,
+	name: 'ratioLine',
 }), new Ellipse({
-    \tbounds: Ellipse.Bounds(-250, 0, 12),
-    \tcolor: Colors.GoldenRod,
-    \tstroke: {lineWidth: 3},
-    \tname: 'startRatio',
+	center: {x: -250, y: 0},
+	radius: 12,
+	color: Colors.GoldenRod,
+	stroke: {lineWidth: 3},
+	name: 'startRatio',
 }), new Ellipse({
-    \tbounds: Ellipse.Bounds(250, 0, 12),
-    \tcolor: Colors.Gold,
-    \tstroke: {lineWidth: 3},
-    \tname: 'endRatio',
+	center: {x: 250, y: 0},
+	radius: 12,
+	color: Colors.Gold,
+	stroke: {lineWidth: 3},
+	name: 'endRatio',
 }));
 
 stage.root.addChildren(sliderLayer);
 
 function updateSlider() {
-    \tconst sliderLine = sliderLayer.findChild('ratioLine') as Line;
-    \tsliderLine.set('corner1', sliderLayer.findChild('startRatio')!.get('center'));
-    \tsliderLine.set('corner2', sliderLayer.findChild('endRatio')!.get('center'));
-    \tlet startRatio = sliderLayer.findChild('startRatio')!.get('centerX') as number;
-    \tlet endRatio = sliderLayer.findChild('endRatio')!.get('centerX') as number;
-    \tstartRatio = (startRatio + 250) / 500;
-    \tendRatio = (endRatio + 250) / 500;
-    \tpath.set('start', startRatio);
-    \tpath.set('end', endRatio);
+	const sliderLine = sliderLayer.findChild('ratioLine')!;
+	sliderLine.corner1 = sliderLayer.findChild('startRatio')!.center;
+	sliderLine.corner2 = sliderLayer.findChild('endRatio')!.center;
+	let startRatio = sliderLayer.findChild('startRatio')!.centerX;
+	let endRatio = sliderLayer.findChild('endRatio')!.centerX;
+	startRatio = (startRatio + 250) / 500;
+	endRatio = (endRatio + 250) / 500;
+	path.startRatio = startRatio;
+	path.endRatio = endRatio;
 }
 
-sliderLayer.findChild('startRatio')!.onDrag = (sprite, _, position) => {
-    \tlet posX = Math.max(-250, Math.min(250, position.x));
-    \tposX = Math.round(posX);
-    \tsprite.set('centerX', posX);
-    \tupdateSlider();
-}
+sliderLayer.findChild('startRatio')!.on('drag', function (_event, position) {
+	let posX = Math.max(-250, Math.min(250, position.x));
+	posX = Math.round(posX);
+	this.centerX = posX;
+	updateSlider();
+});
 
-sliderLayer.findChild('endRatio')!.onDrag = (sprite, _, position) => {
-    \tlet posX = Math.max(-250, Math.min(250, position.x));
-    \tposX = Math.round(posX);
-    \tsprite.set('centerX', posX);
-    \tupdateSlider();
-}
+sliderLayer.findChild('endRatio')!.on('drag', function (_event, position) {
+	let posX = Math.max(-250, Math.min(250, position.x));
+	posX = Math.round(posX);
+	this.centerX = posX;
+	updateSlider();
+});
 
 stage.loop();`} />
 
@@ -215,7 +217,7 @@ stage.loop();`} />
             Inherited from <Hyperlink to='sprites/default/universal-sprite-properties'>Sprite:</Hyperlink>
             {'\u00A0\u00A0\u00A0'}
             {
-                ['color?', 'scale?', 'rotation?', 'alpha?', 'effects?', 'name?', 'details?'].map((prop, idx) => {
+                ['color?', 'scale?', 'rotation?', 'alpha?', 'blur?', 'gradient?', 'effects?', 'name?', 'enabled?', 'channelCount?', 'details?'].map((prop, idx) => {
                     return <>
                         <CodeBlurb key={idx} blurb={[prop]} />{' '}
                     </>
@@ -232,18 +234,18 @@ stage.loop();`} />
                 })
             }
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['path: ', 'PositionType[]']} /> - an array of <Hyperlink to='types/common/positiontype'>PositionType</Hyperlink> objects that represent the points of the path. Normal Property.
+            <CodeBlurb blurb={['path?: ', 'PositionType[]']} /> - an array of <Hyperlink to='types/common/positiontype'>PositionType</Hyperlink> objects that represent the points of the path. Defaults to <InlineCode>[]</InlineCode>. Normal Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
             <CodeBlurb blurb={['closePath?: ', 'boolean']} /> - whether or not the path is closed. Defaults to <InlineCode>false</InlineCode>. Normal Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
             <CodeBlurb blurb={['fillRule?: ', '"nonzero"|"evenodd"']} /> - the fill rule of the path. Defaults to <InlineCode>"nonzero"</InlineCode>. Normal Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['start: ','number']} /> - the ratio of the path's length at which the path begins. Defaults to 0. Normal Property.
+            <CodeBlurb blurb={['startRatio?: ','number']} /> - the ratio of the path's length at which the path begins. Defaults to 0. Normal Property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
-            <CodeBlurb blurb={['end: ','number']} /> - the ratio of the path's length at which the path ends. Defaults to 1. Normal Property.
+            <CodeBlurb blurb={['endRatio?: ','number']} /> - the ratio of the path's length at which the path ends. Defaults to 1. Normal Property.
         </p>
 
-        <h5>HiddenPathProperties</h5>
+        {/* <h5>HiddenPathProperties</h5>
         <p style={{lineHeight: '2em'}}>
             <div style={{'width': '1em', 'height': '.5em'}}></div>
             <CodeBlurb blurb={['point-N: ', 'PositionType']} /> - the Nth point of the path. Zero-indexed. Hidden property.
@@ -251,6 +253,6 @@ stage.loop();`} />
             <CodeBlurb blurb={['x-N: ', 'number']} /> - the x-coordinate of the Nth point of the path. Zero-indexed. Hidden property.
             <div style={{'width': '1em', 'height': '.5em'}}></div>
             <CodeBlurb blurb={['y-N: ', 'number']} /> - the y-coordinate of the Nth point of the path. Zero-indexed. Hidden property.
-        </p>
+        </p> */}
     </>
 }

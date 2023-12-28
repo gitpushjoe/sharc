@@ -7,7 +7,7 @@ import * as Stage from './pages/Stage'
 import * as Sprites from './pages/Sprites'
 import * as Animation from './pages/Animation'
 import * as Types from './pages/Types'
-import Utils from './pages/Utils'
+import * as Utils from './pages/Utils'
 import { LinkContainer } from 'react-router-bootstrap'
 
 function Docs() {
@@ -83,14 +83,15 @@ function Docs() {
                     params.subcategory === 'usage' ? <Stage.Usage /> :
                     params.subcategory === 'react' ? <Stage.React /> :
                     params.subcategory === 'angular' ? <Stage.Angular /> :
-                    params.subcategory === 'handling-user-input' ? <Stage.HandlingUserInput /> :
-                    params.subcategory === 'working-with-the-animation-loop' ? <Stage.WorkingWithTheAnimationLoop /> :
+                    params.subcategory === 'event-listeners' ? <Stage.EventListeners /> :
                     <Stage.DefaultPage /> :
                 params.category === 'sprites' ?
                     params.subcategory === 'usage' ? <Sprites.Usage /> :
                     params.subcategory === 'properties' ? <Sprites.Properties /> :
+                    params.subcategory === 'details' ? <Sprites.Details /> :
                     params.subcategory === 'parenting' ? <Sprites.Parenting /> :
-                    params.subcategory === 'handling-user-input' ? <Sprites.HandlingUserInput /> :
+                    params.subcategory === 'the-base-shape-class' ? <Sprites.Shape /> :
+                    params.subcategory === 'event-listeners' ? <Sprites.EventListeners /> :
                     params.subcategory === 'strokeablesprite' ? <Sprites.Strokeable /> :
                     params.subcategory === 'line' ? <Sprites.LinePage /> :
                     params.subcategory === 'rect' ? <Sprites.RectPage /> :
@@ -100,6 +101,7 @@ function Docs() {
                     params.subcategory === 'polygon' ? <Sprites.PolygonPage /> :
                     params.subcategory === 'star' ? <Sprites.StarPage /> :
                     params.subcategory === 'text' ? <Sprites.TextPage /> :
+                    params.subcategory === 'label' ? <Sprites.LabelPage /> :
                     params.subcategory === 'image' ? <Sprites.ImagePage /> :
                     params.subcategory === 'nullsprite' ? <Sprites.NullSpritePage /> :
                     <Sprites.Sprites/> :
@@ -112,11 +114,12 @@ function Docs() {
                 params.category === 'types' ?
                     params.subcategory === 'common' ? <Types.Common /> :
                     params.subcategory === 'animation' ? <Types.AnimationPage /> :
-                    params.subcategory === 'stage' ? <Types.StagePage /> :
+                    params.subcategory === 'events' ? <Types.EventsPage /> :
                     params.subcategory === 'sprites' ? <Types.SpritesPage /> :
                     <Types.Types /> :
                 params.category === 'utils' ?
-                    <Utils /> :
+                    params.subcategory === 'animation' ? <Utils.AnimationUtils /> :
+                    <Utils.default /> :
                 <> </>
             }    
         </div>

@@ -28,42 +28,42 @@ export function Parenting() {
         </p>
         <br />
         <h3>Parenting Functions</h3>
-        <CodeHeader header={`sprite.addChild(child: Sprite) -> this`} />
+        <CodeHeader header={`sprite.addChild(child: Shape) -> this`} />
         <p>
             Adds one child to <InlineCode>sprite</InlineCode>'s children.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.addChildren(children: Sprite[]) -> this`} />
+        <CodeHeader header={`sprite.addChildren(...children: Shape[]) -> this`} />
         <p>
             Adds multiple children to <InlineCode>sprite</InlineCode>.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.removeChild(child: Sprite) -> this`} />
+        <CodeHeader header={`sprite.removeChild(child: Shape) -> this`} />
         <p>
             Tries to remove <InlineCode>child</InlineCode> from <InlineCode>sprite</InlineCode>'s children.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.removeChildren(children: Sprite[]) -> this`} />
+        <CodeHeader header={`sprite.removeChildren(...children: Shape[]) -> this`} />
         <p>
             Tries to remove all of <InlineCode>children</InlineCode> from <InlineCode>sprite</InlineCode>'s children.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.children -> Sprite[]`} />
+        <CodeHeader header={`sprite.children -> Shape[]`} />
         <p>
             Returns a copy of <InlineCode>sprite</InlineCode>'s children array.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.r_getChildren() -> Sprite[]`} />
+        <CodeHeader header={`sprite.r_getChildren() -> Shape[]`} />
         <p>
             Returns all of <InlineCode>sprite</InlineCode>'s descendants. (Recursive)
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.parent -> Sprite|undefined`} />
+        <CodeHeader header={`sprite.parent -> Shape|undefined`} />
         <p>
             Returns <InlineCode>sprite</InlineCode>'s parent.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.root -> Sprite`} />
+        <CodeHeader header={`sprite.root -> Shape`} />
         <p>
             Returns the root of the tree that <InlineCode>sprite</InlineCode> is in. If <InlineCode>sprite</InlineCode> is the root, then it will return itself.
         </p>
@@ -73,22 +73,22 @@ export function Parenting() {
             Logs <InlineCode>sprite</InlineCode> and all of its descendants to the console, including their positions, using the sprites' <InlineCode>name</InlineCode> properties and their colors.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.findChild(name: string) -> Sprite|undefined`} />
+        <CodeHeader header={`sprite.findChild(name: string) -> Shape|undefined`} />
         <p>
             Returns the first child of <InlineCode>sprite</InlineCode> with the name <InlineCode>name</InlineCode>. Non-recursive.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.findChildren(name: string) -> Sprite[]`} />
+        <CodeHeader header={`sprite.findChildren(name: string) -> Shape[]`} />
         <p>
             Returns all of the children of <InlineCode>sprite</InlineCode> with the name <InlineCode>name</InlineCode>. Non-recursive.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.r_findChild(name: string) -> Sprite|undefined`} />
+        <CodeHeader header={`sprite.r_findChild(name: string) -> Shape|undefined`} />
         <p>
             Returns the first descendant of <InlineCode>sprite</InlineCode> with the name <InlineCode>name</InlineCode>. If no descendant has that name, it returns undefined. Recursive.
         </p>
         <div style={{'width': '1em', 'height': '.5em'}}></div>
-        <CodeHeader header={`sprite.r_findChildren(name: string) -> Sprite[]`} />
+        <CodeHeader header={`sprite.r_findChildren(name: string) -> Shape[]`} />
         <p>
             Returns all of the descendants of <InlineCode>sprite</InlineCode> with the name <InlineCode>name</InlineCode>. If no descendant has that name, it returns an empty array. Recursive.
         </p>
