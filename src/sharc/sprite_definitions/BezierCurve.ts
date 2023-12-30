@@ -21,13 +21,13 @@ export default class BezierCurve<DetailsType = any>
 {
     constructor(props: BezierCurveProperties<DetailsType>) {
         (props as typeof props & { bounds: BoundsType }).bounds = BezierCurve.getBoundsFromCurves(
-            Position(props.start.x ?? 0, props.start.y ?? 0),
+            Position(props.start?.x ?? 0, props.start?.y ?? 0),
             props.points ?? []
         );
         super(
             {
-                startX: props.start.x ?? 0,
-                startY: props.start.y ?? 0,
+                startX: props.start?.x ?? 0,
+                startY: props.start?.y ?? 0,
                 points: props.points ?? [],
                 closePath: props.closePath ?? false,
                 fillRule: props.fillRule ?? "nonzero"
@@ -108,8 +108,8 @@ export default class BezierCurve<DetailsType = any>
         ctx: CanvasRenderingContext2D,
         properties: BezierCurveProperties & StrokeProperties
     ): Path2D => {
-        let [x1, y1, x2, y2] = [properties.start.x, properties.start.y, properties.start.x, properties.start.y];
-        properties.points.forEach(point => {
+        let [x1, y1, x2, y2] = [properties.start?.x ?? 0, properties.start?.y ?? 0, properties.start?.x ?? 0, properties.start?.y ?? 0];
+        properties.points?.forEach(point => {
             x1 = Math.min(x1, point.end.x);
             y1 = Math.min(y1, point.end.y);
             x2 = Math.max(x2, point.end.x);
@@ -118,10 +118,10 @@ export default class BezierCurve<DetailsType = any>
         const bounds = Corners(x1, y1, x2, y2);
         const region = new Path2D();
         region.moveTo(
-            translatePosition(bounds, Position(properties.start.x, properties.start.y)).x,
-            translatePosition(bounds, Position(properties.start.x, properties.start.y)).y
+            translatePosition(bounds, Position(properties.start?.x ?? 0, properties.start?.y ?? 0)).x,
+            translatePosition(bounds, Position(properties.start?.x ?? 0, properties.start?.y ?? 0)).y
         );
-        properties.points.forEach(point => {
+        properties.points?.forEach(point => {
             region.bezierCurveTo(
                 translatePosition(bounds, Position(point.control1.x, point.control1.y)).x,
                 translatePosition(bounds, Position(point.control1.x, point.control1.y)).y,

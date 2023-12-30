@@ -144,8 +144,8 @@ export type BezierPoint = {
 };
 
 export type BezierCurveProperties<DetailsType = any> = {
-    start: PositionType;
-    points: BezierPoint[];
+    start?: PositionType;
+    points?: BezierPoint[];
     closePath?: boolean;
     fillRule?: CanvasFillRule;
 } & StrokeProperties &
@@ -162,7 +162,7 @@ export type BezierCurveNormalProperties =
     | "startY";
 
 export type PathProperties<DetailsType = any> = {
-    path: PositionType[];
+    path?: PositionType[];
     fillRule?: CanvasFillRule;
     closePath?: boolean;
     startRatio?: number;

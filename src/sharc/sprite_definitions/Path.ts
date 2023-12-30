@@ -87,7 +87,7 @@ export default class Path<DetailsType = any>
     }
 
     public static readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: PathProperties): Path2D => {
-        let path = properties.path.map(point => translatePosition(Path.getBoundsFromPath(properties.path), point));
+        let path = properties.path?.map(point => translatePosition(Path.getBoundsFromPath(properties.path ?? []), point)) ?? [];
         path = Path.getPathSegment(path, properties.startRatio ?? 0, properties.endRatio ?? 1);
         // console.log(path);
         if (path.length === 0) {
