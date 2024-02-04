@@ -100,7 +100,7 @@ export default class ImageSprite<DetailsType = any>
         this.srcY2 = value.y;
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
             image: this.image,
             bounds: this.bounds,
@@ -108,7 +108,10 @@ export default class ImageSprite<DetailsType = any>
         });
     }
 
-    public readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: ImageProperties): Path2D => {
+    public readonly drawFunction = (
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties: ImageProperties
+    ): Path2D => {
         const { image, srcBounds: sourceBounds, bounds } = properties;
         const width = bounds!.x2 - bounds!.x1;
         const height = bounds!.y2 - bounds!.y1;

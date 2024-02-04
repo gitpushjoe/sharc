@@ -131,7 +131,7 @@ export default class TextSprite<DetailsType = any>
         this.y2 = y2;
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         if ((this.root as TextSprite).stage?.rootStyle === "centered") {
             this.scaleY *= -1;
         }
@@ -174,7 +174,10 @@ export default class TextSprite<DetailsType = any>
 
     public readonly drawFunction = TextSprite.drawFunction;
 
-    public static readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: TextProperties): Path2D => {
+    public static readonly drawFunction = (
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties: TextProperties
+    ): Path2D => {
         const { text, maxWidth } = properties;
         const metrics = ctx.measureText(text ?? "");
         const textWidth = metrics.width;

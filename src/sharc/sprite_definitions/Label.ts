@@ -194,7 +194,7 @@ export default class LabelSprite<DetailsType = any>
         this.properties.backgroundRadius = backgroundRadius;
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         if ((this.root as LabelSprite).stage?.rootStyle === "centered") {
             this.scaleY *= -1;
         }
@@ -239,7 +239,10 @@ export default class LabelSprite<DetailsType = any>
         }
     }
 
-    public readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: LabelProperties): Path2D => {
+    public readonly drawFunction = (
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties: LabelProperties
+    ): Path2D => {
         const fillStyle = ctx.fillStyle;
         ctx.fillStyle = `rgba(${properties.backgroundColor!.red}, ${properties.backgroundColor!.green}, ${
             properties.backgroundColor!.blue

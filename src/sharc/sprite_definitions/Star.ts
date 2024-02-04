@@ -1,10 +1,6 @@
 import { BoundsType, PositionType } from "../types/Common";
 import { Position, CircleBounds } from "../Utils";
-import {
-    OmitBaseProps,
-    StarNormalProperties,
-    StarProperties,
-} from "../types/Sprites";
+import { OmitBaseProps, StarNormalProperties, StarProperties } from "../types/Sprites";
 import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
@@ -73,7 +69,7 @@ export default class Star<DetailsType = any>
         throw new Error("Star bounds cannot be set");
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         this.x1 = this.centerX - this.radius;
         this.y1 = this.centerY - this.radius;
         this.x2 = this.centerX + this.radius;
@@ -88,7 +84,10 @@ export default class Star<DetailsType = any>
         });
     }
 
-    public readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: StarProperties): Path2D => {
+    public readonly drawFunction = (
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties: StarProperties
+    ): Path2D => {
         const radius = properties.radius ?? 5;
         const innerRadius = properties.innerRadius ?? (radius * (3 - Math.sqrt(5))) / 2;
 

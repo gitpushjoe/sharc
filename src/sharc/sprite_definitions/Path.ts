@@ -1,10 +1,6 @@
 import { translatePosition, Position, Corners } from "../Utils";
 import { PositionType, BoundsType } from "../types/Common";
-import {
-    PathProperties,
-    PathNormalProperties,
-    OmitBaseProps
-} from "../types/Sprites";
+import { PathProperties, PathNormalProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Path<DetailsType = any>
@@ -64,7 +60,7 @@ export default class Path<DetailsType = any>
         this.properties.endRatio = endRatio;
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         const bounds = Path.getBoundsFromPath(this.path);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
@@ -86,8 +82,13 @@ export default class Path<DetailsType = any>
         throw new Error("Path bounds cannot be set");
     }
 
-    public static readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: PathProperties): Path2D => {
-        let path = properties.path?.map(point => translatePosition(Path.getBoundsFromPath(properties.path ?? []), point)) ?? [];
+    public static readonly drawFunction = (
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties: PathProperties
+    ): Path2D => {
+        let path =
+            properties.path?.map(point => translatePosition(Path.getBoundsFromPath(properties.path ?? []), point)) ??
+            [];
         path = Path.getPathSegment(path, properties.startRatio ?? 0, properties.endRatio ?? 1);
         // console.log(path);
         if (path.length === 0) {

@@ -79,7 +79,7 @@ export default class BezierCurve<DetailsType = any>
         throw new Error("Bounds should not be set on BezierCurve");
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         const bounds = BezierCurve.getBoundsFromCurves(Position(this.startX, this.startY), this.points);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
@@ -105,10 +105,15 @@ export default class BezierCurve<DetailsType = any>
     }
 
     public readonly drawFunction = (
-        ctx: CanvasRenderingContext2D,
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         properties: BezierCurveProperties & StrokeProperties
     ): Path2D => {
-        let [x1, y1, x2, y2] = [properties.start?.x ?? 0, properties.start?.y ?? 0, properties.start?.x ?? 0, properties.start?.y ?? 0];
+        let [x1, y1, x2, y2] = [
+            properties.start?.x ?? 0,
+            properties.start?.y ?? 0,
+            properties.start?.x ?? 0,
+            properties.start?.y ?? 0
+        ];
         properties.points?.forEach(point => {
             x1 = Math.min(x1, point.end.x);
             y1 = Math.min(y1, point.end.y);

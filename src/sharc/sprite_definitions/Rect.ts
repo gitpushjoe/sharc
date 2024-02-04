@@ -1,12 +1,6 @@
 import { translateBounds, Dimensions, Corners } from "../Utils";
 import { BoundsType } from "../types/Common";
-import {
-    RectProperties,
-    RadiusType,
-    StrokeProperties,
-    OmitBaseProps,
-    HiddenRectProperties
-} from "../types/Sprites";
+import { RectProperties, RadiusType, StrokeProperties, OmitBaseProps, HiddenRectProperties } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Rect<DetailsType = any>
@@ -34,7 +28,7 @@ export default class Rect<DetailsType = any>
         this.properties.radius = value;
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
             bounds: this.bounds,
             radius: this.radius
@@ -44,7 +38,7 @@ export default class Rect<DetailsType = any>
     public readonly drawFunction = Rect.drawFunction;
 
     public static readonly drawFunction = (
-        ctx: CanvasRenderingContext2D,
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         properties: StrokeProperties & RectProperties
     ): Path2D => {
         const coords = translateBounds(properties.bounds ?? Corners(0, 0, 0, 0));

@@ -1,7 +1,7 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.1.0-dev-0",
   "type": "module",
   "files": [
     "dist/*"
@@ -95,6 +95,8 @@
     "url": "https://github.com/gitpushjoe/sharc.git"
   },
   "dependencies": {
+    "prettier": "^3.2.4",
+    "preview": "^0.1.3",
     "typescript": "^5.1.3"
   }
 }

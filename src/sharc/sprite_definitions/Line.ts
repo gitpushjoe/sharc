@@ -60,7 +60,7 @@ export default class Line<DetailsType = any>
         this.properties.lineDashOffset = value;
     }
 
-    public draw(ctx: CanvasRenderingContext2D, properties?: LineProperties) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: LineProperties) {
         super.draw(ctx, {
             ...properties!,
             bounds: this.bounds,
@@ -73,7 +73,10 @@ export default class Line<DetailsType = any>
         });
     }
 
-    public readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: LineProperties): Path2D => {
+    public readonly drawFunction = (
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties: LineProperties
+    ): Path2D => {
         const bounds = translateBounds(properties.bounds ?? Corners(0, 0, 0, 0));
         ctx.lineWidth = properties.lineWidth ?? 1;
         ctx.lineCap = properties.lineCap ?? "butt";

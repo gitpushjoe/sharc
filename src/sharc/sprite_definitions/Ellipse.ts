@@ -88,7 +88,7 @@ export default class Ellipse<DetailsType = any>
         this.radiusY = (y2 - y1) / 2;
     }
 
-    public draw(ctx: CanvasRenderingContext2D) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
             center: { x: this.centerX, y: this.centerY },
             radius: [this.radiusX, this.radiusY],
@@ -97,7 +97,10 @@ export default class Ellipse<DetailsType = any>
         });
     }
 
-    public readonly drawFunction = (ctx: CanvasRenderingContext2D, properties: EllipseProperties): Path2D => {
+    public readonly drawFunction = (
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties: EllipseProperties
+    ): Path2D => {
         const [radiusX, radiusY] =
             typeof properties.radius === "number"
                 ? [properties.radius, properties.radius]

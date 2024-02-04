@@ -30,10 +30,11 @@ export default class StrokeableSprite<
         props: { stroke?: StrokeType | null } & Properties & DEFAULT_PROPERTIES<DetailsType>
     ) {
         super(
-            { // eslint-disable-line @typescript-eslint/no-unsafe-argument
+            {
+                // eslint-disable-line @typescript-eslint/no-unsafe-argument
                 ...derived_props,
-                strokeRed: (props.stroke?.color?.red ?? 0),
-                strokeGreen: (props.stroke?.color?.green ?? 0),
+                strokeRed: props.stroke?.color?.red ?? 0,
+                strokeGreen: props.stroke?.color?.green ?? 0,
                 strokeBlue: props.stroke?.color?.blue ?? 0,
                 strokeAlpha: props.stroke?.color?.alpha ?? 1,
                 strokeWidth: props.stroke?.lineWidth ?? 1,
@@ -43,7 +44,7 @@ export default class StrokeableSprite<
                 strokeDashGap: props.stroke?.lineDashGap ?? props.stroke?.lineDash ?? 0,
                 strokeOffset: props.stroke?.lineDashOffset ?? 0,
                 strokeEnabled: props.stroke !== null && props.stroke !== undefined
-            } as any, 
+            } as any,
             props
         );
     }
@@ -200,7 +201,7 @@ export default class StrokeableSprite<
         this.strokeAlpha = value.alpha;
     }
 
-    public draw(ctx: CanvasRenderingContext2D, properties?: Required<Properties>) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: Required<Properties>) {
         super.draw(ctx, {
             ...properties!,
             stroke: this.strokeEnabled

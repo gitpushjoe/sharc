@@ -1,7 +1,10 @@
 import { BoundsType, ColorType, PositionType } from "./Common";
 
-export type DrawFunctionType<Property> = (ctx: CanvasRenderingContext2D, params: Property) => Path2D | void;
-export type EffectsType = (ctx: CanvasRenderingContext2D) => void;
+export type DrawFunctionType<Property> = (
+    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+    params: Property
+) => Path2D | void;
+export type EffectsType = (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void;
 
 export type DEFAULT_PROPERTIES<DetailsType = any> = Omit<ShapeProperties, "drawFunction"> & { details?: DetailsType };
 

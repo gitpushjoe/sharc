@@ -1,7 +1,7 @@
 import { Position, ColorToString, Corners, Color } from "./Utils";
 import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
 import { PositionType, BoundsType, ColorType } from "./types/Common";
-import { SpriteEventCollection } from "./types/Events";
+import { EventCollection } from "./types/Events";
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
@@ -20,11 +20,15 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     protected _children: Shape[] = [];
     protected _parent?: Shape = undefined;
     protected _region: Path2D = new Path2D();
-    protected events?: SpriteEventCollection = undefined;
+    protected events?: EventCollection = undefined;
     public name = "";
     public details?: DetailsType = undefined;
 
-    public abstract draw(_ctx: CanvasRenderingContext2D, _properties?: Properties, _isRoot?: boolean): void;
+    public abstract draw(
+        _ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        _properties?: Properties,
+        _isRoot?: boolean
+    ): void;
 
     public addChild(child: Shape) {
         child._parent = this;
@@ -86,7 +90,11 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract blur: number;
     public abstract gradient: CanvasGradient | null;
 
-    public abstract pointIsInPath(ctx: CanvasRenderingContext2D, x: number, y: number): boolean;
+    public abstract pointIsInPath(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        x: number,
+        y: number
+    ): boolean;
     public abstract logHierarchy(indent?: number): void;
     public channelCount = 1;
     public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[] = [];
@@ -121,7 +129,6 @@ export abstract class Sprite<
 {
     protected properties: Required<Omit<Pick<Properties & HiddenProperties, NormalProps>, keyof DEFAULT_PROPERTIES>> &
         Pick<Required<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>, NORMAL_SHAPE_PROPERTIES>;
-    // protected subclass_properties: Required<Omit<Pick<Properties & HiddenProperties, NormalProps>, keyof (DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES)>> = {} as any;
     public readonly drawFunction: DrawFunctionType<Properties> = () => {
         return;
     };
@@ -371,10 +378,10 @@ export abstract class Sprite<
 
     public name: string;
 
-    public events?: SpriteEventCollection = {
-        down: [] as PointerEvent[],
-        up: [] as PointerEvent[],
-        move: [] as PointerEvent[],
+    public events?: EventCollection = {
+        down: [],
+        up: [],
+        move: [],
         stage: undefined
     };
 
@@ -383,7 +390,6 @@ export abstract class Sprite<
         props: Properties & DEFAULT_PROPERTIES<DetailsType>
     ) {
         super();
-        // this.drawFunction = props.drawFunction ?? (() => { });
         this.name = props.name ?? "";
         this.enabled = props.enabled ?? true;
         this.properties = {
@@ -417,7 +423,11 @@ export abstract class Sprite<
         this.details = props.details;
     }
 
-    public draw(ctx: CanvasRenderingContext2D, properties?: Required<Properties>, isRoot?: boolean) {
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties?: Required<Properties>,
+        isRoot?: boolean
+    ) {
         if (!this.enabled) {
             return;
         }
@@ -452,7 +462,7 @@ export abstract class Sprite<
         if (this.events!.stage) {
             const event = this.events!.stage;
             this.eventListeners.beforeDraw.forEach(callback => {
-                callback.call(this, event, event.currentFrame);
+                callback.call(this, event.currentFrame);
             });
         }
         const region = this.drawFunction(ctx, properties!);
@@ -469,7 +479,7 @@ export abstract class Sprite<
         }
     }
 
-    public handlePointerEvents(ctx: CanvasRenderingContext2D): boolean {
+    public handlePointerEvents(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
         let ctxRestored = false;
 
         if (this.events === undefined) return false;
@@ -493,24 +503,29 @@ export abstract class Sprite<
         )
             .flat()
             .reduce((_: PositionType | null, e) => {
-                const pos = Position(
-                    ((e.offsetX || e.clientX - ctx.canvas.getBoundingClientRect().left) * ctx.canvas.width) /
-                        ctx.canvas.clientWidth, // (Google Chrome) || (Firefox)
-                    ((e.offsetY || e.clientY - ctx.canvas.getBoundingClientRect().top) * ctx.canvas.height) /
-                        ctx.canvas.clientHeight // (Google Chrome) || (Firefox)
-                );
-                pointInPath = pointInPath || this.pointIsInPath(ctx, pos.x, pos.y);
-                // console.log(ctx.canvas.getBoundingClientRect().top, ctx.canvas.offsetTop, ctx.canvas.getBoundingClientRect().left, ctx.canvas.offsetLeft);
-                return pos;
+                pointInPath = pointInPath || this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
+                return e.translatedPoint;
             }, null);
 
         if (cursorPos === null && this.pointerId === undefined) return false;
 
         if (pointInPath && this.eventListeners.hover.length > 0 && !this.hovered && pointInPath) {
-            this.eventListeners.hover.forEach(callback => callback.call(this, this.events!.move[0], Position(0, 0)));
+            this.eventListeners.hover.forEach(callback =>
+                callback.call(
+                    this,
+                    this.events!.move.length > 0
+                        ? this.events!.move[0].event
+                        : this.events!.down.length > 0
+                          ? this.events!.down[0].event
+                          : this.events!.up[0].event,
+                    Position(0, 0)
+                )
+            );
             this.hovered = true;
-        } else if (!pointInPath && this.hovered && this.eventListeners.hoverEnd.length > 0) {
-            this.eventListeners.hoverEnd.forEach(callback => callback.call(this, this.events!.move[0], Position(0, 0)));
+        } else if (!pointInPath && this.hovered) {
+            if (this.eventListeners.hoverEnd.length > 0) {
+                this.eventListeners.hoverEnd.forEach(callback => callback.call(this));
+            }
             this.hovered = false;
         }
 
@@ -531,7 +546,7 @@ export abstract class Sprite<
                         transformationMatrix.e,
                         transformationMatrix.f
                     );
-                    this.eventListeners.drag.forEach(callback => callback.call(this, event, transformedPos));
+                    this.eventListeners.drag.forEach(callback => callback.call(this, event.event, transformedPos));
                     ctx.restore();
                 };
                 (this.root as Sprite).rootPointerEventCallback = callback.bind(this);
@@ -555,7 +570,7 @@ export abstract class Sprite<
                         transformationMatrix.e,
                         transformationMatrix.f
                     );
-                    this.eventListeners.release.forEach(callback => callback.call(this, event, transformedPos));
+                    this.eventListeners.release.forEach(callback => callback.call(this, event.event, transformedPos));
                     ctx.restore();
                 };
                 (this.root as Sprite).rootPointerEventCallback = callback.bind(this);
@@ -566,8 +581,8 @@ export abstract class Sprite<
                 ctx.restore();
                 ctxRestored = true;
                 const event = this.events.down[0];
-                this.pointerId = event.pointerId;
-                this.pointerButton = event.button;
+                this.pointerId = event.event.pointerId;
+                this.pointerButton = event.event.button;
                 const transformedPos = ctx.getTransform().inverse().transformPoint(cursorPos!) as PositionType;
                 const transformationMatrix = ctx.getTransform();
                 if (this.eventListeners.click.length > 0) {
@@ -581,7 +596,7 @@ export abstract class Sprite<
                             transformationMatrix.e,
                             transformationMatrix.f
                         );
-                        this.eventListeners.click.forEach(callback => callback.call(this, event, transformedPos));
+                        this.eventListeners.click.forEach(callback => callback.call(this, event.event, transformedPos));
                         ctx.restore();
                     };
                     (this.root as Sprite).rootPointerEventCallback = callback.bind(this);
@@ -591,7 +606,11 @@ export abstract class Sprite<
         return ctxRestored;
     }
 
-    public pointIsInPath(ctx: CanvasRenderingContext2D, x: number, y: number): boolean {
+    public pointIsInPath(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        x: number,
+        y: number
+    ): boolean {
         return ctx.isPointInPath(this._region, x, y);
     }
 
@@ -619,16 +638,9 @@ export abstract class Sprite<
         };
     }
 
-    /**
-     * @returns A copy of the children array. (Not recursive)
-     */
     public get children() {
         return [...this._children];
     }
-
-    /**
-     * @returns A copy of the children array. (Recursive)
-     */
 
     public get parent(): Shape | undefined {
         return this._parent as unknown as Shape | undefined;
@@ -701,7 +713,6 @@ export abstract class Sprite<
     ): void {
         if (animation._from === undefined || animation.frame === 0) {
             if (animation.from === null) {
-                // animation._from = Object.getOwnPropertyDescriptor(this, animation.property as keyof Properties)!.value;
                 animation._from = (this as Record<any, any>)[animation.property as keyof Properties]!;
             } else {
                 animation._from = animation.from;
@@ -758,12 +769,12 @@ export abstract class Sprite<
         throw new Error(`${from as number} -> ${to as number} is not a valid animation for property ${property}`);
     }
 
-    public setPointerEvents(collection: SpriteEventCollection) {
+    public setPointerEvents(collection: EventCollection) {
         this.events = collection;
         return this;
     }
 
-    private r_setPointerEvents(collection: SpriteEventCollection) {
+    private r_setPointerEvents(collection: EventCollection) {
         this.setPointerEvents(collection);
         this._children.forEach(child => (child as Sprite).r_setPointerEvents(collection));
         return this;
