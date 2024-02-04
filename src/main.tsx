@@ -1,5 +1,5 @@
 import { Stage } from "./sharc/Stage";
-import { OffscreenStage } from "./sharc/async_stages/OffscreenStage";
+import { OffscreenStage } from "./sharc/Stage";
 import { Ellipse } from "./sharc/Sprites";
 import { Colors, Easing } from "./sharc/Utils";
 
