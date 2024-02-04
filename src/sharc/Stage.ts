@@ -237,7 +237,3 @@ export class Stage<RootDetailsType = any> {
         return (this.height! ?? 0) / this.canvas!.clientHeight;
     }
 }
-
-import { OffscreenStage } from "./async_stages/OffscreenStage";
-import { WorkerStage } from "./async_stages/WorkerStage";
-export { OffscreenStage, WorkerStage };
