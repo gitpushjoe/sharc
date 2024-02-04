@@ -203,9 +203,9 @@ export class Stage<RootDetailsType = any> {
         this.drawEvents.stage = this;
         try {
             this.root.draw(ctx!);
-        } catch (e: Error | undefined) {
+        } catch (e: unknown) {
             this.stop();
-            this.onError(e);
+            this.onError(e as Error);
         }
         this.drawEvents.up = [];
         this.drawEvents.move = [];
@@ -237,3 +237,7 @@ export class Stage<RootDetailsType = any> {
         return (this.height! ?? 0) / this.canvas!.clientHeight;
     }
 }
+
+import { OffscreenStage } from "./async_stages/OffscreenStage";
+import { WorkerStage } from "./async_stages/WorkerStage";
+export { OffscreenStage, WorkerStage };
