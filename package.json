@@ -80,7 +80,6 @@
       "require": "./dist/types/Sprites.cjs.js",
       "types": "./dist/types/Sprites.d.ts"
     },
-    {
     "./types/Stage": {
       "import": "./dist/types/Stage.js",
       "require": "./dist/types/Stage.cjs.js",
