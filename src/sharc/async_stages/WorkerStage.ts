@@ -85,7 +85,10 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
     }
 
     private setStageState(e: StageStateMessage) {
-        this.nextDrawEvents = { ...e.events, stage: undefined };
+        this.nextDrawEvents ??= {};
+        this.nextDrawEvents.up ??= e.events.up;
+        this.nextDrawEvents.down ??= e.events.down;
+        this.nextDrawEvents.move ??= e.events.move;
         this.canvas!.width = e.canvasProperties.width;
         this.canvas!.height = e.canvasProperties.height;
         this.canvas!.offsetLeft = e.canvasProperties.offsetLeft;
@@ -128,15 +131,16 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
             : this.drawEvents;
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
-        this.drawEvents.up.forEach(event =>
-            this.eventListeners.release.forEach(callback => callback.call(this, event.event, event.translatedPoint))
-        );
-        this.drawEvents.down.forEach(event =>
-            this.eventListeners.click.forEach(callback => callback.call(this, event.event, event.translatedPoint))
-        );
-        this.drawEvents.move.forEach(event =>
-            this.eventListeners.move.forEach(callback => callback.call(this, event.event, event.translatedPoint))
-        );
+        const { down, up, move } = this.drawEvents;
+        if (down) {
+            this.eventListeners.click.forEach(callback => callback.call(this, down.event, down.translatedPoint));
+        }
+        if (up) {
+            this.eventListeners.release.forEach(callback => callback.call(this, up.event, up.translatedPoint));
+        }
+        if (move) {
+            this.eventListeners.move.forEach(callback => callback.call(this, move.event, move.translatedPoint));
+        }
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
         super.draw(ctx);
         this.postMessage({

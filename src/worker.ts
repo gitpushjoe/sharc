@@ -1,10 +1,8 @@
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />
-import { Ellipse, Rect } from "./sharc/Sprites";
+import { Ellipse, Rect, Star } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
-import { AsyncMessage } from "./sharc/types/Stage";
-import { AsyncStageEventListeners } from "./sharc/types/Events";
 
 postMessage("Hello from worker!");
 
@@ -105,9 +103,32 @@ if (test === "perf") {
             y: this.details!.center.y + (pos.y - this.details!.click.y)
         };
     });
-    stage.on("click", function () {
-        stage.postCustomMessage(`click on ${Date.now()}`);
+    circle.on("hover", function () {
+        this.color = Colors.Red;
     });
+    circle.on("hoverEnd", function () {
+        this.color = Colors.Green;
+    });
+    circle.on("release", function () {
+        console.log("released");
+    });
+    stage.on("click", function () {
+        stage.postCustomMessage(`stage click on ${Date.now()}`);
+    });
+
+    // const star = new Star({
+    //     center: { x: 0, y: 0 },
+    //     radius: 500,
+    //     rotation: 180,
+    //     color: Colors.Red,
+    // }).on("click", function () {
+    //     stage.postCustomMessage(`center: ${JSON.stringify(this.center)}`);
+    //     stage.postCustomMessage(`bounds: ${JSON.stringify(this.bounds)}`);
+    //     this.center = {x: 0, y: 0};
+    //     stage.postCustomMessage(`center: ${JSON.stringify(this.center)}`);
+    //     stage.postCustomMessage(`bounds: ${JSON.stringify(this.bounds)}`);
+    //
+    // });
 
     stage.root.addChildren(rect, circle);
 

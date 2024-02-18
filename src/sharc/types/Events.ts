@@ -8,6 +8,12 @@ export type PointerEventCallback<thisType> = (
     event: PointerEvent,
     translatedPoint: PositionType
 ) => void;
+//
+// export type HoverEventCallback<thisType> = (
+//     this: thisType,
+//     event?: PointerEvent,
+//     translatedPoint?: PositionType
+// ) => void;
 
 export type ScrollEventCallback<thisType> = (this: thisType, event: WheelEvent) => void;
 
@@ -17,10 +23,10 @@ export type PositionedPointerEvent = {
 };
 
 export type EventCollection<DetailsType = any> = {
-    down: PositionedPointerEvent[];
-    up: PositionedPointerEvent[];
-    move: PositionedPointerEvent[];
-    stage: Stage<DetailsType> | undefined;
+    down?: PositionedPointerEvent;
+    up?: PositionedPointerEvent;
+    move?: PositionedPointerEvent;
+    stage?: Stage<DetailsType>;
 };
 
 export type StageEventCallback<thisType> = (this: thisType, frame: number) => void;
@@ -37,7 +43,7 @@ export type SpriteEventListeners<thisType = undefined, Properties = any> = {
     drag: PointerEventCallback<thisType>[];
     release: PointerEventCallback<thisType>[];
     hover: PointerEventCallback<thisType>[];
-    hoverEnd: ((this: thisType) => void)[];
+    hoverEnd: PointerEventCallback<thisType>[];
     scroll: ScrollEventCallback<thisType>[];
     beforeDraw: StageEventCallback<thisType>[];
     animationFinish: AnimationFinishCallback<
