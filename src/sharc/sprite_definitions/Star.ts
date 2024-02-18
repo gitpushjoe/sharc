@@ -24,7 +24,11 @@ export default class Star<DetailsType = any>
             },
             props as typeof props & { bounds: BoundsType }
         );
-        this.center = { x: props.center?.x ?? 0, y: props.center?.y ?? 0 };
+        const center = props.center ?? { x: 0, y: 0 };
+        this.x1 = center.x - this.radius;
+        this.y1 = center.y - this.radius;
+        this.x2 = center.x + this.radius;
+        this.y2 = center.y + this.radius;
     }
 
     public get radius(): number {
