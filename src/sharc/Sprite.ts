@@ -1,7 +1,7 @@
 import { Position, ColorToString, Corners, Color } from "./Utils";
 import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
 import { PositionType, BoundsType, ColorType } from "./types/Common";
-import { EventCollection } from "./types/Events";
+import { EventCollection, PositionedPointerEvent } from "./types/Events";
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
@@ -379,9 +379,6 @@ export abstract class Sprite<
     public name: string;
 
     public events?: EventCollection = {
-        down: [],
-        up: [],
-        move: [],
         stage: undefined
     };
 
@@ -484,7 +481,7 @@ export abstract class Sprite<
 
         if (this.events === undefined) return false;
 
-        if (this.events.down.length === 0 && this.events.up.length === 0 && this.events.move.length === 0) return false;
+        if (!this.events.down && !this.events.up && !this.events.move) return false;
 
         if (
             [
@@ -494,113 +491,86 @@ export abstract class Sprite<
                 this.eventListeners.hoverEnd,
                 this.eventListeners.release
             ].every(listeners => listeners.length === 0)
-        )
+        ) {
             return false;
+        }
 
-        let pointInPath = false;
-        const cursorPos: PositionType | null = Object.values(
-            [this.events.down, this.events.up, this.events.move].flat()
-        )
-            .flat()
-            .reduce((_: PositionType | null, e) => {
-                pointInPath = pointInPath || this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
-                return e.translatedPoint;
-            }, null);
+        const pointIsInPath = [this.events.down, this.events.up, this.events.move].every(
+            event => event === undefined || this.pointIsInPath(ctx, event.translatedPoint.x, event.translatedPoint.y)
+        );
 
-        if (cursorPos === null && this.pointerId === undefined) return false;
-
-        if (pointInPath && this.eventListeners.hover.length > 0 && !this.hovered && pointInPath) {
+        if (this.eventListeners.hover.length > 0 && !this.hovered && pointIsInPath) {
             this.eventListeners.hover.forEach(callback =>
                 callback.call(
                     this,
-                    this.events!.move.length > 0
-                        ? this.events!.move[0].event
-                        : this.events!.down.length > 0
-                          ? this.events!.down[0].event
-                          : this.events!.up[0].event,
-                    Position(0, 0)
+                    this.events!.move?.event ?? this.events!.down?.event ?? this.events!.up!.event,
+                    this.events!.move?.translatedPoint ??
+                        this.events!.down?.translatedPoint ??
+                        this.events!.up!.translatedPoint
                 )
             );
             this.hovered = true;
-        } else if (!pointInPath && this.hovered) {
+        } else if (!pointIsInPath && this.hovered) {
             if (this.eventListeners.hoverEnd.length > 0) {
-                this.eventListeners.hoverEnd.forEach(callback => callback.call(this));
+                const unHoverEvent = [this.events.down, this.events.up, this.events.move].find(e => {
+                    return e !== undefined && !this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
+                });
+                this.eventListeners.hoverEnd.forEach(callback => {
+                    callback.call(this, unHoverEvent!.event, unHoverEvent!.translatedPoint);
+                });
             }
             this.hovered = false;
         }
 
-        if (this.events.move.length > 0 && this.events.up.length === 0 && this.events.down.length === 0) {
+        const registerCallback = (
+            ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+            positionedPointerEvent: PositionedPointerEvent,
+            root: Shape,
+            self: this,
+            eventListeners: PointerEventCallback<this>[]
+        ) => {
+            const { event, translatedPoint } = positionedPointerEvent;
+            const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
+            const transformationMatrix = ctx.getTransform();
+            const callback = () => {
+                ctx.save();
+                ctx.setTransform(
+                    transformationMatrix.a,
+                    transformationMatrix.b,
+                    transformationMatrix.c,
+                    transformationMatrix.d,
+                    transformationMatrix.e,
+                    transformationMatrix.f
+                );
+                eventListeners.forEach(callback => callback.call(self, event, transformedPos));
+                ctx.restore();
+            };
+            (root as Sprite).rootPointerEventCallback = callback.bind(this);
+        };
+
+        if (this.events.move && !this.events.up && !this.events.down) {
             if (this.pointerId !== undefined && this.eventListeners.drag.length > 0) {
                 ctx.restore();
                 ctxRestored = true;
-                const event = this.events.move[0];
-                const transformedPos = ctx.getTransform().inverse().transformPoint(cursorPos!) as PositionType;
-                const transformationMatrix = ctx.getTransform();
-                const callback = () => {
-                    ctx.save();
-                    ctx.setTransform(
-                        transformationMatrix.a,
-                        transformationMatrix.b,
-                        transformationMatrix.c,
-                        transformationMatrix.d,
-                        transformationMatrix.e,
-                        transformationMatrix.f
-                    );
-                    this.eventListeners.drag.forEach(callback => callback.call(this, event.event, transformedPos));
-                    ctx.restore();
-                };
-                (this.root as Sprite).rootPointerEventCallback = callback.bind(this);
+                registerCallback(ctx, this.events.move, this.root, this, this.eventListeners.drag);
             }
         }
-
-        if (this.events.up.length > 0) {
+        if (this.events.up) {
             ctx.restore();
             ctxRestored = true;
             if (this.eventListeners.release.length > 0 && this.pointerId !== undefined) {
-                const event = this.events.up[0];
-                const transformedPos = ctx.getTransform().inverse().transformPoint(cursorPos!) as PositionType;
-                const transformationMatrix = ctx.getTransform();
-                const callback = () => {
-                    ctx.save();
-                    ctx.setTransform(
-                        transformationMatrix.a,
-                        transformationMatrix.b,
-                        transformationMatrix.c,
-                        transformationMatrix.d,
-                        transformationMatrix.e,
-                        transformationMatrix.f
-                    );
-                    this.eventListeners.release.forEach(callback => callback.call(this, event.event, transformedPos));
-                    ctx.restore();
-                };
-                (this.root as Sprite).rootPointerEventCallback = callback.bind(this);
+                const event = this.events.up;
+                registerCallback(ctx, event, this.root, this, this.eventListeners.release);
             }
             this.pointerId = undefined;
-        } else if (this.events.down.length > 0) {
-            if (this.pointIsInPath(ctx, cursorPos!.x, cursorPos!.y)) {
-                ctx.restore();
-                ctxRestored = true;
-                const event = this.events.down[0];
-                this.pointerId = event.event.pointerId;
-                this.pointerButton = event.event.button;
-                const transformedPos = ctx.getTransform().inverse().transformPoint(cursorPos!) as PositionType;
-                const transformationMatrix = ctx.getTransform();
-                if (this.eventListeners.click.length > 0) {
-                    const callback = () => {
-                        ctx.save();
-                        ctx.setTransform(
-                            transformationMatrix.a,
-                            transformationMatrix.b,
-                            transformationMatrix.c,
-                            transformationMatrix.d,
-                            transformationMatrix.e,
-                            transformationMatrix.f
-                        );
-                        this.eventListeners.click.forEach(callback => callback.call(this, event.event, transformedPos));
-                        ctx.restore();
-                    };
-                    (this.root as Sprite).rootPointerEventCallback = callback.bind(this);
-                }
+        } else if (this.events.down && pointIsInPath) {
+            ctx.restore();
+            ctxRestored = true;
+            const event = this.events.down;
+            this.pointerId = event.event.pointerId;
+            this.pointerButton = event.event.button;
+            if (this.eventListeners.click.length > 0) {
+                registerCallback(ctx, event, this.root, this, this.eventListeners.click);
             }
         }
         return ctxRestored;

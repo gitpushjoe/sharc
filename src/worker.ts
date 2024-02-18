@@ -3,8 +3,6 @@ import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />
 import { Ellipse, Rect } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
-import { AsyncMessage } from "./sharc/types/Stage";
-import { AsyncStageEventListeners } from "./sharc/types/Events";
 
 postMessage("Hello from worker!");
 
@@ -105,8 +103,17 @@ if (test === "perf") {
             y: this.details!.center.y + (pos.y - this.details!.click.y)
         };
     });
+    circle.on("hover", function () {
+        this.color = Colors.Red;
+    });
+    circle.on("hoverEnd", function () {
+        this.color = Colors.Green;
+    });
+    circle.on("release", function () {
+        console.log("released");
+    });
     stage.on("click", function () {
-        stage.postCustomMessage(`click on ${Date.now()}`);
+        stage.postCustomMessage(`stage click on ${Date.now()}`);
     });
 
     stage.root.addChildren(rect, circle);

@@ -82,32 +82,33 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
     }
 
     private getStageState(): Omit<StageStateMessage, "type"> {
-        const makePointerEventCloneable = (e: PositionedPointerEvent): PositionedPointerEvent => {
-            return {
-                event: {
-                    altKey: e.event.altKey,
-                    button: e.event.button,
-                    buttons: e.event.buttons,
-                    clientX: e.event.clientX,
-                    clientY: e.event.clientY,
-                    pointerId: e.event.pointerId,
-                    pointerType: e.event.pointerType,
-                    shiftKey: e.event.shiftKey,
-                    type: e.event.type,
-                    screenX: e.event.screenX,
-                    screenY: e.event.screenY,
-                    x: e.event.x,
-                    y: e.event.y
-                } as unknown as PointerEvent,
-                translatedPoint: { ...e.translatedPoint }
-            };
+        const makePointerEventCloneable = (e?: PositionedPointerEvent): PositionedPointerEvent | undefined => {
+            return e === undefined
+                ? undefined
+                : {
+                      event: {
+                          altKey: e.event.altKey,
+                          button: e.event.button,
+                          buttons: e.event.buttons,
+                          clientX: e.event.clientX,
+                          clientY: e.event.clientY,
+                          pointerId: e.event.pointerId,
+                          pointerType: e.event.pointerType,
+                          shiftKey: e.event.shiftKey,
+                          type: e.event.type,
+                          screenX: e.event.screenX,
+                          screenY: e.event.screenY,
+                          x: e.event.x,
+                          y: e.event.y
+                      } as unknown as PointerEvent,
+                      translatedPoint: { ...e.translatedPoint }
+                  };
         };
-        this.drawEvents.move.length > 10 && console.log(this.drawEvents.move);
         return {
             events: {
-                down: this.drawEvents.down.map(makePointerEventCloneable) as unknown as PositionedPointerEvent[],
-                up: this.drawEvents.up.map(makePointerEventCloneable) as unknown as PositionedPointerEvent[],
-                move: this.drawEvents.move.map(makePointerEventCloneable) as unknown as PositionedPointerEvent[]
+                down: makePointerEventCloneable(this.drawEvents.down),
+                up: makePointerEventCloneable(this.drawEvents.up),
+                move: makePointerEventCloneable(this.drawEvents.move)
             },
             canvasProperties: {
                 width: this.canvas!.width,
@@ -160,9 +161,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                 ...stageState
             });
         }
-        this.drawEvents.up = [];
-        this.drawEvents.move = [];
-        this.drawEvents.down = [];
+        this.drawEvents = {};
     }
 
     public async postCustomMessage(message: MessageType): Promise<AsyncMessage<MessageType>> {
