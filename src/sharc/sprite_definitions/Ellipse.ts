@@ -16,6 +16,8 @@ export default class Ellipse<DetailsType = any>
         this.startAngle = props.startAngle ?? 0;
         this.endAngle = props.endAngle ?? 360;
         const radius = typeof props.radius === "number" ? [props.radius, props.radius] : props.radius ?? [5, 5];
+        this.radiusX = radius[0];
+        this.radiusY = radius[1];
         const bounds = CircleBounds(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
