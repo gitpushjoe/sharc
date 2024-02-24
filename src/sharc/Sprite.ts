@@ -736,6 +736,7 @@ export abstract class Sprite<
         copy.rootPointerEventCallback = () => {};
         (copy as any).drawFunction = this.drawFunction;
         copy.effects = this.effects.bind(copy);
+        copy.draw = this.draw.bind(copy);
         return copy;
     }
 }
