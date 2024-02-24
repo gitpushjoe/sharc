@@ -28,18 +28,8 @@ export default class Ellipse<DetailsType = any>
     // NORMAL PROPERTIES
     public startAngle: number = 0;
     public endAngle: number = 360;
-    public radiusX: number = 5;
-    public radiusY: number = 5;
 
     // AGGREGATE PROPERTIES
-    public get center(): PositionType {
-        return { x: this.centerX, y: this.centerY };
-    }
-    public set center(value: PositionType) {
-        this.centerX = value.x;
-        this.centerY = value.y;
-    }
-
     public get radius(): [number, number] {
         return [this.radiusX, this.radiusY];
     }
@@ -51,6 +41,21 @@ export default class Ellipse<DetailsType = any>
             this.radiusX = value[0];
             this.radiusY = value[1];
         }
+    }
+
+    // CALCULATED PROPERTIES
+    public get radiusX(): number {
+        return this.width / 2;
+    }
+    public set radiusX(value: number) {
+        this.width = value * 2;
+    }
+
+    public get radiusY(): number {
+        return this.height / 2;
+    }
+    public set radiusY(value: number) {
+        this.height = value * 2;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {

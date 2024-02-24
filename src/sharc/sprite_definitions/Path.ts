@@ -29,8 +29,26 @@ export default class Path<DetailsType = any>
     public endRatio: number = 1;
 
     // Bounds cannot be set, only get
+    public get bounds(): BoundsType {
+        return Path.getBoundsFromPath(this.path);
+    }
     public set bounds(_value: BoundsType) {
         throw new Error("Bounds cannot be set on Path");
+    }
+
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+        const bounds = Path.getBoundsFromPath(this.path);
+        this.x1 = bounds.x1;
+        this.y1 = bounds.y1;
+        this.x2 = bounds.x2;
+        this.y2 = bounds.y2;
+        super.draw(ctx, {
+            path: this.path,
+            closePath: this.closePath,
+            fillRule: this.fillRule,
+            startRatio: this.startRatio,
+            endRatio: this.endRatio
+        });
     }
 
     public static readonly drawFunction = (

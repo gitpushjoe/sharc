@@ -28,10 +28,6 @@ export default class NullSprite<DetailsType = any>
         super(props as Required<typeof props>);
     }
 
-    // NORMAL PROPERTIES
-    public positionX: number = 0;
-    public positionY: number = 0;
-
     // AGGREGATE PROPERTIES
     public get position(): PositionType {
         return Position(this.positionX, this.positionY);
@@ -39,6 +35,27 @@ export default class NullSprite<DetailsType = any>
     public set position(value: PositionType) {
         this.positionX = value.x;
         this.positionY = value.y;
+    }
+
+    // CALCULATED PROPERTIES
+    public get positionX(): number {
+        return this.centerX;
+    }
+    public set positionX(value: number) {
+        this.x1 = value;
+        this.x2 = value;
+    }
+
+    public get positionY(): number {
+        return this.centerY;
+    }
+    public set positionY(value: number) {
+        this.y1 = value;
+        this.y2 = value;
+    }
+
+    public pointIsInPath() {
+        return false;
     }
 
 }
