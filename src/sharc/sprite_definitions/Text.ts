@@ -1,134 +1,49 @@
-import { BoundsType, PositionType } from "sharc/types/Common";
-import { Corners, Position } from "../Utils";
-import { TextProperties, HiddenTextProperties, TextNormalProperties, OmitBaseProps } from "../types/Sprites";
+import { PositionType } from "sharc/types/Common";
+import { Position } from "../Utils";
+import { TextProperties, HiddenTextProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class TextSprite<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<TextProperties>, HiddenTextProperties, TextNormalProperties>
+    extends StrokeableSprite<DetailsType, OmitBaseProps<TextProperties>, HiddenTextProperties>
     implements Required<OmitBaseProps<TextProperties>>
 {
     constructor(props: TextProperties<DetailsType>) {
-        super(
-            {
-                text: props.text ?? "",
-                positionX: props.position?.x ?? 0,
-                positionY: props.position?.y ?? 0,
-                positionIsCenter: props.positionIsCenter ?? false,
-                font: props.font ?? "sans-serif",
-                fontSize: props.fontSize ?? 16,
-                textAlign: props.textAlign ?? "start",
-                textBaseline: props.textBaseline ?? "alphabetic",
-                textDirection: props.textDirection ?? "inherit",
-                maxWidth: props.maxWidth ?? null,
-                bold: props.bold ?? false,
-                italic: props.italic ?? false
-            },
-            props as typeof props & { bounds: BoundsType }
-        );
+        super(props);
+        this.text = props.text ?? "";
+        this.positionX = props.position?.x ?? 0;
+        this.positionY = props.position?.y ?? 0;
+        this.positionIsCenter = props.positionIsCenter ?? false;
+        this.font = props.font ?? "sans-serif";
+        this.fontSize = props.fontSize ?? 16;
+        this.textAlign = props.textAlign ?? "start";
+        this.textBaseline = props.textBaseline ?? "alphabetic";
+        this.textDirection = props.textDirection ?? "inherit";
+        this.maxWidth = props.maxWidth ?? null;
+        this.bold = props.bold ?? false;
+        this.italic = props.italic ?? false;
     }
 
-    public get text(): string {
-        return this.properties.text;
-    }
-    public set text(text: string) {
-        this.properties.text = text;
-    }
+    // NORMAL PROPERTIES
+    public text: string = "";
+    public positionIsCenter: boolean = false;
+    public font: string = "sans-serif";
+    public fontSize: number = 16;
+    public bold: boolean = false;
+    public italic: boolean = false;
+    public textAlign: CanvasTextAlign = "start";
+    public textBaseline: CanvasTextBaseline = "alphabetic";
+    public textDirection: CanvasDirection = "inherit";
+    public maxWidth: number | null = null;
+    public positionX: number = 0;
+    public positionY: number = 0;
 
-    public get positionX(): number {
-        return this.properties.positionX;
-    }
-    public set positionX(positionX: number) {
-        this.properties.positionX = positionX;
-    }
-
-    public get positionY(): number {
-        return this.properties.positionY;
-    }
-    public set positionY(positionY: number) {
-        this.properties.positionY = positionY;
-    }
-
+    // AGGREGATE PROPERTIES
     public get position(): PositionType {
         return Position(this.positionX, this.positionY);
     }
     public set position(value: PositionType) {
         this.positionX = value.x;
         this.positionY = value.y;
-    }
-
-    public get positionIsCenter(): boolean {
-        return this.properties.positionIsCenter;
-    }
-    public set positionIsCenter(value: boolean) {
-        this.properties.positionIsCenter = value;
-    }
-
-    public get font(): string {
-        return this.properties.font;
-    }
-    public set font(font: string) {
-        this.properties.font = font;
-    }
-
-    public get fontSize(): number {
-        return this.properties.fontSize;
-    }
-    public set fontSize(fontSize: number) {
-        this.properties.fontSize = fontSize;
-    }
-
-    public get textAlign(): CanvasTextAlign {
-        return this.properties.textAlign;
-    }
-    public set textAlign(textAlign: CanvasTextAlign) {
-        this.properties.textAlign = textAlign;
-    }
-
-    public get textBaseline(): CanvasTextBaseline {
-        return this.properties.textBaseline;
-    }
-    public set textBaseline(textBaseline: CanvasTextBaseline) {
-        this.properties.textBaseline = textBaseline;
-    }
-
-    public get textDirection(): CanvasDirection {
-        return this.properties.textDirection;
-    }
-    public set textDirection(textDirection: CanvasDirection) {
-        this.properties.textDirection = textDirection;
-    }
-
-    public get maxWidth(): number | null {
-        return this.properties.maxWidth;
-    }
-    public set maxWidth(maxWidth: number | null) {
-        this.properties.maxWidth = maxWidth;
-    }
-
-    public get bold(): boolean {
-        return this.properties.bold;
-    }
-    public set bold(bold: boolean) {
-        this.properties.bold = bold;
-    }
-
-    public get italic(): boolean {
-        return this.properties.italic;
-    }
-    public set italic(italic: boolean) {
-        this.properties.italic = italic;
-    }
-
-    // Note: may only be accurate after draw() is called
-    public get bounds(): BoundsType {
-        return Corners(this.x1, this.y1, this.x2, this.y2);
-    }
-    public set bounds(value: BoundsType) {
-        const { x1, y1, x2, y2 } = value;
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {

@@ -6,27 +6,18 @@ import StrokeableSprite from "./StrokeableSprite";
 export default class Rect<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
-        OmitBaseProps<RectProperties> & { bounds: BoundsType },
-        object,
+        OmitBaseProps<RectProperties> & { bounds?: BoundsType },
         HiddenRectProperties
     >
-    implements Required<OmitBaseProps<RectProperties> & { bounds: BoundsType }>
+    implements Required<OmitBaseProps<RectProperties>>
 {
     constructor(props: RectProperties<DetailsType>) {
-        super(
-            {
-                radius: props.radius ?? [0]
-            },
-            props as typeof props & { bounds: BoundsType }
-        );
+        super(props);
+        this.radius = props.radius ?? [0];
     }
 
-    public get radius(): RadiusType {
-        return this.properties.radius;
-    }
-    public set radius(value: RadiusType) {
-        this.properties.radius = value;
-    }
+    // NORMAL PROPERTIES
+    public radius: RadiusType = [0];
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
@@ -36,7 +27,6 @@ export default class Rect<DetailsType = any>
     }
 
     public readonly drawFunction = Rect.drawFunction;
-
     public static readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         properties: StrokeProperties & RectProperties

@@ -1,23 +1,19 @@
 import { translatePosition, Position, Corners } from "../Utils";
 import { PositionType, BoundsType } from "../types/Common";
-import { PathProperties, PathNormalProperties, OmitBaseProps } from "../types/Sprites";
+import { PathProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Path<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<PathProperties>, object, PathNormalProperties>
+    extends StrokeableSprite<DetailsType, OmitBaseProps<PathProperties>, object>
     implements Required<OmitBaseProps<PathProperties>>
 {
     constructor(props: PathProperties<DetailsType>) {
-        super(
-            {
-                path: props.path ?? [],
-                closePath: props.closePath ?? false,
-                fillRule: props.fillRule ?? "nonzero",
-                startRatio: props.startRatio ?? 0,
-                endRatio: props.endRatio ?? 1
-            },
-            props as typeof props & { bounds: BoundsType }
-        );
+        super(props);
+        this.path = props.path ?? [];
+        this.closePath = props.closePath ?? false;
+        this.fillRule = props.fillRule ?? "nonzero";
+        this.startRatio = props.startRatio ?? 0;
+        this.endRatio = props.endRatio ?? 1;
         const bounds = Path.getBoundsFromPath(this.path);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
@@ -25,61 +21,16 @@ export default class Path<DetailsType = any>
         this.y2 = bounds.y2;
     }
 
-    public get path(): PositionType[] {
-        return this.properties.path;
-    }
-    public set path(path: PositionType[]) {
-        this.properties.path = path;
-    }
+    // NORMAL PROPERTIES
+    public path: PositionType[] = [];
+    public closePath: boolean = false;
+    public fillRule: CanvasFillRule = "nonzero";
+    public startRatio: number = 0;
+    public endRatio: number = 1;
 
-    public get closePath(): boolean {
-        return this.properties.closePath;
-    }
-    public set closePath(closePath: boolean) {
-        this.properties.closePath = closePath;
-    }
-
-    public get fillRule(): CanvasFillRule {
-        return this.properties.fillRule;
-    }
-    public set fillRule(fillRule: CanvasFillRule) {
-        this.properties.fillRule = fillRule;
-    }
-
-    public get startRatio(): number {
-        return this.properties.startRatio;
-    }
-    public set startRatio(startRatio: number) {
-        this.properties.startRatio = startRatio;
-    }
-
-    public get endRatio(): number {
-        return this.properties.endRatio;
-    }
-    public set endRatio(endRatio: number) {
-        this.properties.endRatio = endRatio;
-    }
-
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
-        const bounds = Path.getBoundsFromPath(this.path);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
-        super.draw(ctx, {
-            path: this.path,
-            fillRule: this.fillRule,
-            closePath: this.closePath,
-            startRatio: this.startRatio,
-            endRatio: this.endRatio
-        });
-    }
-
-    public get bounds(): BoundsType {
-        return Path.getBoundsFromPath(this.path);
-    }
-    public set bounds(_bounds: BoundsType) {
-        throw new Error("Path bounds cannot be set");
+    // Bounds cannot be set, only get
+    public set bounds(_value: BoundsType) {
+        throw new Error("Bounds cannot be set on Path");
     }
 
     public static readonly drawFunction = (
