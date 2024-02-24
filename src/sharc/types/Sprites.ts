@@ -107,8 +107,6 @@ export type RectProperties<DetailsType = any> = {
 } & StrokeProperties &
     DEFAULT_PROPERTIES<DetailsType>;
 
-export type HiddenRectProperties = keyof OmitBaseProps<RectProperties>;
-
 export type StrokeType = {
     color?: ColorType;
     lineWidth?: number;

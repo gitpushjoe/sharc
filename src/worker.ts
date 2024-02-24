@@ -1,12 +1,7 @@
-// import { Stage } from './sharc/Stage';
-//         import { Rect, Polygon, Star, Shape } from './sharc/Sprites';
-//         import { CenterBounds, Colors } from './sharc/Utils';
-
-        
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />
-import { Ellipse, Rect, Star } from "./sharc/Sprites";
+import { Ellipse, Rect, Star, Polygon, Path, TextSprite, Line } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
 
 postMessage("Hello from worker!");
@@ -72,8 +67,10 @@ if (test === "perf") {
 } else if (test == "click") {
     const rect = new Rect({
         bounds: Rect.Bounds(20, 20, 100, 100),
-        color: Colors.Blue
+        color: Colors.Blue,
+        rotation: 20,
     });
+    stage.root.addChild(rect);
     rect.on("hover", function () {
         this.color = Colors.Red;
     });
@@ -135,7 +132,11 @@ if (test === "perf") {
     //
     // });
 
-    stage.root.addChildren(rect, circle);
+    const cpy = circle.copy();
+    cpy.centerX += 100;
+    const cpy2 = rect.copy();
+    cpy2.centerY += 200;
+    stage.root.addChildren(circle, cpy, cpy2);
 
     stage.on("beforeDraw", function (frame) {
         if (frame > 60 * 10) this.stop();
