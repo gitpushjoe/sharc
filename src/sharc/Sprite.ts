@@ -726,9 +726,11 @@ export abstract class Sprite<
     }
 
     public copy(): this {
-        const copy = structuredClone({...this, _children: undefined, _parent: undefined, _region: undefined, events: undefined, rootPointerEventCallback: undefined, drawFunction: undefined, effects: undefined, channels: undefined, eventListeners: undefined}) as this;
-        for (let listeners of Object.values(this.eventListeners)) {
-            (listeners as any) = listeners.map(listener => listener.bind(copy));
+        const clone = structuredClone({...this, _children: undefined, _parent: undefined, _region: undefined, events: undefined, rootPointerEventCallback: undefined, drawFunction: undefined, effects: undefined, channels: undefined, eventListeners: undefined}) as this;
+        const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(clone));
+        copy.eventListeners = {} as SpriteEventListeners<this, Properties & HiddenProperties>;
+        for (const [event, listeners] of Object.entries(this.eventListeners)) {
+            (copy as any).eventListeners[event] = listeners.map((listener: any) => listener.bind(copy));
         }
         copy.channels = this.channels.map(_ => new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>()); 
         copy._children = this._children.map(child => child.copy());
@@ -736,7 +738,6 @@ export abstract class Sprite<
         copy.rootPointerEventCallback = () => {};
         (copy as any).drawFunction = this.drawFunction;
         copy.effects = this.effects.bind(copy);
-        copy.draw = this.draw.bind(copy);
         return copy;
     }
 }
