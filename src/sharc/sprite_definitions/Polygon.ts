@@ -19,11 +19,8 @@ export default class Polygon<DetailsType = any>
         this.endRatio = props.endRatio ?? 1;
         this.sides = props.sides ?? 5;
         this.fillRule = props.fillRule ?? "nonzero";
-        const bounds = CircleBounds(props.center?.x ?? 0, props.center?.y ?? 0, this.radius);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        this.centerX = props.center?.x ?? 0;
+        this.centerY = props.center?.y ?? 0;
     }
 
     // NORMAL PROPERTIES

@@ -20,10 +20,8 @@ export default class Star<DetailsType = any>
         this.endRatio = props.endRatio ?? 1;
         this.innerRadius = props.innerRadius ?? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2;
         const center = props.center ?? { x: 0, y: 0 };
-        this.x1 = center.x - this.radius;
-        this.y1 = center.y - this.radius;
-        this.x2 = center.x + this.radius;
-        this.y2 = center.y + this.radius;
+        this.centerX = center.x;
+        this.centerY = center.y;
     }
 
 
