@@ -1,3 +1,8 @@
+// import { Stage } from './sharc/Stage';
+//         import { Rect, Polygon, Star, Shape } from './sharc/Sprites';
+//         import { CenterBounds, Colors } from './sharc/Utils';
+
+        
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />

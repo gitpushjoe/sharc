@@ -1,5 +1,5 @@
 import { BoundsType, PositionType } from "../types/Common";
-import { Position, CircleBounds } from "../Utils";
+import { Position  } from "../Utils";
 import { OmitBaseProps, PolygonProperties } from "../types/Sprites";
 import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
