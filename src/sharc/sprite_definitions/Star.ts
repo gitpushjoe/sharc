@@ -1,76 +1,66 @@
 import { BoundsType, PositionType } from "../types/Common";
-import { Position, CircleBounds } from "../Utils";
-import { OmitBaseProps, StarNormalProperties, StarProperties } from "../types/Sprites";
+import { Position } from "../Utils";
+import { OmitBaseProps, StarProperties } from "../types/Sprites";
 import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Star<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<StarProperties> & { center?: PositionType },
-        object,
-        StarNormalProperties
-    >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: PositionType }, object>
     implements Required<OmitBaseProps<StarProperties>>
 {
     constructor(props: StarProperties<DetailsType>) {
-        super(
-            {
-                radius: props.radius ?? 5,
-                startRatio: props.startRatio ?? 0,
-                endRatio: props.endRatio ?? 1,
-                fillRule: props.fillRule ?? "nonzero",
-                innerRadius: props.innerRadius ?? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2
-            },
-            props as typeof props & { bounds: BoundsType }
-        );
+        super(props);
+        this.radius = props.radius ?? 5;
+        this.fillRule = props.fillRule ?? "nonzero";
+        this.startRatio = props.startRatio ?? 0;
+        this.endRatio = props.endRatio ?? 1;
+        this.innerRadius = props.innerRadius ?? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2;
         const center = props.center ?? { x: 0, y: 0 };
-        this.x1 = center.x - this.radius;
-        this.y1 = center.y - this.radius;
-        this.x2 = center.x + this.radius;
-        this.y2 = center.y + this.radius;
+        this.centerX = center.x;
+        this.centerY = center.y;
     }
 
-    public get radius(): number {
-        return this.properties.radius;
+    // NORMAL PROPERTIES
+    public radius = 5;
+    public innerRadius: number = ((this.radius ?? 5) * (3 - Math.sqrt(5))) / 2;
+    public fillRule: CanvasFillRule = "nonzero";
+    public startRatio = 0;
+    public endRatio = 1;
+
+    // need to override default center getters and setters
+    private _centerX = 0;
+    private _centerY = 0;
+
+    public get centerX(): number {
+        return this._centerX;
     }
-    public set radius(value: number) {
-        this.properties.radius = value;
+    public set centerX(value: number) {
+        this._centerX = value;
+        this.x1 = this._centerX - this.radius;
+        this.x2 = this._centerX + this.radius;
     }
 
-    public get innerRadius(): number {
-        return this.properties.innerRadius;
+    public get centerY(): number {
+        return this._centerY;
     }
-    public set innerRadius(value: number) {
-        this.properties.innerRadius = value;
-    }
-
-    public get startRatio(): number {
-        return this.properties.startRatio;
-    }
-    public set startRatio(value: number) {
-        this.properties.startRatio = value;
+    public set centerY(value: number) {
+        this._centerY = value;
+        this.y1 = this._centerY - this.radius;
+        this.y2 = this._centerY + this.radius;
     }
 
-    public get endRatio(): number {
-        return this.properties.endRatio;
+    // AGGREGATE PROPERTIES
+    public get center(): PositionType {
+        return { x: this.centerX, y: this.centerY };
     }
-    public set endRatio(value: number) {
-        this.properties.endRatio = value;
-    }
-
-    public get fillRule(): CanvasFillRule {
-        return this.properties.fillRule;
-    }
-    public set fillRule(value: CanvasFillRule) {
-        this.properties.fillRule = value;
+    public set center(value: PositionType) {
+        this._centerX = value.x;
+        this._centerY = value.y;
     }
 
-    public get bounds(): BoundsType {
-        return CircleBounds(this.centerX, this.centerY, this.radius);
-    }
+    // Bounds cannot be set, only get
     public set bounds(_bounds: BoundsType) {
-        throw new Error("Star bounds cannot be set");
+        throw new Error("Polygon bounds cannot be set");
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {

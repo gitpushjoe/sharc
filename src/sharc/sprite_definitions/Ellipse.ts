@@ -1,26 +1,23 @@
 import { getX1Y1WH, CircleBounds } from "../Utils";
-import { BoundsType, PositionType } from "../types/Common";
-import { EllipseProperties, HiddenEllipseProperties, EllipseNormalProperties, OmitBaseProps } from "../types/Sprites";
+import { PositionType } from "../types/Common";
+import { EllipseProperties, HiddenEllipseProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Ellipse<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
         OmitBaseProps<EllipseProperties> & { center?: PositionType },
-        HiddenEllipseProperties,
-        EllipseNormalProperties
+        HiddenEllipseProperties
     >
     implements Required<OmitBaseProps<EllipseProperties> & HiddenEllipseProperties>
 {
     constructor(props: EllipseProperties<DetailsType>) {
-        super(
-            {
-                startAngle: props.startAngle ?? 0,
-                endAngle: props.endAngle ?? 360
-            },
-            props as typeof props & { bounds: BoundsType }
-        );
+        super(props);
+        this.startAngle = props.startAngle ?? 0;
+        this.endAngle = props.endAngle ?? 360;
         const radius = typeof props.radius === "number" ? [props.radius, props.radius] : props.radius ?? [5, 5];
+        this.radiusX = radius[0];
+        this.radiusY = radius[1];
         const bounds = CircleBounds(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
@@ -28,34 +25,11 @@ export default class Ellipse<DetailsType = any>
         this.y2 = bounds.y2;
     }
 
-    public get startAngle(): number {
-        return this.properties.startAngle;
-    }
-    public set startAngle(value: number) {
-        this.properties.startAngle = value;
-    }
+    // NORMAL PROPERTIES
+    public startAngle = 0;
+    public endAngle = 360;
 
-    public get endAngle(): number {
-        return this.properties.endAngle;
-    }
-    public set endAngle(value: number) {
-        this.properties.endAngle = value;
-    }
-
-    public get radiusX(): number {
-        return this.width / 2;
-    }
-    public set radiusX(value: number) {
-        this.width = value * 2;
-    }
-
-    public get radiusY(): number {
-        return this.height / 2;
-    }
-    public set radiusY(value: number) {
-        this.height = value * 2;
-    }
-
+    // AGGREGATE PROPERTIES
     public get radius(): [number, number] {
         return [this.radiusX, this.radiusY];
     }
@@ -69,23 +43,19 @@ export default class Ellipse<DetailsType = any>
         }
     }
 
-    public get center(): PositionType {
-        return { x: this.centerX, y: this.centerY };
+    // CALCULATED PROPERTIES
+    public get radiusX(): number {
+        return this.width / 2;
     }
-    public set center(value: PositionType) {
-        this.centerX = value.x;
-        this.centerY = value.y;
+    public set radiusX(value: number) {
+        this.width = value * 2;
     }
 
-    public get bounds(): BoundsType {
-        return CircleBounds(this.centerX, this.centerY, this.radiusX, this.radiusY);
+    public get radiusY(): number {
+        return this.height / 2;
     }
-    public set bounds(value: BoundsType) {
-        const [x1, y1, x2, y2] = getX1Y1WH(value);
-        this.centerX = (x1 + x2) / 2;
-        this.centerY = (y1 + y2) / 2;
-        this.radiusX = (x2 - x1) / 2;
-        this.radiusY = (y2 - y1) / 2;
+    public set radiusY(value: number) {
+        this.height = value * 2;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {

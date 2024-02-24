@@ -7,8 +7,7 @@ import {
     DrawFunctionType,
     EffectsType,
     HIDDEN_SHAPE_PROPERTIES,
-    MostlyRequired,
-    NORMAL_SHAPE_PROPERTIES
+    MostlyRequired
 } from "./types/Sprites";
 import { SpriteEventListeners, PointerEventCallback } from "./types/Events";
 import { Channel } from "./Channels";
@@ -118,17 +117,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract copy(): this;
 }
 
-export abstract class Sprite<
-        DetailsType = any,
-        Properties = object,
-        HiddenProperties = object,
-        NormalProps extends keyof (Properties & HiddenProperties) = never
-    >
+export abstract class Sprite<DetailsType = any, Properties = object, HiddenProperties = object>
     extends Shape<Properties, HiddenProperties, DetailsType>
     implements MostlyRequired<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
 {
-    protected properties: Required<Omit<Pick<Properties & HiddenProperties, NormalProps>, keyof DEFAULT_PROPERTIES>> &
-        Pick<Required<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>, NORMAL_SHAPE_PROPERTIES>;
     public readonly drawFunction: DrawFunctionType<Properties> = () => {
         return;
     };
@@ -139,30 +131,31 @@ export abstract class Sprite<
     public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[]; // to-do: ensure that details can never be animated
     protected stage?: Stage;
 
+    // NORMAL PROPERTIES
+    public rotation = 0;
+    public alpha = 1;
+    public gradient: CanvasGradient | null = null;
+    public effects: EffectsType = () => {
+        return;
+    };
+    public name = "";
     public enabled = true;
+    public channelCount = 1;
+    public details?: DetailsType = undefined;
+    public red = 0;
+    public green = 0;
+    public blue = 0;
+    public colorAlpha = 1;
+    public x1 = 0;
+    public y1 = 0;
+    public x2 = 0;
+    public y2 = 0;
+    public scaleX = 1;
+    public scaleY = 1;
+    public blur = 0;
 
-    public get effects() {
-        return this.properties.effects;
-    }
-    public set effects(value: EffectsType) {
-        this.properties.effects = value;
-    }
-
-    public get blur() {
-        return this.properties.blur;
-    }
-    public set blur(value: number) {
-        this.properties.blur = value;
-    }
-
-    public get gradient() {
-        return this.properties.gradient;
-    }
-    public set gradient(value: CanvasGradient | null) {
-        this.properties.gradient = value;
-    }
-
-    public get bounds() {
+    // AGGREGATE PROPERTIES
+    public get bounds(): BoundsType {
         return Corners(this.x1, this.y1, this.x2, this.y2);
     }
     public set bounds(value: BoundsType) {
@@ -172,127 +165,59 @@ export abstract class Sprite<
         this.y2 = value.y2;
     }
 
-    public get red() {
-        return this.properties.red;
-    }
-    public set red(value: number) {
-        this.properties.red = value;
-    }
-
-    public get green() {
-        return this.properties.green;
-    }
-    public set green(value: number) {
-        this.properties.green = value;
-    }
-
-    public get blue() {
-        return this.properties.blue;
-    }
-    public set blue(value: number) {
-        this.properties.blue = value;
-    }
-
-    public get colorAlpha() {
-        return this.properties.colorAlpha;
-    }
-    public set colorAlpha(value: number) {
-        this.properties.colorAlpha = value;
-    }
-
-    public get color() {
-        return Color(this.red, this.green, this.blue, this.colorAlpha);
+    public get color(): ColorType {
+        return Color(this.red, this.green, this.blue);
     }
     public set color(value: ColorType) {
         this.red = value.red;
         this.green = value.green;
         this.blue = value.blue;
-        this.colorAlpha = value.alpha;
     }
 
-    public get alpha() {
-        return this.properties.alpha;
-    }
-    public set alpha(value: number) {
-        this.properties.alpha = value;
-    }
-
-    public get rotation() {
-        return this.properties.rotation;
-    }
-    public set rotation(value: number) {
-        this.properties.rotation = value;
-    }
-
-    public get scale() {
+    public get scale(): PositionType {
         return Position(this.scaleX, this.scaleY);
     }
     public set scale(value: PositionType) {
-        this.properties.scaleX = value.x;
-        this.properties.scaleY = value.y;
+        this.scaleX = value.x;
+        this.scaleY = value.y;
     }
 
-    public get x1() {
-        return this.properties.x1;
+    public get corner1(): PositionType {
+        return Position(this.x1, this.y1);
     }
-    public set x1(value: number) {
-        this.properties.x1 = value;
-    }
-
-    public get y1() {
-        return this.properties.y1;
-    }
-    public set y1(value: number) {
-        this.properties.y1 = value;
+    public set corner1(value: PositionType) {
+        this.x1 = value.x;
+        this.y1 = value.y;
     }
 
-    public get x2() {
-        return this.properties.x2;
+    public get corner2(): PositionType {
+        return Position(this.x2, this.y2);
     }
-    public set x2(value: number) {
-        this.properties.x2 = value;
-    }
-
-    public get y2() {
-        return this.properties.y2;
-    }
-    public set y2(value: number) {
-        this.properties.y2 = value;
+    public set corner2(value: PositionType) {
+        this.x2 = value.x;
+        this.y2 = value.y;
     }
 
-    public get scaleX() {
-        return this.properties.scaleX;
-    }
-    public set scaleX(value: number) {
-        this.properties.scaleX = value;
-    }
-
-    public get scaleY() {
-        return this.properties.scaleY;
-    }
-    public set scaleY(value: number) {
-        this.properties.scaleY = value;
-    }
-
-    public get width() {
+    // CALCULATED PROPERTIES
+    public get width(): number {
         return Math.abs(this.x2 - this.x1);
     }
     public set width(value: number) {
-        const centerX = this.centerX;
+        const centerX = (this.x1 + this.x2) / 2;
         this.x1 = centerX - value / 2;
         this.x2 = centerX + value / 2;
     }
 
-    public get height() {
+    public get height(): number {
         return Math.abs(this.y2 - this.y1);
     }
     public set height(value: number) {
-        const centerY = this.centerY;
+        const centerY = (this.y1 + this.y2) / 2;
         this.y1 = centerY - value / 2;
         this.y2 = centerY + value / 2;
     }
 
-    public get centerX() {
+    public get centerX(): number {
         return (this.x1 + this.x2) / 2;
     }
     public set centerX(value: number) {
@@ -301,7 +226,7 @@ export abstract class Sprite<
         this.x2 = value + width / 2;
     }
 
-    public get centerY() {
+    public get centerY(): number {
         return (this.y1 + this.y2) / 2;
     }
     public set centerY(value: number) {
@@ -310,28 +235,12 @@ export abstract class Sprite<
         this.y2 = value + height / 2;
     }
 
-    public get center() {
+    public get center(): PositionType {
         return Position(this.centerX, this.centerY);
     }
     public set center(value: PositionType) {
         this.centerX = value.x;
         this.centerY = value.y;
-    }
-
-    public get corner1() {
-        return Position(this.x1, this.y1);
-    }
-    public set corner1(value: PositionType) {
-        this.x1 = value.x;
-        this.y1 = value.y;
-    }
-
-    public get corner2() {
-        return Position(this.x2, this.y2);
-    }
-    public set corner2(value: PositionType) {
-        this.x2 = value.x;
-        this.y2 = value.y;
     }
 
     protected pointerId?: number = undefined;
@@ -376,48 +285,37 @@ export abstract class Sprite<
         return this;
     }
 
-    public name: string;
-
     public events?: EventCollection = {
         stage: undefined
     };
 
-    constructor(
-        derived_props: Required<Omit<Pick<Properties & HiddenProperties, NormalProps>, keyof DEFAULT_PROPERTIES>>,
-        props: Properties & DEFAULT_PROPERTIES<DetailsType>
-    ) {
+    constructor(props: Properties & DEFAULT_PROPERTIES<DetailsType>) {
         super();
         this.name = props.name ?? "";
         this.enabled = props.enabled ?? true;
-        this.properties = {
-            ...derived_props,
-            alpha: props.alpha ?? 1,
-            rotation: props.rotation ?? 0,
-            scaleX: props.scale?.x ?? 1,
-            scaleY: props.scale?.y ?? 1,
-            red: props.color?.red ?? 0,
-            green: props.color?.green ?? 0,
-            blue: props.color?.blue ?? 0,
-            colorAlpha: props.color?.alpha ?? 1,
-            effects:
-                props.effects ??
-                (() => {
-                    return;
-                }),
-            gradient: props.gradient ?? null,
-            blur: props.blur ?? 0,
-            name: props.name ?? "",
-            x1: props.bounds?.x1 ?? 0,
-            y1: props.bounds?.y1 ?? 0,
-            x2: props.bounds?.x2 ?? 0,
-            y2: props.bounds?.y2 ?? 0,
-            channelCount: props.channelCount ?? 1
-        };
+
+        // set normal properties
+        this.rotation = props.rotation ?? this.rotation;
+        this.alpha = props.alpha ?? this.alpha;
+        this.gradient = props.gradient ?? this.gradient;
+        this.effects = props.effects ?? this.effects;
+        this.red = props.color?.red ?? this.red;
+        this.green = props.color?.green ?? this.green;
+        this.blue = props.color?.blue ?? this.blue;
+        this.colorAlpha = props.color?.alpha ?? this.colorAlpha;
+        this.x1 = props.bounds?.x1 ?? this.x1;
+        this.y1 = props.bounds?.y1 ?? this.y1;
+        this.x2 = props.bounds?.x2 ?? this.x2;
+        this.y2 = props.bounds?.y2 ?? this.y2;
+        this.scaleX = props.scale?.x ?? this.scaleX;
+        this.scaleY = props.scale?.y ?? this.scaleY;
+        this.channelCount = props.channelCount ?? this.channelCount;
+        this.details = props.details;
+
         this.channels = Array.from(
-            { length: this.properties.channelCount },
+            { length: this.channelCount },
             () => new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>()
         );
-        this.details = props.details;
     }
 
     public draw(
@@ -481,7 +379,9 @@ export abstract class Sprite<
 
         if (this.events === undefined) return false;
 
-        if (!this.events.down && !this.events.up && !this.events.move) return false;
+        if (!this.events.down && !this.events.up && !this.events.move) {
+            return false;
+        }
 
         if (
             [
@@ -822,20 +722,37 @@ export abstract class Sprite<
     }
 
     public copy(): this {
-        const copy = new (this.constructor as new (...args: any) => this)({ ...this });
-        for (let listeners of Object.values(this.eventListeners)) {
-            (listeners as any) = listeners.map(listener => listener.bind(copy));
+        const clone = structuredClone({
+            ...this,
+            _children: undefined,
+            _parent: undefined,
+            _region: undefined,
+            events: undefined,
+            rootPointerEventCallback: undefined,
+            drawFunction: undefined,
+            effects: undefined,
+            channels: undefined,
+            eventListeners: undefined
+        }) as this;
+        const copy = Object.create(
+            Object.getPrototypeOf(this) as object,
+            Object.getOwnPropertyDescriptors(clone)
+        ) as this;
+        copy.eventListeners = {} as SpriteEventListeners<this, Properties & HiddenProperties>;
+        for (const [event, listeners] of Object.entries(this.eventListeners)) {
+            copy.eventListeners[event as keyof SpriteEventListeners<this, Properties & HiddenProperties>] =
+                listeners.map((listener: (...args: any) => any) => listener.bind(copy) as (...args: any) => any);
         }
-        copy.properties = {
-            ...structuredClone({
-                ...this.properties,
-                effects: null
-            }),
-            effects: this.properties.effects.bind(copy)
-        } as Required<Omit<Pick<Properties & HiddenProperties, NormalProps>, keyof DEFAULT_PROPERTIES>> &
-            Pick<Required<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>, NORMAL_SHAPE_PROPERTIES>;
-        copy.properties.effects = this.properties.effects.bind(copy);
+        copy.channels = this.channels.map(function () {
+            return new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>();
+        });
         copy._children = this._children.map(child => child.copy());
+        copy._parent = undefined;
+        copy.rootPointerEventCallback = () => {
+            return;
+        };
+        (copy as Record<any, any>).drawFunction = this.drawFunction;
+        copy.effects = this.effects.bind(copy);
         return copy;
     }
 }

@@ -1,91 +1,47 @@
-import { Corners, Dimensions } from "../Utils";
+import { Corners, Dimensions, Position } from "../Utils";
 import { BoundsType, PositionType } from "../types/Common";
-import { ImageProperties, HiddenImageProperties, ImageNormalProperties, OmitBaseProps } from "../types/Sprites";
+import { ImageProperties, HiddenImageProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class ImageSprite<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
         OmitBaseProps<ImageProperties> & { bounds?: BoundsType },
-        HiddenImageProperties,
-        ImageNormalProperties
+        HiddenImageProperties
     >
     implements Required<OmitBaseProps<ImageProperties> & HiddenImageProperties>
 {
     constructor(props: ImageProperties<DetailsType>) {
-        super(
-            {
-                image: props.image,
-                srcX1: props.srcBounds?.x1 ?? 0,
-                srcY1: props.srcBounds?.y1 ?? 0,
-                srcX2: props.srcBounds?.x2 ?? props.image.width,
-                srcY2: props.srcBounds?.y2 ?? props.image.height,
-                useSrcBounds: props.srcBounds === null ? false : true
-            },
-            props
-        );
-        this.bounds = Corners(this.x1, this.y1, this.x2, this.y2);
+        super(props);
+        this.image = props.image;
+        this.useSrcBounds = props.srcBounds === null ? false : true;
+        this.srcX1 = props.srcBounds?.x1 ?? 0;
+        this.srcY1 = props.srcBounds?.y1 ?? 0;
+        this.srcX2 = props.srcBounds?.x2 ?? props.image.width;
+        this.srcY2 = props.srcBounds?.y2 ?? props.image.height;
     }
 
-    public get image(): HTMLImageElement {
-        return this.properties.image;
-    }
-    public set image(value: HTMLImageElement) {
-        this.properties.image = value;
-    }
+    // NORMAL PROPERTIES
+    public image: HTMLImageElement = new Image();
+    public useSrcBounds = false;
+    public srcX1 = 0;
+    public srcY1 = 0;
+    public srcX2 = 0;
+    public srcY2 = 0;
 
-    public get srcX1(): number {
-        return this.properties.srcX1;
-    }
-    public set srcX1(value: number) {
-        this.properties.srcX1 = value;
-    }
-
-    public get srcY1(): number {
-        return this.properties.srcY1;
-    }
-    public set srcY1(value: number) {
-        this.properties.srcY1 = value;
-    }
-
-    public get srcX2(): number {
-        return this.properties.srcX2;
-    }
-    public set srcX2(value: number) {
-        this.properties.srcX2 = value;
-    }
-
-    public get srcY2(): number {
-        return this.properties.srcY2;
-    }
-    public set srcY2(value: number) {
-        this.properties.srcY2 = value;
-    }
-
-    public get useSrcBounds(): boolean {
-        return this.properties.useSrcBounds;
-    }
-    public set useSrcBounds(value: boolean) {
-        this.properties.useSrcBounds = value;
-    }
-
+    // AGGREGATE PROPERTIES
     public get srcBounds(): BoundsType {
         return Corners(this.srcX1, this.srcY1, this.srcX2, this.srcY2);
     }
     public set srcBounds(value: BoundsType) {
-        if (value === null) {
-            this.useSrcBounds = false;
-        } else {
-            this.useSrcBounds = true;
-            this.srcX1 = value.x1;
-            this.srcY1 = value.y1;
-            this.srcX2 = value.x2;
-            this.srcY2 = value.y2;
-        }
+        this.srcX1 = value.x1;
+        this.srcY1 = value.y1;
+        this.srcX2 = value.x2;
+        this.srcY2 = value.y2;
     }
 
     public get srcCorner1(): PositionType {
-        return { x: this.srcX1, y: this.srcY1 };
+        return Position(this.srcX1, this.srcY1);
     }
     public set srcCorner1(value: PositionType) {
         this.srcX1 = value.x;
@@ -93,7 +49,7 @@ export default class ImageSprite<DetailsType = any>
     }
 
     public get srcCorner2(): PositionType {
-        return { x: this.srcX2, y: this.srcY2 };
+        return Position(this.srcX2, this.srcY2);
     }
     public set srcCorner2(value: PositionType) {
         this.srcX2 = value.x;

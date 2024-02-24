@@ -4,19 +4,13 @@ import {
     BezierCurveProperties,
     HiddenBezierCurveProperties,
     BezierPoint,
-    BezierCurveNormalProperties,
     StrokeProperties,
     OmitBaseProps
 } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class BezierCurve<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<BezierCurveProperties>,
-        HiddenBezierCurveProperties,
-        BezierCurveNormalProperties
-    >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<BezierCurveProperties>, HiddenBezierCurveProperties>
     implements Required<OmitBaseProps<BezierCurveProperties & HiddenBezierCurveProperties>>
 {
     constructor(props: BezierCurveProperties<DetailsType>) {
@@ -24,49 +18,22 @@ export default class BezierCurve<DetailsType = any>
             Position(props.start?.x ?? 0, props.start?.y ?? 0),
             props.points ?? []
         );
-        super(
-            {
-                startX: props.start?.x ?? 0,
-                startY: props.start?.y ?? 0,
-                points: props.points ?? [],
-                closePath: props.closePath ?? false,
-                fillRule: props.fillRule ?? "nonzero"
-            },
-            props as typeof props & { bounds: BoundsType }
-        );
+        super(props);
         this.points = props.points ?? [];
+        this.closePath = props.closePath ?? false;
+        this.fillRule = props.fillRule ?? "nonzero";
+        this.startX = props.start?.x ?? 0;
+        this.startY = props.start?.y ?? 0;
     }
 
-    public get startX(): number {
-        return this.properties.startX;
-    }
-    public set startX(value: number) {
-        this.properties.startX = value;
-    }
-
-    public get startY(): number {
-        return this.properties.startY;
-    }
-    public set startY(value: number) {
-        this.properties.startY = value;
-    }
-
+    // NORMAL PROPERTIES
+    public startX = 0;
+    public startY = 0;
     public points: BezierPoint[] = [];
+    public closePath = false;
+    public fillRule: CanvasFillRule = "nonzero";
 
-    public get closePath(): boolean {
-        return this.properties.closePath;
-    }
-    public set closePath(value: boolean) {
-        this.properties.closePath = value;
-    }
-
-    public get fillRule(): CanvasFillRule {
-        return this.properties.fillRule;
-    }
-    public set fillRule(value: CanvasFillRule) {
-        this.properties.fillRule = value;
-    }
-
+    // AGGREGATE PROPERTIES
     public get start(): PositionType {
         return Position(this.startX, this.startY);
     }
@@ -75,8 +42,9 @@ export default class BezierCurve<DetailsType = any>
         this.startY = value.y;
     }
 
+    // Bounds cannot be set, only get
     public set bounds(_value: BoundsType) {
-        throw new Error("Bounds should not be set on BezierCurve");
+        throw new Error("Bounds cannot be set on BezierCurve");
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {

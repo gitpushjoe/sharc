@@ -1,74 +1,63 @@
 import { BoundsType, PositionType } from "../types/Common";
-import { Position, CircleBounds } from "../Utils";
-import { OmitBaseProps, PolygonNormalProperties, PolygonProperties } from "../types/Sprites";
+import { Position } from "../Utils";
+import { OmitBaseProps, PolygonProperties } from "../types/Sprites";
 import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Polygon<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<PolygonProperties> & { center: PositionType },
-        object,
-        PolygonNormalProperties
-    >
-    implements Required<OmitBaseProps<PolygonProperties> & { center: PositionType }>
+    extends StrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: PositionType }, object>
+    implements Required<OmitBaseProps<PolygonProperties>>
 {
     constructor(props: PolygonProperties<DetailsType>) {
-        super(
-            {
-                startRatio: props.startRatio ?? 0,
-                radius: props.radius ?? 5,
-                endRatio: props.endRatio ?? 1,
-                sides: props.sides ?? 5,
-                fillRule: props.fillRule ?? "nonzero"
-            },
-            props as Required<PolygonProperties> & { bounds: BoundsType }
-        );
-        const bounds = CircleBounds(props.center?.x ?? 0, props.center?.y ?? 0, this.radius);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        super(props);
+        this.startRatio = props.startRatio ?? 0;
+        this.radius = props.radius ?? 5;
+        this.endRatio = props.endRatio ?? 1;
+        this.sides = props.sides ?? 5;
+        this.fillRule = props.fillRule ?? "nonzero";
+        this.centerX = props.center?.x ?? 0;
+        this.centerY = props.center?.y ?? 0;
     }
 
-    public get startRatio(): number {
-        return this.properties.startRatio;
+    // NORMAL PROPERTIES
+    public sides = 5;
+    public radius = 5;
+    public fillRule: CanvasFillRule = "nonzero";
+    public startRatio = 0;
+    public endRatio = 1;
+
+    // need to override default center getters and setters
+    private _centerX = 0;
+    private _centerY = 0;
+
+    public get centerX(): number {
+        return this._centerX;
     }
-    public set startRatio(value: number) {
-        this.properties.startRatio = value;
+    public set centerX(value: number) {
+        this._centerX = value;
+        this.x1 = this._centerX - this.radius;
+        this.x2 = this._centerX + this.radius;
     }
 
-    public get endRatio(): number {
-        return this.properties.endRatio;
+    public get centerY(): number {
+        return this._centerY;
     }
-    public set endRatio(value: number) {
-        this.properties.endRatio = value;
-    }
-
-    public get radius(): number {
-        return this.properties.radius;
-    }
-    public set radius(value: number) {
-        this.properties.radius = value;
+    public set centerY(value: number) {
+        this._centerY = value;
+        this.y1 = this._centerY - this.radius;
+        this.y2 = this._centerY + this.radius;
     }
 
-    public get sides(): number {
-        return this.properties.sides;
+    // AGGREGATE PROPERTIES
+    public get center(): PositionType {
+        return { x: this.centerX, y: this.centerY };
     }
-    public set sides(value: number) {
-        this.properties.sides = value;
-    }
-
-    public get fillRule(): CanvasFillRule {
-        return this.properties.fillRule;
-    }
-    public set fillRule(value: CanvasFillRule) {
-        this.properties.fillRule = value;
+    public set center(value: PositionType) {
+        this._centerX = value.x;
+        this._centerY = value.y;
     }
 
-    public get bounds(): BoundsType {
-        return CircleBounds(this.centerX, this.centerY, this.radius);
-    }
+    // Bounds cannot be set, only get
     public set bounds(_bounds: BoundsType) {
         throw new Error("Polygon bounds cannot be set");
     }

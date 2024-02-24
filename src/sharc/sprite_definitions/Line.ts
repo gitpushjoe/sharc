@@ -1,64 +1,27 @@
 import { Sprite } from "../Sprite";
 import { Color, translateBounds, ColorToString, Corners } from "../Utils";
 import { BoundsType, ColorType } from "../types/Common";
-import { LineProperties, LineNormalProperties, OmitBaseProps } from "../types/Sprites";
+import { LineProperties, OmitBaseProps } from "../types/Sprites";
 
 export default class Line<DetailsType = any>
-    extends Sprite<
-        DetailsType,
-        OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType },
-        object,
-        LineNormalProperties
-    >
+    extends Sprite<DetailsType, OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType }>
     implements Required<OmitBaseProps<LineProperties>>
 {
     constructor(props: LineProperties<DetailsType>) {
-        super(
-            {
-                lineWidth: props.lineWidth ?? 1,
-                lineCap: props.lineCap ?? "butt",
-                lineDash: props.lineDash ?? 0,
-                lineDashGap: props.lineDashGap ?? 0,
-                lineDashOffset: props.lineDashOffset ?? 0
-            },
-            props
-        );
+        super(props);
+        this.lineWidth = props.lineWidth ?? 1;
+        this.lineCap = props.lineCap ?? "butt";
+        this.lineDash = props.lineDash ?? 0;
+        this.lineDashGap = props.lineDashGap ?? 0;
+        this.lineDashOffset = props.lineDashOffset ?? 0;
     }
 
-    public get lineWidth(): number {
-        return this.properties.lineWidth;
-    }
-    public set lineWidth(value: number) {
-        this.properties.lineWidth = value;
-    }
-
-    public get lineCap(): CanvasLineCap {
-        return this.properties.lineCap;
-    }
-    public set lineCap(value: CanvasLineCap) {
-        this.properties.lineCap = value;
-    }
-
-    public get lineDash(): number {
-        return this.properties.lineDash;
-    }
-    public set lineDash(value: number) {
-        this.properties.lineDash = value;
-    }
-
-    public get lineDashGap(): number {
-        return this.properties.lineDashGap;
-    }
-    public set lineDashGap(value: number) {
-        this.properties.lineDashGap = value;
-    }
-
-    public get lineDashOffset(): number {
-        return this.properties.lineDashOffset;
-    }
-    public set lineDashOffset(value: number) {
-        this.properties.lineDashOffset = value;
-    }
+    // NORMAL PROPERTIES
+    public lineWidth = 1;
+    public lineCap: CanvasLineCap = "butt";
+    public lineDash = 0;
+    public lineDashGap = 0;
+    public lineDashOffset = 0;
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: LineProperties) {
         super.draw(ctx, {
