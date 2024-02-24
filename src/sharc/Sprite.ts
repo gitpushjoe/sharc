@@ -726,7 +726,7 @@ export abstract class Sprite<
     }
 
     public copy(): this {
-        const copy = structuredClone({...this, _children: undefined, _parent: undefined, _region: undefined, events: undefined, rootPointerEventCallback: undefined, drawFunction: undefined, effects: undefined}) as this;
+        const copy = structuredClone({...this, _children: undefined, _parent: undefined, _region: undefined, events: undefined, rootPointerEventCallback: undefined, drawFunction: undefined, effects: undefined, channels: undefined, eventListeners: undefined}) as this;
         for (let listeners of Object.values(this.eventListeners)) {
             (listeners as any) = listeners.map(listener => listener.bind(copy));
         }
