@@ -23,10 +23,10 @@ export default class Path<DetailsType = any>
 
     // NORMAL PROPERTIES
     public path: PositionType[] = [];
-    public closePath: boolean = false;
+    public closePath = false;
     public fillRule: CanvasFillRule = "nonzero";
-    public startRatio: number = 0;
-    public endRatio: number = 1;
+    public startRatio = 0;
+    public endRatio = 1;
 
     // Bounds cannot be set, only get
     public get bounds(): BoundsType {

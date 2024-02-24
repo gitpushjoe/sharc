@@ -1,12 +1,6 @@
 import { ColorType, PositionType } from "../types/Common";
 import { Corners, Position, Color } from "../Utils";
-import {
-    OmitBaseProps,
-    LabelProperties,
-    HiddenLabelProperties,
-    StrokeType,
-    RadiusType
-} from "../types/Sprites";
+import { OmitBaseProps, LabelProperties, HiddenLabelProperties, StrokeType, RadiusType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 import TextSprite from "./Text";
 import Rect from "./Rect";
@@ -36,23 +30,23 @@ export default class LabelSprite<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public text: string = "";
-    public positionIsCenter: boolean = false;
-    public font: string = "sans-serif";
-    public fontSize: number = 16;
-    public bold: boolean = false;
-    public italic: boolean = false;
+    public text = "";
+    public positionIsCenter = false;
+    public font = "sans-serif";
+    public fontSize = 16;
+    public bold = false;
+    public italic = false;
     public textAlign: CanvasTextAlign = "start";
     public textBaseline: CanvasTextBaseline = "alphabetic";
     public textDirection: CanvasDirection = "inherit";
     public maxWidth: number | null = null;
-    public positionX: number = 0;
-    public positionY: number = 0;
-    public padding: number = 10;
-    public backgroundRed: number = 0;
-    public backgroundGreen: number = 0;
-    public backgroundBlue: number = 0;
-    public backgroundAlpha: number = 0;
+    public positionX = 0;
+    public positionY = 0;
+    public padding = 10;
+    public backgroundRed = 0;
+    public backgroundGreen = 0;
+    public backgroundBlue = 0;
+    public backgroundAlpha = 0;
     public backgroundRadius: RadiusType = [5];
     public textStroke: StrokeType | null = null;
 

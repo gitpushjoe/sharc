@@ -24,18 +24,18 @@ export default class TextSprite<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public text: string = "";
-    public positionIsCenter: boolean = false;
-    public font: string = "sans-serif";
-    public fontSize: number = 16;
-    public bold: boolean = false;
-    public italic: boolean = false;
+    public text = "";
+    public positionIsCenter = false;
+    public font = "sans-serif";
+    public fontSize = 16;
+    public bold = false;
+    public italic = false;
     public textAlign: CanvasTextAlign = "start";
     public textBaseline: CanvasTextBaseline = "alphabetic";
     public textDirection: CanvasDirection = "inherit";
     public maxWidth: number | null = null;
-    public positionX: number = 0;
-    public positionY: number = 0;
+    public positionX = 0;
+    public positionY = 0;
 
     // AGGREGATE PROPERTIES
     public get position(): PositionType {

@@ -23,11 +23,11 @@ export default class ImageSprite<DetailsType = any>
 
     // NORMAL PROPERTIES
     public image: HTMLImageElement = new Image();
-    public useSrcBounds: boolean = false;
-    public srcX1: number = 0;
-    public srcY1: number = 0;
-    public srcX2: number = 0;
-    public srcY2: number = 0;
+    public useSrcBounds = false;
+    public srcX1 = 0;
+    public srcY1 = 0;
+    public srcX2 = 0;
+    public srcY2 = 0;
 
     // AGGREGATE PROPERTIES
     public get srcBounds(): BoundsType {
@@ -55,7 +55,6 @@ export default class ImageSprite<DetailsType = any>
         this.srcX2 = value.x;
         this.srcY2 = value.y;
     }
-
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {

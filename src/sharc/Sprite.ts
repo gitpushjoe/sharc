@@ -7,7 +7,7 @@ import {
     DrawFunctionType,
     EffectsType,
     HIDDEN_SHAPE_PROPERTIES,
-    MostlyRequired,
+    MostlyRequired
 } from "./types/Sprites";
 import { SpriteEventListeners, PointerEventCallback } from "./types/Events";
 import { Channel } from "./Channels";
@@ -117,11 +117,7 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract copy(): this;
 }
 
-export abstract class Sprite<
-        DetailsType = any,
-        Properties = object,
-        HiddenProperties = object
-    >
+export abstract class Sprite<DetailsType = any, Properties = object, HiddenProperties = object>
     extends Shape<Properties, HiddenProperties, DetailsType>
     implements MostlyRequired<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
 {
@@ -136,25 +132,27 @@ export abstract class Sprite<
     protected stage?: Stage;
 
     // NORMAL PROPERTIES
-    public rotation: number = 0;
-    public alpha: number = 1;
+    public rotation = 0;
+    public alpha = 1;
     public gradient: CanvasGradient | null = null;
-    public effects: EffectsType = () => { return; };
-    public name: string = "";
-    public enabled: boolean = true;
-    public channelCount: number = 1;
+    public effects: EffectsType = () => {
+        return;
+    };
+    public name = "";
+    public enabled = true;
+    public channelCount = 1;
     public details?: DetailsType = undefined;
-    public red: number = 0;
-    public green: number = 0;
-    public blue: number = 0;
-    public colorAlpha: number = 1;
-    public x1: number = 0;
-    public y1: number = 0;
-    public x2: number = 0;
-    public y2: number = 0;
-    public scaleX: number = 1;
-    public scaleY: number = 1;
-    public blur: number = 0;
+    public red = 0;
+    public green = 0;
+    public blue = 0;
+    public colorAlpha = 1;
+    public x1 = 0;
+    public y1 = 0;
+    public x2 = 0;
+    public y2 = 0;
+    public scaleX = 1;
+    public scaleY = 1;
+    public blur = 0;
 
     // AGGREGATE PROPERTIES
     public get bounds(): BoundsType {
@@ -291,9 +289,7 @@ export abstract class Sprite<
         stage: undefined
     };
 
-    constructor(
-        props: Properties & DEFAULT_PROPERTIES<DetailsType>
-    ) {
+    constructor(props: Properties & DEFAULT_PROPERTIES<DetailsType>) {
         super();
         this.name = props.name ?? "";
         this.enabled = props.enabled ?? true;
@@ -726,17 +722,36 @@ export abstract class Sprite<
     }
 
     public copy(): this {
-        const clone = structuredClone({...this, _children: undefined, _parent: undefined, _region: undefined, events: undefined, rootPointerEventCallback: undefined, drawFunction: undefined, effects: undefined, channels: undefined, eventListeners: undefined}) as this;
-        const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(clone));
+        const clone = structuredClone({
+            ...this,
+            _children: undefined,
+            _parent: undefined,
+            _region: undefined,
+            events: undefined,
+            rootPointerEventCallback: undefined,
+            drawFunction: undefined,
+            effects: undefined,
+            channels: undefined,
+            eventListeners: undefined
+        }) as this;
+        const copy = Object.create(
+            Object.getPrototypeOf(this) as object,
+            Object.getOwnPropertyDescriptors(clone)
+        ) as this;
         copy.eventListeners = {} as SpriteEventListeners<this, Properties & HiddenProperties>;
         for (const [event, listeners] of Object.entries(this.eventListeners)) {
-            (copy as any).eventListeners[event] = listeners.map((listener: any) => listener.bind(copy));
+            copy.eventListeners[event as keyof SpriteEventListeners<this, Properties & HiddenProperties>] =
+                listeners.map((listener: (...args: any) => any) => listener.bind(copy) as (...args: any) => any);
         }
-        copy.channels = this.channels.map(_ => new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>()); 
+        copy.channels = this.channels.map(function () {
+            return new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>();
+        });
         copy._children = this._children.map(child => child.copy());
         copy._parent = undefined;
-        copy.rootPointerEventCallback = () => {};
-        (copy as any).drawFunction = this.drawFunction;
+        copy.rootPointerEventCallback = () => {
+            return;
+        };
+        (copy as Record<any, any>).drawFunction = this.drawFunction;
         copy.effects = this.effects.bind(copy);
         return copy;
     }

@@ -4,11 +4,7 @@ import { RectProperties, RadiusType, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Rect<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<RectProperties> & { bounds?: BoundsType },
-        object
-    >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<RectProperties> & { bounds?: BoundsType }, object>
     implements Required<OmitBaseProps<RectProperties>>
 {
     constructor(props: RectProperties<DetailsType>) {

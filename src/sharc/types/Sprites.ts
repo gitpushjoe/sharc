@@ -79,8 +79,6 @@ export type LineProperties<DetailsType = any> = {
     lineDashOffset?: number;
 } & DEFAULT_PROPERTIES<DetailsType>;
 
-export type LineNormalProperties = keyof OmitBaseProps<LineProperties>;
-
 export type EllipseProperties<DetailsType = any> = {
     center?: PositionType;
     radius?: number | [number, number];
@@ -95,8 +93,6 @@ export type HiddenEllipseProperties = {
     radiusX: number;
     radiusY: number;
 };
-
-export type EllipseNormalProperties = Exclude<keyof OmitBaseProps<EllipseProperties>, "center" | "radius">;
 
 export type KeysOf<Properties> = keyof Properties | keyof HIDDEN_SHAPE_PROPERTIES;
 
@@ -136,8 +132,6 @@ export type StrokeProperties = {
     stroke?: StrokeType | null;
 };
 
-export type StrokeableSpriteNormalProperties = Exclude<keyof HiddenStrokeProperties, "strokeColor"> | "strokeEnabled";
-
 export type BezierPoint = {
     control1: PositionType;
     control2: PositionType;
@@ -157,11 +151,6 @@ export type HiddenBezierCurveProperties = {
     startY: number;
 };
 
-export type BezierCurveNormalProperties =
-    | Exclude<keyof OmitBaseProps<BezierCurveProperties>, "start">
-    | "startX"
-    | "startY";
-
 export type PathProperties<DetailsType = any> = {
     path?: PositionType[];
     fillRule?: CanvasFillRule;
@@ -170,8 +159,6 @@ export type PathProperties<DetailsType = any> = {
     endRatio?: number;
 } & StrokeProperties &
     Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds">;
-
-export type PathNormalProperties = keyof OmitBaseProps<PathProperties>;
 
 export type PolygonProperties<DetailsType = any> = {
     sides?: number;
@@ -183,8 +170,6 @@ export type PolygonProperties<DetailsType = any> = {
 } & StrokeProperties &
     Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds">;
 
-export type PolygonNormalProperties = Exclude<keyof OmitBaseProps<PolygonProperties>, "center">;
-
 export type StarProperties<DetailsType = any> = {
     center?: PositionType;
     radius?: number;
@@ -194,8 +179,6 @@ export type StarProperties<DetailsType = any> = {
     fillRule?: CanvasFillRule;
 } & StrokeProperties &
     Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds">;
-
-export type StarNormalProperties = keyof OmitBaseProps<StarProperties>;
 
 export type TextProperties<DetailsType = any> = {
     text?: string;
@@ -218,8 +201,6 @@ export type HiddenTextProperties = {
     positionY: number;
 };
 
-export type TextNormalProperties = Exclude<keyof OmitBaseProps<TextProperties>, "position"> | "positionX" | "positionY";
-
 export type ImageProperties<DetailsType = any> = {
     image: HTMLImageElement;
     srcBounds?: BoundsType | null;
@@ -236,14 +217,6 @@ export type HiddenImageProperties = {
     useSrcBounds: boolean;
 };
 
-export type ImageNormalProperties =
-    | Exclude<keyof OmitBaseProps<ImageProperties>, "srcBounds">
-    | "srcX1"
-    | "srcY1"
-    | "srcX2"
-    | "srcY2"
-    | "useSrcBounds";
-
 export type LabelProperties<DetailsType = any> = TextProperties<DetailsType> & {
     padding?: number;
     backgroundColor?: ColorType;
@@ -258,18 +231,6 @@ export type HiddenLabelProperties = HiddenTextProperties & {
     backgroundAlpha: number;
 };
 
-export type LabelNormalProperties =
-    | TextNormalProperties
-    | "padding"
-    | "textStroke"
-    | "backgroundRadius"
-    | "backgroundRed"
-    | "backgroundGreen"
-    | "backgroundBlue"
-    | "backgroundAlpha";
-
 export type MostlyRequired<Type extends { details?: any }> = Required<Omit<Type, "details">> & {
     details?: Type["details"];
 };
-
-export type Merge<T1, T2> = Omit<T1, keyof T2> & T2;

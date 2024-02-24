@@ -10,11 +10,7 @@ import {
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class BezierCurve<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<BezierCurveProperties>,
-        HiddenBezierCurveProperties
-    >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<BezierCurveProperties>, HiddenBezierCurveProperties>
     implements Required<OmitBaseProps<BezierCurveProperties & HiddenBezierCurveProperties>>
 {
     constructor(props: BezierCurveProperties<DetailsType>) {
@@ -31,10 +27,10 @@ export default class BezierCurve<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public startX: number = 0;
-    public startY: number = 0;
+    public startX = 0;
+    public startY = 0;
     public points: BezierPoint[] = [];
-    public closePath: boolean = false;
+    public closePath = false;
     public fillRule: CanvasFillRule = "nonzero";
 
     // AGGREGATE PROPERTIES

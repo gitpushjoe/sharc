@@ -1,27 +1,12 @@
 import { ColorType } from "../types/Common";
 import { Sprite } from "../Sprite";
-import {
-    StrokeProperties,
-    HiddenStrokeProperties,
-    StrokeType,
-    DEFAULT_PROPERTIES,
-} from "../types/Sprites";
+import { StrokeProperties, HiddenStrokeProperties, StrokeType, DEFAULT_PROPERTIES } from "../types/Sprites";
 
-export default class StrokeableSprite<
-DetailsType = any,
-Properties = object,
-HiddenProperties = object,
->
-extends Sprite<
-DetailsType,
-Properties & StrokeProperties,
-HiddenProperties & HiddenStrokeProperties
->
-implements Required<StrokeProperties & HiddenStrokeProperties>
+export default class StrokeableSprite<DetailsType = any, Properties = object, HiddenProperties = object>
+    extends Sprite<DetailsType, Properties & StrokeProperties, HiddenProperties & HiddenStrokeProperties>
+    implements Required<StrokeProperties & HiddenStrokeProperties>
 {
-    constructor(
-        props: { stroke?: StrokeType | null } & Properties & DEFAULT_PROPERTIES<DetailsType>
-    ) {
+    constructor(props: { stroke?: StrokeType | null } & Properties & DEFAULT_PROPERTIES<DetailsType>) {
         super(props);
         this.strokeRed = props.stroke?.color?.red ?? 0;
         this.strokeGreen = props.stroke?.color?.green ?? 0;
@@ -37,35 +22,35 @@ implements Required<StrokeProperties & HiddenStrokeProperties>
     }
 
     // NORMAL PROPERTIES
-    public strokeRed: number = 0;
-    public strokeGreen: number = 0;
-    public strokeBlue: number = 0;
-    public strokeAlpha: number = 1;
-    public strokeWidth: number = 1;
+    public strokeRed = 0;
+    public strokeGreen = 0;
+    public strokeBlue = 0;
+    public strokeAlpha = 1;
+    public strokeWidth = 1;
     public strokeJoin: CanvasLineJoin = "miter";
     public strokeCap: CanvasLineCap = "butt";
-    public strokeDash: number = 0;
-    public strokeDashGap: number = 0;
-    public strokeOffset: number = 0;
-    public strokeEnabled: boolean = false;
+    public strokeDash = 0;
+    public strokeDashGap = 0;
+    public strokeOffset = 0;
+    public strokeEnabled = false;
 
     // AGGREGATE PROPERTIES
     public get stroke(): StrokeType | null {
         return this.strokeEnabled
             ? {
-                color: {
-                    red: this.strokeRed,
-                    green: this.strokeGreen,
-                    blue: this.strokeBlue,
-                    alpha: this.strokeAlpha
-                },
-                lineWidth: this.strokeWidth,
-                lineJoin: this.strokeJoin,
-                lineCap: this.strokeCap,
-                lineDash: this.strokeDash,
-                lineDashGap: this.strokeDashGap,
-                lineDashOffset: this.strokeOffset
-            }
+                  color: {
+                      red: this.strokeRed,
+                      green: this.strokeGreen,
+                      blue: this.strokeBlue,
+                      alpha: this.strokeAlpha
+                  },
+                  lineWidth: this.strokeWidth,
+                  lineJoin: this.strokeJoin,
+                  lineCap: this.strokeCap,
+                  lineDash: this.strokeDash,
+                  lineDashGap: this.strokeDashGap,
+                  lineDashOffset: this.strokeOffset
+              }
             : null;
     }
     public set stroke(value: StrokeType | null) {
@@ -104,19 +89,19 @@ implements Required<StrokeProperties & HiddenStrokeProperties>
             ...properties!,
             stroke: this.strokeEnabled
                 ? {
-                    color: {
-                        red: this.strokeRed,
-                        green: this.strokeGreen,
-                        blue: this.strokeBlue,
-                        alpha: this.strokeAlpha
-                    },
-                    lineWidth: this.strokeWidth,
-                    lineJoin: this.strokeJoin,
-                    lineCap: this.strokeCap,
-                    lineDash: this.strokeDash,
-                    lineDashGap: this.strokeDashGap,
-                    lineDashOffset: this.strokeOffset
-                }
+                      color: {
+                          red: this.strokeRed,
+                          green: this.strokeGreen,
+                          blue: this.strokeBlue,
+                          alpha: this.strokeAlpha
+                      },
+                      lineWidth: this.strokeWidth,
+                      lineJoin: this.strokeJoin,
+                      lineCap: this.strokeCap,
+                      lineDash: this.strokeDash,
+                      lineDashGap: this.strokeDashGap,
+                      lineDashOffset: this.strokeOffset
+                  }
                 : null
         } as Required<Properties & StrokeProperties>);
     }

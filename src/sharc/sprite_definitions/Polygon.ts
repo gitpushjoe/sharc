@@ -1,15 +1,11 @@
 import { BoundsType, PositionType } from "../types/Common";
-import { Position  } from "../Utils";
+import { Position } from "../Utils";
 import { OmitBaseProps, PolygonProperties } from "../types/Sprites";
 import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Polygon<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<PolygonProperties> & { center?: PositionType },
-        object
-    >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: PositionType }, object>
     implements Required<OmitBaseProps<PolygonProperties>>
 {
     constructor(props: PolygonProperties<DetailsType>) {
@@ -24,15 +20,15 @@ export default class Polygon<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public sides: number = 5;
-    public radius: number = 5;
+    public sides = 5;
+    public radius = 5;
     public fillRule: CanvasFillRule = "nonzero";
-    public startRatio: number = 0;
-    public endRatio: number = 1;
-    
+    public startRatio = 0;
+    public endRatio = 1;
+
     // need to override default center getters and setters
-    private _centerX: number = 0;
-    private _centerY: number = 0;
+    private _centerX = 0;
+    private _centerY = 0;
 
     public get centerX(): number {
         return this._centerX;

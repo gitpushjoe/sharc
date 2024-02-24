@@ -26,14 +26,14 @@ export default class Ellipse<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public startAngle: number = 0;
-    public endAngle: number = 360;
+    public startAngle = 0;
+    public endAngle = 360;
 
     // AGGREGATE PROPERTIES
     public get radius(): [number, number] {
         return [this.radiusX, this.radiusY];
     }
-    public set radius(value: number|[number, number]) {
+    public set radius(value: number | [number, number]) {
         if (typeof value === "number") {
             this.radiusX = value;
             this.radiusY = value;

@@ -4,11 +4,7 @@ import { PositionType } from "../types/Common";
 import { DEFAULT_PROPERTIES } from "../types/Sprites";
 
 export default class NullSprite<DetailsType = any>
-    extends Sprite<
-        DetailsType,
-        { position: PositionType },
-        { positionX: number; positionY: number }
-    >
+    extends Sprite<DetailsType, { position: PositionType }, { positionX: number; positionY: number }>
     implements Required<{ position: PositionType; positionX: number; positionY: number }>
 {
     constructor(props: { position?: PositionType } & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">) {
@@ -57,5 +53,4 @@ export default class NullSprite<DetailsType = any>
     public pointIsInPath() {
         return false;
     }
-
 }

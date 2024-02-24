@@ -68,7 +68,7 @@ if (test === "perf") {
     const rect = new Rect({
         bounds: Rect.Bounds(20, 20, 100, 100),
         color: Colors.Blue,
-        rotation: 20,
+        rotation: 20
     });
     stage.root.addChild(rect);
     rect.on("hover", function () {

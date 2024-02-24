@@ -4,10 +4,7 @@ import { BoundsType, ColorType } from "../types/Common";
 import { LineProperties, OmitBaseProps } from "../types/Sprites";
 
 export default class Line<DetailsType = any>
-    extends Sprite<
-        DetailsType,
-        OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType }
-    >
+    extends Sprite<DetailsType, OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType }>
     implements Required<OmitBaseProps<LineProperties>>
 {
     constructor(props: LineProperties<DetailsType>) {
@@ -20,11 +17,11 @@ export default class Line<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public lineWidth: number = 1;
+    public lineWidth = 1;
     public lineCap: CanvasLineCap = "butt";
-    public lineDash: number = 0;
-    public lineDashGap: number = 0;
-    public lineDashOffset: number = 0;
+    public lineDash = 0;
+    public lineDashGap = 0;
+    public lineDashOffset = 0;
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: LineProperties) {
         super.draw(ctx, {
