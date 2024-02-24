@@ -727,9 +727,9 @@ export abstract class Sprite<
 
     public copy(): this {
         const copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-        // for (let listeners of Object.values(this.eventListeners)) {
-        //     (listeners as any) = listeners.map(listener => listener.bind(copy));
-        // }
+        for (let listeners of Object.values(this.eventListeners)) {
+            (listeners as any) = listeners.map(listener => listener.bind(copy));
+        }
         copy.channels = this.channels.map(_ => new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>()); 
         copy._children = this._children.map(child => child.copy());
         return copy;
