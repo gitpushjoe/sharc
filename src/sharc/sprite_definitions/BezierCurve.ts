@@ -27,7 +27,7 @@ export default class BezierCurve<DetailsType = any>
         this.fillRule = props.fillRule ?? "nonzero";
         this.startX = props.start?.x ?? 0;
         this.startY = props.start?.y ?? 0;
-        this.arrow = props.arrow ?? { side: "none" };
+        this.arrow = props.arrow ?? {};
     }
 
     // NORMAL PROPERTIES
@@ -123,8 +123,8 @@ export default class BezierCurve<DetailsType = any>
         };
     }
     public set arrow(value: ArrowType) {
-        this.arrowLength = value.length ?? 0;
-        this.arrowSide = value.side ?? "none";
+        this.arrowLength = value.length ?? 20;
+        this.arrowSide = value.side ?? (value.length !== undefined || value.angle !== undefined || value.color !== undefined || value.stroke !== undefined || value.closed !== undefined) ? "end" : "none";
         this.arrowAngle = value.angle ?? 90;
         this.arrowStroke = value.stroke ?? {};
         this.arrowClosed = value.closed ?? false;
