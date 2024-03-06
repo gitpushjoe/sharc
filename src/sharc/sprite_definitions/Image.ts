@@ -94,7 +94,7 @@ export default class ImageSprite<DetailsType = any>
         region.lineTo(-width / 2, height / 2);
         region.closePath();
 
-        StrokeableSprite.strokeRegion(ctx, properties, region);
+        StrokeableSprite.strokeRegion(ctx, properties.stroke, region);
         return region;
     };
 

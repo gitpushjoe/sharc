@@ -99,7 +99,7 @@ export default class TextSprite<DetailsType = any>
         const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
         ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
-            StrokeableSprite.strokeRegion(ctx, properties);
+            StrokeableSprite.strokeRegion(ctx, properties.stroke);
             ctx.strokeText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         }
 

@@ -72,7 +72,7 @@ export default class Path<DetailsType = any>
             region.closePath();
         }
         ctx.fill(region, properties.fillRule ?? "nonzero");
-        StrokeableSprite.strokeRegion(ctx, properties, region);
+        StrokeableSprite.strokeRegion(ctx, properties.stroke, region);
         return region;
     };
 

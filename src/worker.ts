@@ -8,7 +8,7 @@ postMessage("Hello from worker!");
 
 const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 
-const test: string = "arrow";
+const test: string = "click";
 if (test === "perf") {
     for (let i = 0; i < 70 * 31; i++) {
         const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
@@ -68,6 +68,7 @@ if (test === "perf") {
     const rect = new Rect({
         bounds: Rect.Bounds(20, 20, 100, 100),
         color: Colors.Blue,
+        stroke: { lineWidth: 10 },
         rotation: 20
     });
     stage.root.addChild(rect);
@@ -92,7 +93,7 @@ if (test === "perf") {
         radius: 50,
         color: Colors.Green,
         details: { center: { x: 200, y: 200 }, click: { x: 0, y: 0 } },
-        stroke: { lineWidth: 5 }
+        stroke: { lineWidth: 10 }
     });
     circle.on("click", function (_, pos) {
         this.details!.click = pos;

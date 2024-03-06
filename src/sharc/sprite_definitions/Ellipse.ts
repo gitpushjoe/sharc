@@ -91,7 +91,7 @@ export default class Ellipse<DetailsType = any>
         region.closePath();
         ctx.fill(region, "nonzero");
         ctx.closePath();
-        StrokeableSprite.strokeRegion(ctx, properties, region);
+        StrokeableSprite.strokeRegion(ctx, properties.stroke, region);
         return region;
     };
 }
