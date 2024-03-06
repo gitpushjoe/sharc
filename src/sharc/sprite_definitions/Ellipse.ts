@@ -91,26 +91,7 @@ export default class Ellipse<DetailsType = any>
         region.closePath();
         ctx.fill(region, "nonzero");
         ctx.closePath();
-        if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
-            const {
-                color,
-                lineWidth: width,
-                lineJoin: join,
-                lineCap: cap,
-                lineDash,
-                lineDashGap,
-                lineDashOffset
-            } = properties.stroke!;
-            ctx.lineWidth = width ?? 1;
-            ctx.lineJoin = join ?? "miter";
-            ctx.lineCap = cap ?? "round";
-            ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${
-                color?.alpha ?? 1
-            })`;
-            ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
-            ctx.lineDashOffset = lineDashOffset ?? 0;
-            ctx.stroke(region);
-        }
+        StrokeableSprite.strokeRegion(ctx, properties, region);
         return region;
     };
 }

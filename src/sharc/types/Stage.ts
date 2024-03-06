@@ -20,6 +20,7 @@ export interface CanvasInterface {
     clientHeight: number;
     removeEventListener: (type: string, callback: (...args: any) => any) => void;
     transferToImageBitmap?: () => ImageBitmap;
+    focus?: () => void;
 }
 
 export type InitializeWorkerMessage = {

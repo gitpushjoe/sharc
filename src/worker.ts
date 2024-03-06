@@ -1,14 +1,14 @@
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />
-import { Ellipse, Rect, Star, Polygon, Path, TextSprite, Line } from "./sharc/Sprites";
+import { Ellipse, Rect, Line, LabelSprite, BezierCurve } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
 
 postMessage("Hello from worker!");
 
 const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 
-const test: string = "click";
+const test: string = "arrow";
 if (test === "perf") {
     for (let i = 0; i < 70 * 31; i++) {
         const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
@@ -118,20 +118,6 @@ if (test === "perf") {
         stage.postCustomMessage(`stage click on ${Date.now()}`);
     });
 
-    // const star = new Star({
-    //     center: { x: 0, y: 0 },
-    //     radius: 500,
-    //     rotation: 180,
-    //     color: Colors.Red,
-    // }).on("click", function () {
-    //     stage.postCustomMessage(`center: ${JSON.stringify(this.center)}`);
-    //     stage.postCustomMessage(`bounds: ${JSON.stringify(this.bounds)}`);
-    //     this.center = {x: 0, y: 0};
-    //     stage.postCustomMessage(`center: ${JSON.stringify(this.center)}`);
-    //     stage.postCustomMessage(`bounds: ${JSON.stringify(this.bounds)}`);
-    //
-    // });
-
     const cpy = circle.copy();
     cpy.centerX += 100;
     const cpy2 = rect.copy();
@@ -141,6 +127,66 @@ if (test === "perf") {
     stage.on("beforeDraw", function (frame) {
         if (frame > 60 * 10) this.stop();
     });
+} else if (test === "key") {
+    const label = new LabelSprite({
+        text: "Click me",
+        fontSize: 50,
+        backgroundColor: Colors.LightBlue,
+        backgroundRadius: [10, 10],
+        stroke: { lineWidth: 5 },
+        color: Colors.Black,
+        positionIsCenter: true,
+        position: { x: 600, y: 300 }
+    });
+    stage.on("keydown", function (e) {
+        if (e.key === 'Backspace') {
+            label.text = label.text.slice(0, -1);
+        } else if (e.key.length === 1) {
+            label.text += e.key;
+        }
+    });
+    stage.root.addChild(label);
+} else if (test === "arrow") {
+    const line = new Line({
+        bounds: Line.Bounds(100, 100, 400, 500),
+        color: Colors.Black,
+        lineWidth: 10,
+        arrow: {
+            side: "both",
+            length: 50,
+            closed: true,
+            color: Colors.Black,
+            stroke: {
+                lineCap: "round",
+                color: Colors.White,
+                lineWidth: 10,
+                lineJoin: "round",
+            }
+        }
+    });
+    const beziercurve = new BezierCurve({
+        start: { x: 300, y: 300 },
+        points: [
+            { 
+                control1: { x: 400, y: 100 },
+                control2: { x: 500, y: 500 },
+                end: { x: 500, y: 300 }
+            },
+            {
+                control1: { x: 500, y: 100 },
+                control2: { x: 700, y: 400 },
+                end: { x: 500, y: 600 }
+            }
+        ],
+        color: Colors.None,
+        stroke: {
+            lineCap: "round",
+            lineWidth: 10,
+            color: Colors.Black
+        },
+        arrow: line.arrow
+    });
+    stage.root.addChildren(line, beziercurve);
 }
 
 stage.on("beforeDraw", function () {

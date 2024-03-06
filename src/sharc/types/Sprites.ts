@@ -71,7 +71,27 @@ export type HIDDEN_SHAPE_PROPERTIES = {
     height: number;
 };
 
+export type StrokeType = {
+    color?: ColorType;
+    lineWidth?: number;
+    lineJoin?: CanvasLineJoin;
+    lineCap?: CanvasLineCap;
+    lineDash?: number;
+    lineDashGap?: number;
+    lineDashOffset?: number;
+};
+
+export type ArrowType = {
+    length?: number;
+    side?: "start" | "end" | "both" | "none";
+    angle?: number;
+    stroke?: StrokeType;
+    closed?: boolean;
+    color?: ColorType;
+};
+
 export type LineProperties<DetailsType = any> = {
+    arrow?: ArrowType;
     lineWidth?: number;
     lineCap?: CanvasLineCap;
     lineDash?: number;
@@ -103,16 +123,6 @@ export type RectProperties<DetailsType = any> = {
 } & StrokeProperties &
     DEFAULT_PROPERTIES<DetailsType>;
 
-export type StrokeType = {
-    color?: ColorType;
-    lineWidth?: number;
-    lineJoin?: CanvasLineJoin;
-    lineCap?: CanvasLineCap;
-    lineDash?: number;
-    lineDashGap?: number;
-    lineDashOffset?: number;
-};
-
 export type HiddenStrokeProperties = {
     strokeColor: ColorType;
     strokeRed: number;
@@ -139,6 +149,7 @@ export type BezierPoint = {
 };
 
 export type BezierCurveProperties<DetailsType = any> = {
+    arrow?: ArrowType;
     start?: PositionType;
     points?: BezierPoint[];
     closePath?: boolean;

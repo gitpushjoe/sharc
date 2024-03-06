@@ -13,7 +13,9 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
         release: [],
         move: [],
         scroll: [],
-        message: []
+        message: [],
+        keyup: [],
+        keydown: [],
     };
 
     constructor(
@@ -104,11 +106,28 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                       translatedPoint: { ...e.translatedPoint }
                   };
         };
+        const makeKeyboardEventCloneable = (e?: KeyboardEvent): KeyboardEvent | undefined => {
+            return e === undefined
+                ? undefined
+                : {
+                    key: e.key,
+                    code: e.code,
+                    altKey: e.altKey,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    metaKey: e.metaKey,
+                    repeat: e.repeat,
+                    isComposing: e.isComposing,
+                    location: e.location,
+                } as unknown as KeyboardEvent;
+        };
         return {
             events: {
                 down: makePointerEventCloneable(this.drawEvents.down),
                 up: makePointerEventCloneable(this.drawEvents.up),
-                move: makePointerEventCloneable(this.drawEvents.move)
+                move: makePointerEventCloneable(this.drawEvents.move),
+                keydown: makeKeyboardEventCloneable(this.drawEvents.keydown),
+                keyup: makeKeyboardEventCloneable(this.drawEvents.keyup),
             },
             canvasProperties: {
                 width: this.canvas!.width,
