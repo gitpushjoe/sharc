@@ -84,6 +84,28 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
         this.strokeAlpha = value.alpha;
     }
 
+    public static strokeRegion(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        stroke: StrokeType | null | undefined,
+        region?: Path2D
+    ) {
+        if (stroke === null || stroke === undefined) {
+            return;
+        }
+        if (stroke.lineWidth === 0) {
+            return;
+        }
+        ctx.lineWidth = stroke.lineWidth ?? 1;
+        ctx.lineJoin = stroke.lineJoin ?? "miter";
+        ctx.lineCap = stroke.lineCap ?? "round";
+        ctx.strokeStyle = `rgba(${stroke.color?.red ?? 0}, ${stroke.color?.green ?? 0}, ${stroke.color?.blue ?? 0}, ${stroke.color?.alpha ?? 1})`;
+        ctx.setLineDash([stroke.lineDash ?? 0, stroke.lineDashGap ?? 0]);
+        ctx.lineDashOffset = stroke.lineDashOffset ?? 0;
+        if (region) {
+            ctx.stroke(region);
+        }
+    }
+
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: Required<Properties>) {
         super.draw(ctx, {
             ...properties!,

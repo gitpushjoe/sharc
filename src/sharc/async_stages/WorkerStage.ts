@@ -34,7 +34,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         release: [],
         move: [],
         scroll: [],
-        message: []
+        message: [],
+        keyup: [],
+        keydown: [],
     };
 
     protected onError = function (this: WorkerStage, e?: Error) {
@@ -89,6 +91,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.nextDrawEvents.up ??= e.events.up;
         this.nextDrawEvents.down ??= e.events.down;
         this.nextDrawEvents.move ??= e.events.move;
+        this.nextDrawEvents.keydown ??= e.events.keydown;
+        this.nextDrawEvents.keyup ??= e.events.keyup;
+        // this.postCustomMessage(e.events.keydown != undefined);
         this.canvas!.width = e.canvasProperties.width;
         this.canvas!.height = e.canvasProperties.height;
         this.canvas!.offsetLeft = e.canvasProperties.offsetLeft;
@@ -131,7 +136,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
             : this.drawEvents;
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
-        const { down, up, move } = this.drawEvents;
+        const { down, up, move, keydown, keyup } = this.drawEvents;
         if (down) {
             this.eventListeners.click.forEach(callback => callback.call(this, down.event, down.translatedPoint));
         }
@@ -140,6 +145,12 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         }
         if (move) {
             this.eventListeners.move.forEach(callback => callback.call(this, move.event, move.translatedPoint));
+        }
+        if (keydown) {
+            this.eventListeners.keydown.forEach(callback => callback.call(this, keydown));
+        }
+        if (keyup) {
+            this.eventListeners.keyup.forEach(callback => callback.call(this, keyup));
         }
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
         super.draw(ctx);

@@ -8,14 +8,10 @@ export type PointerEventCallback<thisType> = (
     event: PointerEvent,
     translatedPoint: PositionType
 ) => void;
-//
-// export type HoverEventCallback<thisType> = (
-//     this: thisType,
-//     event?: PointerEvent,
-//     translatedPoint?: PositionType
-// ) => void;
 
 export type ScrollEventCallback<thisType> = (this: thisType, event: WheelEvent) => void;
+
+export type KeyboardEventCallback<thisType> = (this: thisType, event: KeyboardEvent) => void;
 
 export type PositionedPointerEvent = {
     event: PointerEvent;
@@ -27,6 +23,8 @@ export type EventCollection<DetailsType = any> = {
     up?: PositionedPointerEvent;
     move?: PositionedPointerEvent;
     stage?: Stage<DetailsType>;
+    keydown?: KeyboardEvent;
+    keyup?: KeyboardEvent;
 };
 
 export type StageEventCallback<thisType> = (this: thisType, frame: number) => void;
@@ -57,11 +55,11 @@ export type StageEventListeners<thisType = Stage> = {
     release: PointerEventCallback<thisType>[];
     move: PointerEventCallback<thisType>[];
     scroll: ScrollEventCallback<thisType>[];
+    keydown: KeyboardEventCallback<thisType>[];
+    keyup: KeyboardEventCallback<thisType>[];
     beforeDraw: StageEventCallback<thisType>[];
 };
 
 export type AsyncStageEventListeners<thisType = any, MessageType = any> = StageEventListeners<thisType> & {
     message: MessageCallback<thisType, MessageType>[];
 };
-//     [key in keyof StageEventListeners<thisType>]: StageEventListeners<thisType>[key];
-// } & {message: MessageCallback<thisType, MessageType>[]};
