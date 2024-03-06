@@ -1,5 +1,5 @@
 import { Sprite } from "../Sprite";
-import { Color, translateBounds, ColorToString, Corners, Position } from "../Utils";
+import { Color, translateBounds, ColorToString, Corners } from "../Utils";
 import { BoundsType, ColorType, PositionType } from "../types/Common";
 import { ArrowType, LineProperties, OmitBaseProps, StrokeType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";

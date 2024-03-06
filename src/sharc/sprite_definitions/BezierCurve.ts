@@ -1,4 +1,4 @@
-import { Position, Corners, translatePosition, Color, translateBounds } from "../Utils";
+import { Position, Corners, translatePosition, Color } from "../Utils";
 import { PositionType, BoundsType, ColorType } from "../types/Common";
 import {
     BezierCurveProperties,
