@@ -41,22 +41,8 @@ export default class Rect<DetailsType = any>
                 return region;
             }
         }
-        const {
-            color,
-            lineWidth: width,
-            lineJoin: join,
-            lineCap: cap,
-            lineDash,
-            lineDashGap,
-            lineDashOffset
-        } = properties.stroke!;
-        ctx.lineWidth = width ?? 1;
-        ctx.lineJoin = join ?? "miter";
-        ctx.lineCap = cap ?? "round";
-        ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${color?.alpha ?? 1})`;
-        ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
-        ctx.lineDashOffset = lineDashOffset ?? 0;
-        if (lineDash === 0) {
+        StrokeableSprite.strokeRegion(ctx, properties.stroke);
+        if (properties.stroke?.lineDash === 0) {
             const region = new Path2D();
             region.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
             ctx.fill(region, "nonzero");

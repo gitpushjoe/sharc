@@ -109,12 +109,16 @@ const delays: number[] = [];
         }
     });
 
+const cnv = document.getElementById("canvas") as HTMLCanvasElement;
+cnv.tabIndex = 1;
+cnv.addEventListener("keydown", function (e) {
+    console.log(`${e.key} pressed`);
+});
+cnv.style.cursor = "default";
+
 var interval =
     (updateDOM ? 0 : 1) ||
     setInterval(() => {
-        // for (let i = 0; i < 500; i++) {
-        // 	document.getElementsByClassName('title')[0].innerHTML = `${Math.floor(stage.currentFrame / (600) * 10000) / 100}% complete`;
-        // }
         document!
             .getElementById("container")!
             .appendChild(document!.createTextNode(stage.currentFrame.toString() + " "));

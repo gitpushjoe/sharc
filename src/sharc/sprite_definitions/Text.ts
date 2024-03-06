@@ -99,23 +99,7 @@ export default class TextSprite<DetailsType = any>
         const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
         ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
-            const {
-                color,
-                lineWidth: width,
-                lineJoin: join,
-                lineCap: cap,
-                lineDash,
-                lineDashGap,
-                lineDashOffset
-            } = properties.stroke!;
-            ctx.lineWidth = width ?? 1;
-            ctx.lineJoin = join ?? "miter";
-            ctx.lineCap = cap ?? "round";
-            ctx.strokeStyle = `rgba(${color?.red ?? 0}, ${color?.green ?? 0}, ${color?.blue ?? 0}, ${
-                color?.alpha ?? 1
-            })`;
-            ctx.setLineDash([lineDash ?? 0, lineDashGap ?? 0]);
-            ctx.lineDashOffset = lineDashOffset ?? 0;
+            StrokeableSprite.strokeRegion(ctx, properties.stroke);
             ctx.strokeText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         }
 

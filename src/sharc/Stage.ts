@@ -33,6 +33,8 @@ export class Stage<RootDetailsType = any> {
         click: [] as StageEventListeners["click"],
         release: [] as StageEventListeners["release"],
         move: [] as StageEventListeners["move"],
+        keydown: [] as StageEventListeners["keydown"],
+        keyup: [] as StageEventListeners["keyup"],
         scroll: [] as StageEventListeners["scroll"]
     } as StageEventListeners<this>;
 
@@ -99,6 +101,7 @@ export class Stage<RootDetailsType = any> {
         );
         this.eventListeners.click.forEach(callback => callback.call(this, e, position));
         this.drawEvents.down = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
+        this.canvas?.focus && this.canvas.focus();
     }
 
     protected pointerUpHandler(e: PointerEvent) {
@@ -133,6 +136,24 @@ export class Stage<RootDetailsType = any> {
         this.drawEvents.move = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
+    protected async keydownHandler(e: KeyboardEvent) {
+        if (!this.active) {
+            return;
+        }
+        e.preventDefault();
+        this.eventListeners.keydown.forEach(callback => callback.call(this, e));
+        this.drawEvents.keydown = e;
+    }
+
+    protected keyupHandler(e: KeyboardEvent) {
+        if (!this.active) {
+            return;
+        }
+        e.preventDefault();
+        this.eventListeners.keyup.forEach(callback => callback.call(this, e));
+        this.drawEvents.keyup = e;
+    }
+
     private wheelHandler(e: WheelEvent) {
         if (!this.active) {
             return;
@@ -154,6 +175,8 @@ export class Stage<RootDetailsType = any> {
         this.canvas!.addEventListener("pointerup", this.pointerUpHandler.bind(this));
         this.canvas!.addEventListener("pointermove", this.pointerMoveHandler.bind(this));
         this.canvas!.addEventListener("wheel", this.wheelHandler.bind(this));
+        this.canvas!.addEventListener("keydown", this.keydownHandler.bind(this));
+        this.canvas!.addEventListener("keyup", this.keyupHandler.bind(this));
         this.active = true;
         this.frameRate = frameRate;
         this.nextRenderTime = performance.now();
@@ -199,6 +222,8 @@ export class Stage<RootDetailsType = any> {
         this.canvas!.removeEventListener("pointerup", this.pointerUpHandler.bind(this));
         this.canvas!.removeEventListener("pointermove", this.pointerMoveHandler.bind(this));
         this.canvas!.removeEventListener("wheel", this.wheelHandler.bind(this));
+        this.canvas!.removeEventListener("keydown", this.keydownHandler.bind(this));
+        this.canvas!.removeEventListener("keyup", this.keyupHandler.bind(this));
         this.active = false;
     }
 

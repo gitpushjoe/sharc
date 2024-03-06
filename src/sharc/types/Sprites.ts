@@ -71,13 +71,60 @@ export type HIDDEN_SHAPE_PROPERTIES = {
     height: number;
 };
 
+export type StrokeType = {
+    color?: ColorType;
+    lineWidth?: number;
+    lineJoin?: CanvasLineJoin;
+    lineCap?: CanvasLineCap;
+    lineDash?: number;
+    lineDashGap?: number;
+    lineDashOffset?: number;
+};
+
+export type ArrowType = {
+    length?: number;
+    side?: "start" | "end" | "both" | "none";
+    angle?: number;
+    stroke?: StrokeType;
+    closed?: boolean;
+    color?: ColorType;
+};
+
 export type LineProperties<DetailsType = any> = {
+    arrow?: ArrowType;
     lineWidth?: number;
     lineCap?: CanvasLineCap;
     lineDash?: number;
     lineDashGap?: number;
     lineDashOffset?: number;
 } & DEFAULT_PROPERTIES<DetailsType>;
+
+export type HiddenArrowProperties = {
+    arrowLength: number;
+    arrowSide: "start" | "end" | "both" | "none";
+    arrowAngle: number;
+    arrowClosed: boolean;
+    arrowColor: ColorType;
+    arrowStroke: StrokeType;
+    arrowStrokeColor: ColorType;
+    arrowStrokeRed: number;
+    arrowStrokeGreen: number;
+    arrowStrokeBlue: number;
+    arrowStrokeAlpha: number;
+    arrowStrokeWidth: number;
+    arrowStrokeJoin: CanvasLineJoin;
+    arrowStrokeCap: CanvasLineCap;
+    arrowStrokeDash: number;
+    arrowStrokeDashGap: number;
+    arrowStrokeDashOffset: number;
+    arrowStrokeEnabled: boolean;
+    arrowRed: number;
+    arrowGreen: number;
+    arrowBlue: number;
+    arrowAlpha: number;
+};
+
+export type HiddenLineProperties = HiddenArrowProperties;
 
 export type EllipseProperties<DetailsType = any> = {
     center?: PositionType;
@@ -102,16 +149,6 @@ export type RectProperties<DetailsType = any> = {
     radius?: RadiusType;
 } & StrokeProperties &
     DEFAULT_PROPERTIES<DetailsType>;
-
-export type StrokeType = {
-    color?: ColorType;
-    lineWidth?: number;
-    lineJoin?: CanvasLineJoin;
-    lineCap?: CanvasLineCap;
-    lineDash?: number;
-    lineDashGap?: number;
-    lineDashOffset?: number;
-};
 
 export type HiddenStrokeProperties = {
     strokeColor: ColorType;
@@ -139,6 +176,7 @@ export type BezierPoint = {
 };
 
 export type BezierCurveProperties<DetailsType = any> = {
+    arrow?: ArrowType;
     start?: PositionType;
     points?: BezierPoint[];
     closePath?: boolean;
@@ -146,7 +184,7 @@ export type BezierCurveProperties<DetailsType = any> = {
 } & StrokeProperties &
     Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds">;
 
-export type HiddenBezierCurveProperties = {
+export type HiddenBezierCurveProperties = HiddenArrowProperties & {
     startX: number;
     startY: number;
 };
