@@ -59,7 +59,7 @@ export default class BezierCurve<DetailsType = any>
     public arrowStrokeCap: CanvasLineCap = "butt";
     public arrowStrokeDash = 0;
     public arrowStrokeDashGap = 0;
-    public arrowStrokeOffset = 0;
+    public arrowStrokeDashOffset = 0;
     public arrowStrokeEnabled = true;
     public arrowClosed = false;
     public arrowRed = 0;
@@ -76,7 +76,7 @@ export default class BezierCurve<DetailsType = any>
             lineCap: this.arrowStrokeCap,
             lineDash: this.arrowStrokeDash,
             lineDashGap: this.arrowStrokeDashGap,
-            lineDashOffset: this.arrowStrokeOffset
+            lineDashOffset: this.arrowStrokeDashOffset
         };
     }
     public set arrowStroke(value: StrokeType) {
@@ -89,7 +89,7 @@ export default class BezierCurve<DetailsType = any>
         this.arrowStrokeCap = value.lineCap ?? "butt";
         this.arrowStrokeDash = value.lineDash ?? 0;
         this.arrowStrokeDashGap = value.lineDashGap ?? 0;
-        this.arrowStrokeOffset = value.lineDashOffset ?? 0;
+        this.arrowStrokeDashOffset = value.lineDashOffset ?? 0;
     }
 
     public get arrowStrokeColor(): ColorType {

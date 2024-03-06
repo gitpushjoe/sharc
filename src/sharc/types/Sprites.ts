@@ -116,7 +116,7 @@ export type HiddenArrowProperties = {
     arrowStrokeCap: CanvasLineCap;
     arrowStrokeDash: number;
     arrowStrokeDashGap: number;
-    arrowStrokeOffset: number;
+    arrowStrokeDashOffset: number;
     arrowStrokeEnabled: boolean;
     arrowRed: number;
     arrowGreen: number;
