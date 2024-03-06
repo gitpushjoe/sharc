@@ -1,12 +1,12 @@
 import { Sprite } from "../Sprite";
 import { Color, translateBounds, ColorToString, Corners } from "../Utils";
 import { BoundsType, ColorType, PositionType } from "../types/Common";
-import { ArrowType, LineProperties, OmitBaseProps, StrokeType } from "../types/Sprites";
+import { ArrowType, HiddenLineProperties, LineProperties, OmitBaseProps, StrokeType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Line<DetailsType = any>
-    extends Sprite<DetailsType, OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType }>
-    implements Required<OmitBaseProps<LineProperties>>
+    extends Sprite<DetailsType, OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType }, HiddenLineProperties>
+    implements Required<OmitBaseProps<LineProperties & HiddenLineProperties>>
 {
     constructor(props: LineProperties<DetailsType>) {
         super(props);
@@ -38,7 +38,7 @@ export default class Line<DetailsType = any>
     public arrowStrokeDash = 0;
     public arrowStrokeDashGap = 0;
     public arrowStrokeOffset = 0;
-    public arrowStrokeEnabled = false;
+    public arrowStrokeEnabled = true;
     public arrowClosed = false;
     public arrowRed = 0;
     public arrowGreen = 0;
@@ -119,7 +119,7 @@ export default class Line<DetailsType = any>
             lineDashGap: this.lineDashGap,
             lineDashOffset: this.lineDashOffset,
             color: Color(this.red, this.green, this.blue, this.colorAlpha),
-            arrow: this.arrow
+            arrow: this.arrowStrokeEnabled ? this.arrow : {} 
         });
     }
 

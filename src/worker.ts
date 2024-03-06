@@ -8,7 +8,7 @@ postMessage("Hello from worker!");
 
 const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 
-const test: string = "click";
+const test: string = "arrow";
 if (test === "perf") {
     for (let i = 0; i < 70 * 31; i++) {
         const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
@@ -159,7 +159,7 @@ if (test === "perf") {
             color: Colors.Black,
             stroke: {
                 lineCap: "round",
-                color: Colors.White,
+                color: Colors.Gray,
                 lineWidth: 10,
                 lineJoin: "round",
             }
@@ -185,7 +185,7 @@ if (test === "perf") {
             lineWidth: 10,
             color: Colors.Black
         },
-        arrow: line.arrow
+        arrow: line.arrow,
     });
     stage.root.addChildren(line, beziercurve);
 }

@@ -60,7 +60,7 @@ export default class BezierCurve<DetailsType = any>
     public arrowStrokeDash = 0;
     public arrowStrokeDashGap = 0;
     public arrowStrokeOffset = 0;
-    public arrowStrokeEnabled = false;
+    public arrowStrokeEnabled = true;
     public arrowClosed = false;
     public arrowRed = 0;
     public arrowGreen = 0;
@@ -148,7 +148,7 @@ export default class BezierCurve<DetailsType = any>
             points: this.points,
             closePath: this.closePath,
             fillRule: this.fillRule,
-            arrow: this.arrow,
+            arrow: this.arrowStrokeEnabled ? this.arrow : {},
         });
     }
 

@@ -99,6 +99,33 @@ export type LineProperties<DetailsType = any> = {
     lineDashOffset?: number;
 } & DEFAULT_PROPERTIES<DetailsType>;
 
+export type HiddenArrowProperties = {
+    arrowLength: number;
+    arrowSide: "start" | "end" | "both" | "none";
+    arrowAngle: number;
+    arrowClosed: boolean;
+    arrowColor: ColorType;
+    arrowStroke: StrokeType;
+    arrowStrokeColor: ColorType;
+    arrowStrokeRed: number;
+    arrowStrokeGreen: number;
+    arrowStrokeBlue: number;
+    arrowStrokeAlpha: number;
+    arrowStrokeWidth: number;
+    arrowStrokeJoin: CanvasLineJoin;
+    arrowStrokeCap: CanvasLineCap;
+    arrowStrokeDash: number;
+    arrowStrokeDashGap: number;
+    arrowStrokeOffset: number;
+    arrowStrokeEnabled: boolean;
+    arrowRed: number;
+    arrowGreen: number;
+    arrowBlue: number;
+    arrowAlpha: number;
+};
+
+export type HiddenLineProperties = HiddenArrowProperties;
+
 export type EllipseProperties<DetailsType = any> = {
     center?: PositionType;
     radius?: number | [number, number];
@@ -157,7 +184,7 @@ export type BezierCurveProperties<DetailsType = any> = {
 } & StrokeProperties &
     Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds">;
 
-export type HiddenBezierCurveProperties = {
+export type HiddenBezierCurveProperties = HiddenArrowProperties & {
     startX: number;
     startY: number;
 };
