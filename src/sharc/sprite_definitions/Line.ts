@@ -15,7 +15,7 @@ export default class Line<DetailsType = any>
         this.lineDash = props.lineDash ?? 0;
         this.lineDashGap = props.lineDashGap ?? 0;
         this.lineDashOffset = props.lineDashOffset ?? 0;
-        this.arrow = props.arrow ?? {};
+        this.arrow = props.arrow ?? { side: "none" };
     }
 
     // NORMAL PROPERTIES
@@ -24,9 +24,10 @@ export default class Line<DetailsType = any>
     public lineDash = 0;
     public lineDashGap = 0;
     public lineDashOffset = 0;
+
     // \/ arrow-related properties
-    public arrowLength = 0;
-    public arrowSide: "start" | "end" | "both" | "none" = "none";
+    public arrowLength = 20;
+    public arrowSide: "start" | "end" | "both" | "none" = "end";
     public arrowAngle = 90;
     public arrowStrokeRed = 0;
     public arrowStrokeGreen = 0;
@@ -119,7 +120,7 @@ export default class Line<DetailsType = any>
             lineDashGap: this.lineDashGap,
             lineDashOffset: this.lineDashOffset,
             color: Color(this.red, this.green, this.blue, this.colorAlpha),
-            arrow: this.arrowStrokeEnabled ? this.arrow : {} 
+            arrow: this.arrow
         });
     }
 

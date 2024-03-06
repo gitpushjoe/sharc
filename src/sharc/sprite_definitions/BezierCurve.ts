@@ -27,7 +27,7 @@ export default class BezierCurve<DetailsType = any>
         this.fillRule = props.fillRule ?? "nonzero";
         this.startX = props.start?.x ?? 0;
         this.startY = props.start?.y ?? 0;
-        this.arrow = props.arrow ?? {};
+        this.arrow = props.arrow ?? { side: "none" };
     }
 
     // NORMAL PROPERTIES
@@ -46,9 +46,9 @@ export default class BezierCurve<DetailsType = any>
         this.startY = value.y;
     }
 
-        // \/ arrow-related properties
-    public arrowLength = 0;
-    public arrowSide: "start" | "end" | "both" | "none" = "none";
+    // \/ arrow-related properties
+    public arrowLength = 20;
+    public arrowSide: "start" | "end" | "both" | "none" = "end";
     public arrowAngle = 90;
     public arrowStrokeRed = 0;
     public arrowStrokeGreen = 0;
@@ -148,7 +148,7 @@ export default class BezierCurve<DetailsType = any>
             points: this.points,
             closePath: this.closePath,
             fillRule: this.fillRule,
-            arrow: this.arrowStrokeEnabled ? this.arrow : {},
+            arrow: this.arrow 
         });
     }
 
@@ -211,9 +211,9 @@ export default class BezierCurve<DetailsType = any>
                     x: properties.points[0].control1.x,
                     y: properties.points[0].control1.y
                 } : {
-                    x: properties.start?.x ?? 0,
-                    y: properties.start?.y ?? 0
-                }
+                        x: properties.start?.x ?? 0,
+                        y: properties.start?.y ?? 0
+                    }
             );
             const newBounds = {
                 x1: newStart.x,
@@ -235,18 +235,18 @@ export default class BezierCurve<DetailsType = any>
                     x: properties.points[properties.points.length - 1].end.x,
                     y: properties.points[properties.points.length - 1].end.y
                 } : {
-                    x: properties.start?.x ?? 0,
-                    y: properties.start?.y ?? 0
-                }
+                        x: properties.start?.x ?? 0,
+                        y: properties.start?.y ?? 0
+                    }
             );
             const newControl2 = translatePosition(bounds,
                 properties.points?.length ? {
                     x: properties.points[properties.points.length - 1].control2.x,
                     y: properties.points[properties.points.length - 1].control2.y
                 } : {
-                    x: properties.start?.x ?? 0,
-                    y: properties.start?.y ?? 0
-                }
+                        x: properties.start?.x ?? 0,
+                        y: properties.start?.y ?? 0
+                    }
             );
             const newBounds = {
                 x1: newControl2.x,
