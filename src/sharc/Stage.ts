@@ -159,6 +159,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         this.eventListeners.scroll.forEach(callback => callback.call(this, e));
+        this.drawEvents.scroll = e;
         e.preventDefault();
     }
 

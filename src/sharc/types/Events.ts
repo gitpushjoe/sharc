@@ -25,6 +25,7 @@ export type EventCollection<DetailsType = any> = {
     stage?: Stage<DetailsType>;
     keydown?: KeyboardEvent;
     keyup?: KeyboardEvent;
+    scroll?: WheelEvent;
 };
 
 export type StageEventCallback<thisType> = (this: thisType, frame: number) => void;

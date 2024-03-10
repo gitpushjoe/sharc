@@ -93,6 +93,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.nextDrawEvents.move ??= e.events.move;
         this.nextDrawEvents.keydown ??= e.events.keydown;
         this.nextDrawEvents.keyup ??= e.events.keyup;
+        this.nextDrawEvents.scroll ??= e.events.scroll;
         this.canvas!.width = e.canvasProperties.width;
         this.canvas!.height = e.canvasProperties.height;
         this.canvas!.offsetLeft = e.canvasProperties.offsetLeft;
@@ -135,7 +136,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
             : this.drawEvents;
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
-        const { down, up, move, keydown, keyup } = this.drawEvents;
+        const { down, up, move, keydown, keyup, scroll } = this.drawEvents;
         if (down) {
             this.eventListeners.click.forEach(callback => callback.call(this, down.event, {
                 x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
@@ -159,6 +160,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         }
         if (keyup) {
             this.eventListeners.keyup.forEach(callback => callback.call(this, keyup));
+        }
+        if (scroll) {
+            this.eventListeners.scroll.forEach(callback => callback.call(this, scroll));
         }
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
         super.draw(ctx);

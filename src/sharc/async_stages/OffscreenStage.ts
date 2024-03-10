@@ -128,6 +128,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                 move: makePointerEventCloneable(this.drawEvents.move),
                 keydown: makeKeyboardEventCloneable(this.drawEvents.keydown),
                 keyup: makeKeyboardEventCloneable(this.drawEvents.keyup),
+                scroll: this.drawEvents.scroll
             },
             canvasProperties: {
                 width: this.canvas!.width,
