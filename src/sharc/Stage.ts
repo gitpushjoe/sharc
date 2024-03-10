@@ -100,7 +100,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? -1 : 1)
         );
         this.eventListeners.click.forEach(callback => callback.call(this, e, position));
-        this.drawEvents.down = { event: e, translatedPoint: position };
+        this.drawEvents.down = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
         this.canvas?.focus && this.canvas.focus();
     }
 
@@ -117,7 +117,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? -1 : 1)
         );
         this.eventListeners.release.forEach(callback => callback.call(this, e, position));
-        this.drawEvents.up = { event: e, translatedPoint: position };
+        this.drawEvents.up = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
     protected pointerMoveHandler(e: PointerEvent) {
@@ -133,7 +133,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? -1 : 1)
         );
         this.eventListeners.move.forEach(callback => callback.call(this, e, position));
-        this.drawEvents.move = { event: e, translatedPoint: position };
+        this.drawEvents.move = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
     protected async keydownHandler(e: KeyboardEvent) {

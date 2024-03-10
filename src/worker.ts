@@ -8,7 +8,7 @@ postMessage("Hello from worker!");
 
 const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 
-const test: string = "arrow";
+const test: string = "click";
 if (test === "perf") {
     for (let i = 0; i < 70 * 31; i++) {
         const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
@@ -65,11 +65,23 @@ if (test === "perf") {
         stage.root.addChild(ellipse);
     }
 } else if (test == "click") {
+    (stage as Record<'rootStyle', string>).rootStyle = "centered";
+    const text = new LabelSprite({
+        text: "(0, 0)",
+        fontSize: 50,
+        color: Colors.Black,
+        positionIsCenter: true,
+        scale: { x: 1, y: -1 },
+        position: { x: -200, y: 100 }
+    });
     const rect = new Rect({
         bounds: Rect.Bounds(20, 20, 100, 100),
         color: Colors.Blue,
         stroke: { lineWidth: 10 },
         rotation: 20
+    });
+    stage.on("move", function (_, pos) {
+        text.text = `(${pos.x}, ${pos.y})`;
     });
     stage.root.addChild(rect);
     rect.on("hover", function () {
@@ -123,7 +135,7 @@ if (test === "perf") {
     cpy.centerX += 100;
     const cpy2 = rect.copy();
     cpy2.centerY += 200;
-    stage.root.addChildren(circle, cpy, cpy2);
+    stage.root.addChildren(text, circle, cpy, cpy2);
 
     stage.on("beforeDraw", function (frame) {
         if (frame > 60 * 10) this.stop();
