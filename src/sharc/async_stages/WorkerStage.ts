@@ -93,7 +93,6 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.nextDrawEvents.move ??= e.events.move;
         this.nextDrawEvents.keydown ??= e.events.keydown;
         this.nextDrawEvents.keyup ??= e.events.keyup;
-        // this.postCustomMessage(e.events.keydown != undefined);
         this.canvas!.width = e.canvasProperties.width;
         this.canvas!.height = e.canvasProperties.height;
         this.canvas!.offsetLeft = e.canvasProperties.offsetLeft;
@@ -140,13 +139,13 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         if (down) {
             this.eventListeners.click.forEach(callback => callback.call(this, down.event, {
                 x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                y: down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0) * (this.rootStyle === "centered" ? -1 : 1)
+                y: (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) * (this.rootStyle === "centered" ? -1 : 1)
             }));
         }
         if (up) {
             this.eventListeners.release.forEach(callback => callback.call(this, up.event, {
                 x: up.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                y: up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0) * (this.rootStyle === "centered" ? -1 : 1)
+                y: (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) * (this.rootStyle === "centered" ? -1 : 1)
             }));
         }
         if (move) {
