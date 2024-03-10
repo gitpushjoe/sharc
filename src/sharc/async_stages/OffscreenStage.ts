@@ -121,6 +121,20 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                     location: e.location,
                 } as unknown as KeyboardEvent;
         };
+        const makeWheelEventCloneable = (e?: WheelEvent): WheelEvent | undefined => {
+            return e === undefined
+                ? undefined
+                : {
+                    deltaX: e.deltaX,
+                    deltaY: e.deltaY,
+                    deltaZ: e.deltaZ,
+                    deltaMode: e.deltaMode,
+                    altKey: e.altKey,
+                    ctrlKey: e.ctrlKey,
+                    shiftKey: e.shiftKey,
+                    metaKey: e.metaKey,
+                } as unknown as WheelEvent;
+        };
         return {
             events: {
                 down: makePointerEventCloneable(this.drawEvents.down),
@@ -128,7 +142,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                 move: makePointerEventCloneable(this.drawEvents.move),
                 keydown: makeKeyboardEventCloneable(this.drawEvents.keydown),
                 keyup: makeKeyboardEventCloneable(this.drawEvents.keyup),
-                scroll: this.drawEvents.scroll
+                scroll: makeWheelEventCloneable(this.drawEvents.scroll)
             },
             canvasProperties: {
                 width: this.canvas!.width,
