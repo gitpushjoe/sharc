@@ -5,7 +5,11 @@ import { ArrowType, HiddenLineProperties, LineProperties, OmitBaseProps, StrokeT
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Line<DetailsType = any>
-    extends Sprite<DetailsType, OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType }, HiddenLineProperties>
+    extends Sprite<
+        DetailsType,
+        OmitBaseProps<LineProperties> & { bounds?: BoundsType; color?: ColorType },
+        HiddenLineProperties
+    >
     implements Required<OmitBaseProps<LineProperties & HiddenLineProperties>>
 {
     constructor(props: LineProperties<DetailsType>) {
@@ -15,7 +19,7 @@ export default class Line<DetailsType = any>
         this.lineDash = props.lineDash ?? 0;
         this.lineDashGap = props.lineDashGap ?? 0;
         this.lineDashOffset = props.lineDashOffset ?? 0;
-        this.arrow = props.arrow ?? { };
+        this.arrow = props.arrow ?? {};
     }
 
     // NORMAL PROPERTIES
@@ -103,7 +107,15 @@ export default class Line<DetailsType = any>
     }
     public set arrow(value: ArrowType) {
         this.arrowLength = value.length ?? 20;
-        this.arrowSide = value.side ?? (value.length !== undefined || value.angle !== undefined || value.color !== undefined || value.stroke !== undefined || value.closed !== undefined) ? "end" : "none";
+        this.arrowSide =
+            value.side ??
+            (value.length !== undefined ||
+                value.angle !== undefined ||
+                value.color !== undefined ||
+                value.stroke !== undefined ||
+                value.closed !== undefined)
+                ? "end"
+                : "none";
         this.arrowAngle = value.angle ?? 90;
         this.arrowStroke = value.stroke ?? {};
         this.arrowClosed = value.closed ?? false;
@@ -130,11 +142,8 @@ export default class Line<DetailsType = any>
         arrowAngle: number,
         arrowLength: number
     ): [PositionType, PositionType, PositionType] {
-        arrowAngle = arrowAngle * Math.PI / 360;
-        const [ x, y ] = [
-            arrowLength * Math.sin(arrowAngle),
-            arrowLength * Math.cos(arrowAngle)
-        ];
+        arrowAngle = (arrowAngle * Math.PI) / 360;
+        const [x, y] = [arrowLength * Math.sin(arrowAngle), arrowLength * Math.cos(arrowAngle)];
         lineLength /= 2;
         const pos1 = {
             x: (lineLength - y) * Math.cos(lineAngle) - x * Math.sin(lineAngle),
@@ -155,7 +164,7 @@ export default class Line<DetailsType = any>
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         line: BoundsType,
         arrow: ArrowType,
-        stroke: StrokeType|undefined = undefined,
+        stroke: StrokeType | undefined = undefined,
         offset: PositionType = { x: 0, y: 0 }
     ): Path2D {
         if (arrow.side === "none" || arrow.length === 0) {
@@ -168,7 +177,7 @@ export default class Line<DetailsType = any>
             const arrowHead = Line.getArrowCoordinates(
                 lineAngle + Math.PI,
                 Math.sqrt((line.x2 - line.x1) ** 2 + (line.y2 - line.y1) ** 2),
-                (arrow.angle ?? 0),
+                arrow.angle ?? 0,
                 arrow.length ?? 0
             );
             const region = new Path2D();
@@ -187,7 +196,7 @@ export default class Line<DetailsType = any>
             const arrowHead = Line.getArrowCoordinates(
                 lineAngle,
                 Math.sqrt((line.x2 - line.x1) ** 2 + (line.y2 - line.y1) ** 2),
-                (arrow.angle ?? 0),
+                arrow.angle ?? 0,
                 arrow.length ?? 0
             );
             const region = new Path2D();

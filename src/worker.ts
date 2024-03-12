@@ -1,14 +1,14 @@
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />
-import { Ellipse, Rect, Line, LabelSprite, BezierCurve } from "./sharc/Sprites";
+import { Ellipse, Rect, Line, LabelSprite, BezierCurve, ImageSprite } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
 
 postMessage("Hello from worker!");
 
 const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 
-const test: string = "click";
+const test: string = "image";
 if (test === "perf") {
     for (let i = 0; i < 70 * 31; i++) {
         const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
@@ -65,7 +65,7 @@ if (test === "perf") {
         stage.root.addChild(ellipse);
     }
 } else if (test == "click") {
-    (stage as Record<'rootStyle', string>).rootStyle = "centered";
+    (stage as Record<"rootStyle", string>).rootStyle = "centered";
     const text = new LabelSprite({
         text: "(0, 0)",
         fontSize: 50,
@@ -152,7 +152,7 @@ if (test === "perf") {
         position: { x: 600, y: 300 }
     });
     stage.on("keydown", function (e) {
-        if (e.key === 'Backspace') {
+        if (e.key === "Backspace") {
             label.text = label.text.slice(0, -1);
         } else if (e.key.length === 1) {
             label.text += e.key;
@@ -173,14 +173,14 @@ if (test === "perf") {
                 lineCap: "round",
                 color: Colors.Gray,
                 lineWidth: 10,
-                lineJoin: "round",
+                lineJoin: "round"
             }
         }
     });
     const beziercurve = new BezierCurve({
         start: { x: 300, y: 300 },
         points: [
-            { 
+            {
                 control1: { x: 400, y: 100 },
                 control2: { x: 500, y: 500 },
                 end: { x: 500, y: 300 }
@@ -197,9 +197,41 @@ if (test === "perf") {
             lineWidth: 10,
             color: Colors.Black
         },
-        arrow: line.arrow,
+        arrow: line.arrow
     });
     stage.root.addChildren(line, beziercurve);
+} else if (test === "image") {
+    const image = new ImageSprite({
+        bounds: Rect.Bounds(100, 100, 200, 200)
+    });
+    image.on("beforeDraw", function (frame) {
+        if (frame === 0) {
+            fetch(
+                "https://images.squarespace-cdn.com/content/v1/5b80290bee1759a50e3a86b3/1535916876568-9PPRFSDF7X6X1U5LC9LX/leatherback+art.png"
+            )
+                .then(response => response.blob())
+                .then(blob => createImageBitmap(blob))
+                .then(image => (this.image = image))
+                .then(() => {
+                    console.group("Image loaded");
+                    console.log(image.src);
+                    console.groupEnd();
+                });
+        }
+        if (frame === 60) {
+            image.src = "noresize:https://assets.petco.com/petco/image/upload/f_auto,q_auto/rabbit-care-sheet";
+        }
+        if (frame === 120) {
+            image.src =
+                "noresize:https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Eopsaltria_australis_-_Mogo_Campground.jpg/640px-Eopsaltria_australis_-_Mogo_Campground.jpg";
+        }
+    });
+    stage.root.addChild(image);
+    stage.root.addChild(
+        new Ellipse({ color: Colors.Blue, radius: 10 }).distribute([[{ property: "centerX", from: 0, to: 1000 }]], {
+            loop: true
+        })
+    );
 }
 
 stage.on("beforeDraw", function () {

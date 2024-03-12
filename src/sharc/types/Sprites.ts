@@ -240,7 +240,7 @@ export type HiddenTextProperties = {
 };
 
 export type ImageProperties<DetailsType = any> = {
-    image: HTMLImageElement;
+    src?: string;
     srcBounds?: BoundsType | null;
 } & StrokeProperties &
     DEFAULT_PROPERTIES<DetailsType>;
@@ -253,6 +253,7 @@ export type HiddenImageProperties = {
     srcCorner1: PositionType;
     srcCorner2: PositionType;
     useSrcBounds: boolean;
+    image: ImageBitmap | null;
 };
 
 export type LabelProperties<DetailsType = any> = TextProperties<DetailsType> & {

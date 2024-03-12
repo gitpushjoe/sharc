@@ -136,7 +136,7 @@ export class Stage<RootDetailsType = any> {
         this.drawEvents.move = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
-    protected async keydownHandler(e: KeyboardEvent) {
+    protected keydownHandler(e: KeyboardEvent) {
         if (!this.active) {
             return;
         }
