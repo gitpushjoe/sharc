@@ -1,0 +1,22 @@
+import { Stage } from 'sharc-js/Stage';
+import { TextSprite } from 'sharc-js/Sprites';
+import { Colors } from 'sharc-js/Utils';
+
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
+
+stage.root.addChild(new TextSprite({
+    position: {x: 0, y: 10},
+    text: 'even frame',
+    color: Colors.White,
+    positionIsCenter: true,
+    fontSize: 60,
+    bold: true,
+}));
+
+stage.on('beforeDraw', function (frame) {
+    this.bgColor = frame % 2 === 0 ? Colors.DarkBlue : Colors.DarkRed;
+    (this.root.children[0] as TextSprite).text = (frame % 2 === 0 ? 'even' : 'odd') + ' frame';
+});
+
+stage.loop(0.25);
