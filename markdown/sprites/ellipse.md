@@ -23,4 +23,5 @@ Inherited from [c:StrokeableSprite](): `bl:stroke?`
 #### HiddenEllipseProperties
 
 `bl:radiusX: number` - the radius of the ellipse's x-axis. Calculated property (returns `ellipse.width / 2`).
+
 `bl:radiusY: number` - the radius of the ellipse's y-axis. Calculated property (returns `ellipse.height / 2`).
