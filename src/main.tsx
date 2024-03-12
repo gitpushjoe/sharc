@@ -1,6 +1,6 @@
 import { Stage } from "./sharc/Stage";
 import { OffscreenStage } from "./sharc/async_stages/OffscreenStage";
-import { Ellipse } from "./sharc/Sprites";
+import { Ellipse, ImageSprite, Rect } from "./sharc/Sprites";
 import { Colors, Easing } from "./sharc/Utils";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -15,59 +15,94 @@ let framerate = 60;
 let stage: Stage | OffscreenStage;
 if (!useOffscreen) {
     stage = new Stage(canvas, "classic");
-    for (let i = 0; i < 70 * 31; i++) {
-        const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
-        ellipse.centerX = 20 + (i % 70) * 15;
-        ellipse.centerY = 20 + Math.floor(i / 70) * 25;
+    const test: string = "image";
 
-        ellipse.channels[0].push(
-            {
-                property: "centerX",
-                from: null,
-                to: x => x + 130 + Math.random() * 10,
-                duration: 20,
-                easing: Easing.Bounce(Easing.EASE_IN_OUT)
-            },
-            { loop: true }
-        );
+    switch (test) {
+        case "perf": {
+            for (let i = 0; i < 70 * 31; i++) {
+                const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
+                ellipse.centerX = 20 + (i % 70) * 15;
+                ellipse.centerY = 20 + Math.floor(i / 70) * 25;
 
-        ellipse.createChannels(2);
+                ellipse.channels[0].push(
+                    {
+                        property: "centerX",
+                        from: null,
+                        to: x => x + 130 + Math.random() * 10,
+                        duration: 20,
+                        easing: Easing.Bounce(Easing.EASE_IN_OUT)
+                    },
+                    { loop: true }
+                );
 
-        ellipse.channels[1].push(
-            {
-                property: "color",
-                from: {
-                    red: Math.random() * 180 + 55,
-                    green: Math.random() * 180 + 55,
-                    blue: Math.random() * 180 + 55,
-                    alpha: 1
-                },
-                to: () => {
-                    return {
-                        red: Math.random() * 180 + 55,
-                        green: Math.random() * 180 + 55,
-                        blue: Math.random() * 180 + 55,
-                        alpha: 1
+                ellipse.createChannels(2);
+
+                ellipse.channels[1].push(
+                    {
+                        property: "color",
+                        from: {
+                            red: Math.random() * 180 + 55,
+                            green: Math.random() * 180 + 55,
+                            blue: Math.random() * 180 + 55,
+                            alpha: 1
+                        },
+                        to: () => {
+                            return {
+                                red: Math.random() * 180 + 55,
+                                green: Math.random() * 180 + 55,
+                                blue: Math.random() * 180 + 55,
+                                alpha: 1
+                            };
+                        },
+                        duration: 20,
+                        easing: Easing.Bounce(Easing.EASE_IN_OUT)
+                    },
+                    { loop: true }
+                );
+
+                ellipse.channels[2].push(
+                    {
+                        property: "rotation",
+                        from: 0,
+                        to: 360,
+                        duration: 20,
+                        easing: Easing.EASE_IN_OUT
+                    },
+                    { loop: true }
+                );
+
+                stage.root.addChild(ellipse);
+            }
+            break;
+        }
+        case "image":
+            const image = new ImageSprite({
+                src: "https://i.imgur.com/mXuQAt2.png",
+                bounds: Rect.Bounds(100, 100, 200, 200)
+            });
+            image.on("beforeDraw", function (frame) {
+                if (frame === 60) {
+                    image.src =
+                        "https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_square.jpg";
+                }
+                if (frame === 120) {
+                    image.src = "https://www.w3schools.com/w3images/fjords.jpg";
+                }
+                if (frame === 240) {
+                    const img = new Image();
+                    img.src =
+                        "https://www.nylabone.com/-/media/project/oneweb/nylabone/images/dog101/activities-fun/10-great-small-dog-breeds/maltese-portrait.jpg";
+                    img.onload = function () {
+                        image.image = img;
                     };
-                },
-                duration: 20,
-                easing: Easing.Bounce(Easing.EASE_IN_OUT)
-            },
-            { loop: true }
-        );
-
-        ellipse.channels[2].push(
-            {
-                property: "rotation",
-                from: 0,
-                to: 360,
-                duration: 20,
-                easing: Easing.EASE_IN_OUT
-            },
-            { loop: true }
-        );
-
-        stage.root.addChild(ellipse);
+                }
+            });
+            stage.root.addChild(image);
+            stage.root.addChild(
+                new Ellipse({ color: Colors.Blue, radius: 10 }).distribute([
+                    [{ property: "centerX", from: 0, to: 1000 }]
+                ])
+            );
     }
 } else {
     const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });

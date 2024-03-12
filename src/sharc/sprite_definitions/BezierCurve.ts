@@ -124,13 +124,20 @@ export default class BezierCurve<DetailsType = any>
     }
     public set arrow(value: ArrowType) {
         this.arrowLength = value.length ?? 20;
-        this.arrowSide = value.side ?? (value.length !== undefined || value.angle !== undefined || value.color !== undefined || value.stroke !== undefined || value.closed !== undefined) ? "end" : "none";
+        this.arrowSide =
+            value.side ??
+            (value.length !== undefined ||
+                value.angle !== undefined ||
+                value.color !== undefined ||
+                value.stroke !== undefined ||
+                value.closed !== undefined)
+                ? "end"
+                : "none";
         this.arrowAngle = value.angle ?? 90;
         this.arrowStroke = value.stroke ?? {};
         this.arrowClosed = value.closed ?? false;
         this.arrowColor = value.color ?? Color(0, 0, 0, 0);
     }
-
 
     // Bounds cannot be set, only get
     public set bounds(_value: BoundsType) {
@@ -148,7 +155,7 @@ export default class BezierCurve<DetailsType = any>
             points: this.points,
             closePath: this.closePath,
             fillRule: this.fillRule,
-            arrow: this.arrow 
+            arrow: this.arrow
         });
     }
 
@@ -180,7 +187,7 @@ export default class BezierCurve<DetailsType = any>
             y2 = Math.max(y2, point.end.y);
         });
         const bounds = Corners(x1, y1, x2, y2);
-        let region = new Path2D();
+        const region = new Path2D();
         region.moveTo(
             translatePosition(bounds, Position(properties.start?.x ?? 0, properties.start?.y ?? 0)).x,
             translatePosition(bounds, Position(properties.start?.x ?? 0, properties.start?.y ?? 0)).y
@@ -206,14 +213,17 @@ export default class BezierCurve<DetailsType = any>
                 x: properties.start?.x ?? 0,
                 y: properties.start?.y ?? 0
             });
-            const newControl1 = translatePosition(bounds, 
-                properties.points?.length ? {
-                    x: properties.points[0].control1.x,
-                    y: properties.points[0].control1.y
-                } : {
-                        x: properties.start?.x ?? 0,
-                        y: properties.start?.y ?? 0
-                    }
+            const newControl1 = translatePosition(
+                bounds,
+                properties.points?.length
+                    ? {
+                          x: properties.points[0].control1.x,
+                          y: properties.points[0].control1.y
+                      }
+                    : {
+                          x: properties.start?.x ?? 0,
+                          y: properties.start?.y ?? 0
+                      }
             );
             const newBounds = {
                 x1: newStart.x,
@@ -225,43 +235,49 @@ export default class BezierCurve<DetailsType = any>
                 x: (newBounds.x1 + newBounds.x2) / 2,
                 y: (newBounds.y1 + newBounds.y2) / 2
             };
-            properties!.arrow!.side = "start";
+            properties.arrow.side = "start";
             region.addPath(Line.drawArrow(ctx, newBounds, properties.arrow, properties.arrow?.stroke, center));
         }
-        properties!.arrow!.side = side;
+        properties.arrow!.side = side;
         if (properties?.arrow?.side === "end" || properties?.arrow?.side === "both") {
-            const newEnd = translatePosition(bounds, 
-                properties.points?.length ? {
-                    x: properties.points[properties.points.length - 1].end.x,
-                    y: properties.points[properties.points.length - 1].end.y
-                } : {
-                        x: properties.start?.x ?? 0,
-                        y: properties.start?.y ?? 0
-                    }
+            const newEnd = translatePosition(
+                bounds,
+                properties.points?.length
+                    ? {
+                          x: properties.points[properties.points.length - 1].end.x,
+                          y: properties.points[properties.points.length - 1].end.y
+                      }
+                    : {
+                          x: properties.start?.x ?? 0,
+                          y: properties.start?.y ?? 0
+                      }
             );
-            const newControl2 = translatePosition(bounds,
-                properties.points?.length ? {
-                    x: properties.points[properties.points.length - 1].control2.x,
-                    y: properties.points[properties.points.length - 1].control2.y
-                } : {
-                        x: properties.start?.x ?? 0,
-                        y: properties.start?.y ?? 0
-                    }
+            const newControl2 = translatePosition(
+                bounds,
+                properties.points?.length
+                    ? {
+                          x: properties.points[properties.points.length - 1].control2.x,
+                          y: properties.points[properties.points.length - 1].control2.y
+                      }
+                    : {
+                          x: properties.start?.x ?? 0,
+                          y: properties.start?.y ?? 0
+                      }
             );
             const newBounds = {
                 x1: newControl2.x,
                 y1: newControl2.y,
                 x2: newEnd.x,
-                y2: newEnd.y,
+                y2: newEnd.y
             };
             const center = {
                 x: (newBounds.x1 + newBounds.x2) / 2,
                 y: (newBounds.y1 + newBounds.y2) / 2
             };
-            properties!.arrow!.side = "end";
+            properties.arrow.side = "end";
             region.addPath(Line.drawArrow(ctx, newBounds, properties.arrow, properties.arrow?.stroke, center));
         }
-        properties!.arrow!.side = side;
+        properties.arrow!.side = side;
         return region;
     };
 }
