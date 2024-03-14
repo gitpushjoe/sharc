@@ -1,95 +1,81 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "1.4.1-dev3",
+  "version": "1.4.1-dev4",
   "type": "module",
   "files": [
     "dist/*"
   ],
   "exports": {
     "./Animation": {
-      "import": {
-        "default": "./dist/Animation.js",
-        "types": "./dist/types/Animation.js"
-      }
+      "import": "./dist/Animation.js",
+      "require": "./dist/cjs/Animation.js",
+      "types": "./dist/Animation.d.ts"
     },
     "./Stage": {
-      "import": {
-        "default": "./dist/Stage.js",
-        "types": "./dist/types/Stage.js"
-      }
+      "import": "./dist/Stage.js",
+      "require": "./dist/cjs/Stage.js",
+      "types": "./dist/Stage.d.ts"
     },
     "./Sprites": {
-      "import": {
-        "default": "./dist/Sprites.js",
-        "types": "./dist/types/Sprites.js"
-      }
+      "import": "./dist/Sprites.js",
+      "require": "./dist/cjs/Sprites.js",
+      "types": "./dist/Sprites.d.ts"
     },
     "./Channels": {
-      "import": {
-        "default": "./dist/Channels.js",
-        "types": "./dist/types/Channels.js"
-      }
+      "import": "./dist/Channels.js",
+      "require": "./dist/cjs/Channels.js",
+      "types": "./dist/Channels.d.ts"
     },
     "./Utils": {
-      "import": {
-        "default": "./dist/Utils.js",
-        "types": "./dist/types/Utils.js"
-      }
+      "import": "./dist/Utils.js",
+      "require": "./dist/cjs/Utils.js",
+      "types": "./dist/Utils.d.ts"
     },
     "./async_stages/OffscreenStage": {
-      "import": {
-        "default": "./dist/async_stages/OffscreenStage.js",
-        "types": "./dist/async_stages/OffscreenStage.js"
-      }
+      "import": "./dist/async_stages/OffscreenStage.js",
+      "require": "./dist/cjs/async_stages/OffscreenStage.js",
+      "types": "./dist/async_stages/OffscreenStage.d.ts"
     },
     "./async_stages/WorkerStage": {
-      "import": {
-        "default": "./dist/async_stages/WorkerStage.js",
-        "types": "./dist/async_stages/WorkerStage.js"
-      }
+      "import": "./dist/async_stages/WorkerStage.js",
+      "require": "./dist/cjs/async_stages/WorkerStage.js",
+      "types": "./dist/async_stages/WorkerStage.d.ts"
     },
     "./AnimationUtils": {
-      "import": {
-        "default": "./dist/AnimationUtils.js",
-        "types": "./dist/types/AnimationUtils.js"
-      }
+      "import": "./dist/AnimationUtils.js",
+      "require": "./dist/cjs/AnimationUtils.js",
+      "types": "./dist/AnimationUtils.d.ts"
     },
     "./types/Animation": {
-      "import": {
-        "default": "./dist/types/Animation.js",
-        "types": "./dist/types/Animation.js"
-      }
+      "import": "./dist/types/Animation.js",
+      "require": "./dist/types/Animation.cjs.js",
+      "types": "./dist/types/Animation.d.ts"
     },
     "./types/Common": {
-      "import": {
-        "default": "./dist/types/Common.js",
-        "types": "./dist/types/Common.js"
-      }
+      "import": "./dist/types/Common.js",
+      "require": "./dist/types/Common.cjs.js",
+      "types": "./dist/types/Common.d.ts"
     },
     "./types/Channels": {
-      "import": {
-        "default": "./dist/types/Channels.js",
-        "types": "./dist/types/Channels.js"
-      }
+      "import": "./dist/types/Channels.js",
+      "require": "./dist/types/Channels.cjs.js",
+      "types": "./dist/types/Channels.d.ts"
     },
     "./types/Events": {
-      "import": {
-        "default": "./dist/types/Events.js",
-        "types": "./dist/types/Events.js"
-      }
+      "import": "./dist/types/Events.js",
+      "require": "./dist/types/Events.cjs.js",
+      "types": "./dist/types/Events.d.ts"
     },
     "./types/Sprites": {
-      "import": {
-        "default": "./dist/types/Sprites.js",
-        "types": "./dist/types/Sprites.js"
-      }
+      "import": "./dist/types/Sprites.js",
+      "require": "./dist/types/Sprites.cjs.js",
+      "types": "./dist/types/Sprites.d.ts"
     },
     "./types/Stage": {
-      "import": {
-        "default": "./dist/types/Stage.js",
-        "types": "./dist/types/Stage.js"
-      }
+      "import": "./dist/types/Stage.js",
+      "require": "./dist/types/Stage.cjs.js",
+      "types": "./dist/types/Stage.d.ts"
     }
   },
   "license": "MIT",
@@ -121,4 +107,3 @@
     "url": "https://github.com/gitpushjoe/sharc.git"
   }
 }
-
