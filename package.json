@@ -1,7 +1,7 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "1.4.1-dev0",
+  "version": "1.4.1-dev1",
   "type": "module",
   "files": [
     "dist/*"
@@ -11,85 +11,85 @@
       "import": {
         "default": "./dist/Animation.js",
         "types": "./dist/types/Animation.js"
-      },
+      }
     },
     "./Stage": {
       "import": {
         "default": "./dist/Stage.js",
         "types": "./dist/types/Stage.js"
-      },
+      }
     },
     "./Sprites": {
       "import": {
         "default": "./dist/Sprites.js",
         "types": "./dist/types/Sprites.js"
-      },
+      }
     },
     "./Channels": {
       "import": {
         "default": "./dist/Channels.js",
         "types": "./dist/types/Channels.js"
-      },
+      }
     },
     "./Utils": {
       "import": {
         "default": "./dist/Utils.js",
         "types": "./dist/types/Utils.js"
-      },
+      }
     },
     "./async_stages/OffscreenStage": {
       "import": {
         "default": "./dist/async_stages/OffscreenStage.js",
         "types": "./dist/async_stages/OffscreenStage.js"
-      },
+      }
     },
     "./async_stages/WorkerStage": {
       "import": {
         "default": "./dist/async_stages/WorkerStage.js",
         "types": "./dist/async_stages/WorkerStage.js"
-      },
+      }
     },
     "./AnimationUtils": {
       "import": {
         "default": "./dist/AnimationUtils.js",
         "types": "./dist/types/AnimationUtils.js"
-      },
+      }
     },
     "./types/Animation": {
       "import": {
         "default": "./dist/types/Animation.js"
         "types": "./dist/types/Animation.js"
-      },
+      }
     },
     "./types/Common": {
       "import": {
         "default": "./dist/types/Common.js",
         "types": "./dist/types/Common.js"
-      },
+      }
     },
     "./types/Channels": {
       "import": {
         "default": "./dist/types/Channels.js",
         "types": "./dist/types/Channels.js"
-      },
+      }
     },
     "./types/Events": {
       "import": {
         "default": "./dist/types/Events.js",
         "types": "./dist/types/Events.js"
-      },
+      }
     },
     "./types/Sprites": {
       "import": {
         "default": "./dist/types/Sprites.js",
         "types": "./dist/types/Sprites.js"
-      },
+      }
     },
     "./types/Stage": {
       "import": {
         "default": "./dist/types/Stage.js",
         "types": "./dist/types/Stage.js"
-      },
+      }
     },
   },
   "license": "MIT",
