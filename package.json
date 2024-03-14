@@ -1,84 +1,96 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "1.4.1-dev5",
+  "version": "1.4.1",
   "type": "module",
   "files": [
     "dist/*"
   ],
   "exports": {
+    "./Animation.js": "./dist/Animation.js",
+    "./Stage.js": "./dist/Stage.js",
+    "./Sprites.js": "./dist/Sprites.js",
+    "./Channels.js": "./dist/Channels.js",
+    "./Utils.js": "./dist/Utils.js",
+    "./async_stages/OffscreenStage.js": "./dist/async_stages/OffscreenStage.js",
+    "./async_stages/WorkerStage.js": "./dist/async_stages/WorkerStage.js",
     "./Animation": {
       "import": "./dist/Animation.js",
-      "require": "./dist/cjs/Animation.js",
       "types": "./dist/Animation.d.ts"
     },
     "./Stage": {
       "import": "./dist/Stage.js",
-      "require": "./dist/cjs/Stage.js",
       "types": "./dist/Stage.d.ts"
     },
     "./Sprites": {
       "import": "./dist/Sprites.js",
-      "require": "./dist/cjs/Sprites.js",
       "types": "./dist/Sprites.d.ts"
     },
     "./Channels": {
       "import": "./dist/Channels.js",
-      "require": "./dist/cjs/Channels.js",
       "types": "./dist/Channels.d.ts"
     },
     "./Utils": {
       "import": "./dist/Utils.js",
-      "require": "./dist/cjs/Utils.js",
       "types": "./dist/Utils.d.ts"
     },
     "./async_stages/OffscreenStage": {
       "import": "./dist/async_stages/OffscreenStage.js",
-      "require": "./dist/cjs/async_stages/OffscreenStage.js",
       "types": "./dist/async_stages/OffscreenStage.d.ts"
     },
     "./async_stages/WorkerStage": {
       "import": "./dist/async_stages/WorkerStage.js",
-      "require": "./dist/cjs/async_stages/WorkerStage.js",
       "types": "./dist/async_stages/WorkerStage.d.ts"
     },
     "./AnimationUtils": {
       "import": "./dist/AnimationUtils.js",
-      "require": "./dist/cjs/AnimationUtils.js",
       "types": "./dist/AnimationUtils.d.ts"
     },
     "./types/Animation": {
       "import": "./dist/types/Animation.js",
-      "require": "./dist/types/Animation.cjs.js",
       "types": "./dist/types/Animation.d.ts"
     },
     "./types/Common": {
       "import": "./dist/types/Common.js",
-      "require": "./dist/types/Common.cjs.js",
       "types": "./dist/types/Common.d.ts"
     },
     "./types/Channels": {
       "import": "./dist/types/Channels.js",
-      "require": "./dist/types/Channels.cjs.js",
       "types": "./dist/types/Channels.d.ts"
     },
     "./types/Events": {
       "import": "./dist/types/Events.js",
-      "require": "./dist/types/Events.cjs.js",
       "types": "./dist/types/Events.d.ts"
     },
     "./types/Sprites": {
       "import": "./dist/types/Sprites.js",
-      "require": "./dist/types/Sprites.cjs.js",
       "types": "./dist/types/Sprites.d.ts"
     },
     "./types/Stage": {
       "import": "./dist/types/Stage.js",
-      "require": "./dist/types/Stage.cjs.js",
       "types": "./dist/types/Stage.d.ts"
     }
   },
-  "types": "./dist/tstypes",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/AnimationUtils.d.ts",
+        "dist/Animation.d.ts",
+        "dist/Stage.d.ts",
+        "dist/Sprites.d.ts",
+        "dist/Channels.d.ts",
+        "dist/Utils.d.ts",
+        "dist/async_stages/OffscreenStage.d.ts",
+        "dist/async_stages/WorkerStage.d.ts"
+      ]
+    }
+  },
+  "references": [
+    {
+      "name": "sharc",
+      "path": "dist"
+    }
+  ],
   "license": "MIT",
   "scripts": {
     "dev": "vite",
