@@ -1,7 +1,7 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "1.4.1-dev4",
+  "version": "1.4.1-dev5",
   "type": "module",
   "files": [
     "dist/*"
@@ -78,6 +78,7 @@
       "types": "./dist/types/Stage.d.ts"
     }
   },
+  "types": "./dist/tstypes",
   "license": "MIT",
   "scripts": {
     "dev": "vite",

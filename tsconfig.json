@@ -12,6 +12,7 @@
         "allowSyntheticDefaultImports": true,
         "allowJs": true,
       "declaration": true,
+      "declarationDir": "dist/tstypes",
       "outDir": "dist",
       "noEmit": false,
       "strict": true,
