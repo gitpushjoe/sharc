@@ -1,14 +1,9 @@
 import { useRef, useState } from 'react'
 import './main.css'
 import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom'
-import { GettingStarted, GS_Overview, GS_Terminology } from './pages/GettingStarted'
 import Sidebar from './components/Sidebar/Sidebar'
-import * as Stage from './pages/Stage'
-import * as Sprites from './pages/Sprites'
-import * as Animation from './pages/Animation'
-import * as Types from './pages/Types'
-import * as Utils from './pages/Utils'
 import { LinkContainer } from 'react-router-bootstrap'
+import PageLoader from './components/PageLoader'
 
 function Docs() {
 
@@ -38,7 +33,21 @@ function Docs() {
                 </LinkContainer>
             </li>
             <li className="nav-item active">
-                <a className="nav-link lead mx-1" href="#"><strong>Documentation</strong></a>
+                <a className="nav-link lead mx-1" href="#/docs/getting-started">
+                    {
+                        params.category !== 'changelog' ?
+                        <strong>Documentation</strong> :
+                        'Documentation'
+                    }
+                </a>
+            </li>
+            <li className="nav-item active">
+                <a className="nav-link lead mx-1" href="#/docs/changelog">
+                {
+                    params.category === 'changelog' ?
+                    <strong>Changelog</strong> :
+                    'Changelog'
+                }</a>
             </li>
             {/* <li className="nav-item active">
                 <a className="nav-link lead mx-1" href="#">Examples</a>
@@ -60,7 +69,12 @@ function Docs() {
                     Download{'\u00A0\u00A0'}
                 </button>
                 <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1DA7QlCm2AYLxfLz9NlM1DHVcrK1dIBqr?usp=drive_link">beta v1.0.0 (latest)</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/11ZEeAiAO7F-YRpSgM08XcRuj8LUhCyr5?usp=sharing">release v1.3.1</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1wdG0XfqM10HLGGbW4ktO4uRbWwNI3Wy8?usp=drive_link">release v1.2.0</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1M_PzHl7_uyRRhZnGtiCiSXayV93i5Nnb?usp=sharing">release v1.1.1</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1bK432l4WjHF7pybB76sHIi5o-CjLFJbv?usp=sharing">release v1.1.0</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1xH-roxXxDQrMc1iRvsIAIIJp3tjaAM5L?usp=sharing">release v1.0.0</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1DA7QlCm2AYLxfLz9NlM1DHVcrK1dIBqr?usp=drive_link">beta v1.0.0</a>
                 </div>
                 </div>
         </div></div>
@@ -74,54 +88,7 @@ function Docs() {
                 <Sidebar category={params.category} subcategory={params.subcategory}/>
             </div>
         <div className='col-12 col-md-9 col-lg-9 d-block m-0 p-md-4 p-2 border-left'>
-            {
-                params.category === 'getting-started' ? 
-                    params.subcategory === 'first-steps' ? <GS_Overview /> :
-                    params.subcategory === 'terminology' ? <GS_Terminology /> :
-                <GettingStarted /> : 
-                params.category === 'stage' ? 
-                    params.subcategory === 'usage' ? <Stage.Usage /> :
-                    params.subcategory === 'react' ? <Stage.React /> :
-                    params.subcategory === 'angular' ? <Stage.Angular /> :
-                    params.subcategory === 'event-listeners' ? <Stage.EventListeners /> :
-                    <Stage.DefaultPage /> :
-                params.category === 'sprites' ?
-                    params.subcategory === 'usage' ? <Sprites.Usage /> :
-                    params.subcategory === 'properties' ? <Sprites.Properties /> :
-                    params.subcategory === 'details' ? <Sprites.Details /> :
-                    params.subcategory === 'parenting' ? <Sprites.Parenting /> :
-                    params.subcategory === 'the-base-shape-class' ? <Sprites.Shape /> :
-                    params.subcategory === 'event-listeners' ? <Sprites.EventListeners /> :
-                    params.subcategory === 'strokeablesprite' ? <Sprites.Strokeable /> :
-                    params.subcategory === 'line' ? <Sprites.LinePage /> :
-                    params.subcategory === 'rect' ? <Sprites.RectPage /> :
-                    params.subcategory === 'ellipse' ? <Sprites.EllipsePage /> :
-                    params.subcategory === 'beziercurve' ? <Sprites.BezierCurvePage /> :
-                    params.subcategory === 'path' ? <Sprites.PathPage /> :
-                    params.subcategory === 'polygon' ? <Sprites.PolygonPage /> :
-                    params.subcategory === 'star' ? <Sprites.StarPage /> :
-                    params.subcategory === 'text' ? <Sprites.TextPage /> :
-                    params.subcategory === 'label' ? <Sprites.LabelPage /> :
-                    params.subcategory === 'image' ? <Sprites.ImagePage /> :
-                    params.subcategory === 'nullsprite' ? <Sprites.NullSpritePage /> :
-                    <Sprites.Sprites/> :
-                params.category === 'animation' ?
-                    params.subcategory === 'channels' ? <Animation.Channels /> :
-                    params.subcategory === 'smart-animations' ? <Animation.SmartAnimations /> :
-                    params.subcategory === 'distribute' ? <Animation.Distribute /> :
-                    params.subcategory === 'easing' ? <Animation.EasingPage /> :
-                    <Animation.DefaultPage /> :
-                params.category === 'types' ?
-                    params.subcategory === 'common' ? <Types.Common /> :
-                    params.subcategory === 'animation' ? <Types.AnimationPage /> :
-                    params.subcategory === 'events' ? <Types.EventsPage /> :
-                    params.subcategory === 'sprites' ? <Types.SpritesPage /> :
-                    <Types.Types /> :
-                params.category === 'utils' ?
-                    params.subcategory === 'animation' ? <Utils.AnimationUtils /> :
-                    <Utils.default /> :
-                <> </>
-            }    
+            <PageLoader category={params.category} subcategory={params.subcategory}/>
         </div>
         </div>
         </div>

@@ -9,13 +9,13 @@ import { HashRouter, Routes, Route } from 'react-router-dom'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<>
 
-  <React.StrictMode>
+  <>
     <HashRouter basename={process.env.PUBLIC_URL}>
         <Routes>
             <Route path="/docs/:category?/:subcategory?/:section?" element={<Docs />} />
             <Route path="/" element={<Home />} />
         </Routes>
     </HashRouter>
-  </React.StrictMode>
+  </>
   </>
 )

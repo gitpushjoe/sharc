@@ -1,0 +1,23 @@
+import { Stage } from 'sharc-js/Stage';
+import { Ellipse } from 'sharc-js/Sprites';
+import { Colors } from 'sharc-js/Utils';
+
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const stage = new Stage(canvas, 'classic', Colors.LightSlateGray);
+const root = stage.root;
+
+const ellipse1 = new Ellipse({
+		    center: { x: 100, y: 100 },
+		    radius: 50,
+		    color: Colors.Aqua,
+		});
+
+const ellipse2 = new Ellipse({
+		    center: { x: 400, y: 200 },
+		    radius: 75,
+		    color: Colors.Lime,
+		});
+
+root.addChildren(ellipse1, ellipse2);
+stage.loop();
+

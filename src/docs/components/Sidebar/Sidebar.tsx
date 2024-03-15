@@ -7,17 +7,16 @@ export default function Sidebar(props: {category: string, subcategory: string|nu
     return <>
             <div className='col-12 d-md-block p-2'>
             <br/>
-            <h1 className='h5'>beta v1.0.0</h1>
+            <h1 className='h5'> stable: 1.4.1 </h1>
             <hr/>
             <div className='nav flex-column nav-pills'  role='tablist' aria-orientation='vertical'>
-                {Object.entries(SidebarItems).map(([key, items], idx) => {
-                    return <>
+                {[...Object.entries(SidebarItems)].map(([key, items], idx) => {
+                    return <div key={idx}>
                         <SidebarElement category={key} key={idx} highlighted={(key.toLowerCase().replaceAll(' ','-') === category) && !subcategory} indented={false} disabled={false}/>
                         {items.map((item, idx2) => {
-                    console.log(key, category)
-                            return <SidebarElement name={item} category={key} key={idx2 * 100} highlighted={item.toLowerCase().replaceAll(' ','-') === subcategory && key.toLowerCase().replaceAll(' ','-') === category} indented={true} disabled={false}/>
+                            return <SidebarElement name={item} category={key} key={`${idx} ${idx2}`} highlighted={item.toLowerCase().replaceAll(' ','-') === subcategory && key.toLowerCase().replaceAll(' ','-') === category} indented={true} disabled={false}/>
                         })}
-                    </>
+                    </div>
                 })}
             </div>
         </div>

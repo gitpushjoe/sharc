@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './Home.module.css';
-import { Stage } from 'sharc-js/Stage'
-import { Ellipse, Line, NullSprite } from 'sharc-js/Sprites'
+import { Stage } from 'sharc-js/Stage.js'
+import { Ellipse, NullSprite } from 'sharc-js/Sprites'
 import { Animate, Color, Colors, Easing, addXCallback } from 'sharc-js/Utils'
-import { renderIntoDocument } from 'react-dom/test-utils'
 import { LinkContainer } from 'react-router-bootstrap';
-
 
 function App() {
     const canvasRef = useRef<HTMLCanvasElement>(null);

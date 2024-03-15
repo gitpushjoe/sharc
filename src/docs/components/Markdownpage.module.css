@@ -1,0 +1,9 @@
+pre {
+    margin: 0em 0em;
+    padding: 0;
+}
+
+.noBackground {
+    background-color: transparent;
+    background: transparent;
+}

@@ -1,0 +1,33 @@
+import { Stage } from 'sharc-js/Stage'
+import { Ellipse } from 'sharc-js/Sprites'
+import { Colors, Easing } from 'sharc-js/Utils'
+import { PositionType } from 'sharc-js/types/Common'
+
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
+
+const circle = new Ellipse({
+    radius: 25,
+    color: Colors.Aqua,
+    stroke: {lineWidth: 5},
+}).on('click', function () {
+    this.channels[0].enqueue([
+        {
+            property: 'center',
+            from: null,
+            to: (src: PositionType) => {
+                const dest = {
+                    x: Math.round((Math.random() - 0.5) * stage.width!),
+                    y: Math.round((Math.random() - 0.5) * stage.height!),
+                }
+                alert(`Moving from (${src.x}, ${src.y}) to (${dest.x}, ${dest.y})`)
+                return dest;
+            },
+            duration: 15,
+            easing: Easing.EASE_IN_OUT,
+        }
+    ], 1);
+});
+
+stage.root.addChild(circle);
+stage.loop();

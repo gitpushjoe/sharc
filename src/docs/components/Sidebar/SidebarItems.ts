@@ -8,6 +8,7 @@ export const SidebarItems = {
         'React',
         'Angular',
         'Event Listeners',
+        'Async Stages'
     ],
     'Sprites': [
         'Usage',
@@ -36,10 +37,6 @@ export const SidebarItems = {
         'Easing'
     ],
     'Types': [
-        'Common',
-        'Animation',
-        'Events',
-        'Sprites'
     ],
     'Utils': [
         'Animation',

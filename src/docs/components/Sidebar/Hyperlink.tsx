@@ -12,9 +12,11 @@ export const Hyperlink = (props: {to?: string, children: string}) => {
     }
     return (
         <span>
-        <LinkContainer to={'/docs/' + link}>
+        { link.startsWith('https:') ? <a href={link}>{props.children}</a> :
+        <LinkContainer to={`/docs/${link}`}>
             <a>{props.children}</a>
         </LinkContainer>
+        }
         </span>
     );
 }

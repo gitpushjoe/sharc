@@ -1,0 +1,25 @@
+import { useEffect, useRef } from 'react';
+import { Stage } from 'sharc-js/dist/Stage';
+import { Ellipse } from 'sharc-js/dist/Sprits';
+import { Colors } from 'sharc-js/dist/Utils';
+
+export function StageComponent() {
+    const canvasRef = useRef(null);
+
+    useEffect(() => {
+        const stage = new Stage(canvasRef.current!, 'centered', Colors.LightSlateGray);
+
+        stage.root.addChild(new Ellipse({
+            radius: 100,
+            color: Colors.Aqua,
+        }));
+
+        stage.loop();
+
+        return () => {
+            stage.stop();
+        }
+    }, []);
+                            
+    return <canvas ref={canvasRef} width={600} height={400} />
+}
