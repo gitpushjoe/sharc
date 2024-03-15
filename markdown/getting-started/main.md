@@ -20,7 +20,7 @@ This is the simplest way to install sharc. Just run this command in your termina
 ~~~txt
 $ npm install sharc-js@stable
 ~~~
-This works for both Javascript and Typescript projects. (For Typescript you need Typescript version ^5.1.3)
+This works for both Javascript and Typescript projects. (For Typescript, you need Typescript version ^5.1.3)
 
 []
 ### Github

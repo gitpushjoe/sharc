@@ -28,6 +28,6 @@ Inherited from [c:StrokeableSprite](): `bl:stroke?`
 
 `bl:startY: number - the number of curves on the path. Normal property.arrowLength: number` - the length of the arrowhead. Defaults to `20`. Normal Property.
 
-`bl:arrowSide: 'none' | 'start' | 'end' | 'both'` - the side of the line the arrowhead is on. Defaults to `'none' if no arrow style is supplied, otherwise 'end'`. Normal Property.
+`bl:arrowSide: 'none' | 'start' | 'end' | 'both'` - the side of the line the arrowhead is on. Defaults to `'none'` if no arrow style is supplied, otherwise `'end'`. Normal Property.
 
 See [c:Line](): `bl:arrowAngle: number` `bl:arrowStroke: StrokeType` `bl:arrowClosed: boolean` `bl:arrowColor: ColorType` `bl:arrowStrokeColor: ColorType` `bl:arrowStrokeJoin: 'bevel' | 'round' | 'miter'` `bl:arrowStrokeCap: 'butt' | 'round' | 'square'` `bl:arrowStrokeDash: number` `bl:arrowStrokeDashGap: number` `bl:arrowStrokeDashOffset: number` `bl:arrowRed: number` `bl:arrowGreen: number` `bl:arrowBlue: number` `bl:arrowAlpha: number` `bl:arrowStrokeRed: number` `bl:arrowStrokeGreen: number` `bl:arrowStrokeBlue: number` `bl:arrowStrokeAlpha: number`
