@@ -1,7 +1,7 @@
 import { Position, ColorToString, Corners, Color, callAndPrune } from "./Utils";
 import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
 import { PositionType, BoundsType, ColorType } from "./types/Common";
-import { EventCollection, PositionedPointerEvent, StageEventCallback } from "./types/Events";
+import { EventCollection, PositionedPointerEvent } from "./types/Events";
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
@@ -408,7 +408,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     protected pointerId?: number = undefined;
-    protected pointerButton?: number = undefined;
     protected hovered = false;
 
     private eventListeners: SpriteEventListeners<this, Properties & HiddenProperties> = {
@@ -416,6 +415,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         drag: [],
         hover: [],
         hoverEnd: [],
+        hold: [],
         release: [],
         scroll: [],
         beforeDraw: [],
@@ -546,7 +546,12 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             (child as Sprite).events = this.events;
             child.draw(ctx, undefined, false);
         });
-        if (!this.handlePointerEvents(ctx)) ctx.restore();
+        if (!this.handlePointerEvents(ctx)) {
+            ctx.restore();
+        }
+        if (this.pointerId !== undefined) {
+            callAndPrune(this.eventListeners, "hold", [this]);
+        }
         if (isRoot) {
             this.rootPointerEventCallback();
         }
@@ -565,6 +570,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             [
                 this.eventListeners.click,
                 this.eventListeners.drag,
+                this.eventListeners.hold,
                 this.eventListeners.hover,
                 this.eventListeners.hoverEnd,
                 this.eventListeners.release
@@ -601,12 +607,14 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             positionedPointerEvent: PositionedPointerEvent,
             root: Shape,
             self: this,
-            listener: 'click' | 'drag' | 'release'
+            listener?: 'click' | 'drag' | 'release',
+            pointerId?: number
         ) => {
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
-            const callback = function() {
+            console.log("here");
+            const callback = function(pointerId?: number) {
                 ctx.save();
                 ctx.setTransform(
                     transformationMatrix.a,
@@ -616,17 +624,28 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                callAndPrune(self.eventListeners, listener, [self, transformedPos, event]);
+                callAndPrune(self.eventListeners, listener!, [self, transformedPos, event]);
+                if (pointerId !== undefined) {
+                    self.pointerId = pointerId;
+                }
                 ctx.restore();
             };
-            (root as Sprite).rootPointerEventCallback = callback.bind(this);
+            if (listener === undefined) {
+                (root as Sprite).rootPointerEventCallback = (function(pointerId?: number) {
+                    if (pointerId !== undefined) {
+                        self.pointerId = pointerId;
+                    }
+                }).bind(this, pointerId);
+            } else {
+                (root as Sprite).rootPointerEventCallback = callback.bind(this, pointerId);
+            }
         };
 
         if (this.events.move && !this.events.up && !this.events.down) {
             if (this.pointerId !== undefined && this.eventListeners.drag.length > 0) {
                 ctx.restore();
                 ctxRestored = true;
-                registerCallback(ctx, this.events.move, this.root, this, 'drag');
+                registerCallback(ctx, this.events.move, this.root, this, 'drag', this.pointerId);
             }
         }
         if (this.events.up) {
@@ -641,12 +660,13 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             ctx.restore();
             ctxRestored = true;
             const event = this.events.down;
-            this.pointerId = event.event.pointerId;
-            this.pointerButton = event.event.button;
             if (this.eventListeners.click.length > 0) {
-                registerCallback(ctx, event, this.root, this, 'click');
+                registerCallback(ctx, event, this.root, this, 'click', event.event.pointerId);
+            } else {
+                registerCallback(ctx, event, this.root, this, undefined, event.event.pointerId);
             }
         }
+
         return ctxRestored;
     }
 

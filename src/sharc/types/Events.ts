@@ -43,6 +43,7 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     release: PointerEventCallback<CallerType>[];
     hover: PointerEventCallback<CallerType>[];
     hoverEnd: PointerEventCallback<CallerType>[];
+    hold: ((sprite: CallerType) => boolean | 0 | 1 | void)[];
     scroll: ScrollEventCallback<CallerType>[];
     beforeDraw: StageEventCallback<CallerType>[];
     animationFinish: AnimationFinishCallback<
@@ -50,14 +51,6 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
         PrivateAnimationType<Properties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
     >[];
 };
-
-// future update:
-// export type SpriteScheduler<CallerType = undefined> = {
-//     remainingFrames: number;
-//     callback: (this: CallerType) => void;
-// };
-//
-// export type SpriteSchedulers<thisType = undefined> = SpriteScheduler<thisType>[];
 
 export type StageEventListeners<CallerType = Stage> = {
     click: PointerEventCallback<CallerType>[];

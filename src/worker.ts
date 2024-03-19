@@ -233,20 +233,31 @@ if (test === "perf") {
             center: { x: 50 + (i + 2) * 40, y: 50 + (i % 2) * 40 },
             name: `ellipse${i}`
         })
-            .on("drag", (sprite, pos) => {
-                stage.postCustomMessage(`${sprite.name}`);
-                sprite.center = pos;
-                sprite.bringToFront();
-            })
-            .on("release", (sprite, _, e) => {
-                sprite.root.logHierarchy();
-                if (e.button === 0) {
-                    sprite.sendToBack();
-                } else {
-                    sprite.sendBackward();
-                    return 1;
-                }
-            });
+        .on("drag", (sprite, pos) => {
+            stage.postCustomMessage(`${sprite.name}`);
+            sprite.center = pos;
+            sprite.radius = 20;
+            sprite.bringToFront();
+        })
+        .on("hold", sprite => {
+            sprite.strokeDash = 10;
+            sprite.strokeDashGap = 5;
+            if (!(stage.currentFrame % 30)) {
+                console.log("held!");
+            }
+        })
+        .on("release", (sprite, _, e) => {
+            sprite.root.logHierarchy();
+            sprite.radius = 50;
+            sprite.strokeDash = 0;
+            sprite.strokeDashGap = 0;
+            if (e.button === 0) {
+                sprite.sendToBack();
+            } else {
+                sprite.sendBackward();
+                return 1;
+            }
+        });
         stage.root.addChild(ellipse);
     }
     const max = 100;
