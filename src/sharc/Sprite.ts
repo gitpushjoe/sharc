@@ -76,8 +76,8 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return [...this._children];
     }
 
-    public r_getChildren(): Shape[] {
-        return this._children.reduce<Shape[]>((acc, child) => acc.concat(child.r_getChildren()), this._children);
+    public get descendants(): Shape[] {
+        return this._children.reduce<Shape[]>((acc, child) => acc.concat(child, child.descendants), []);
     }
 
     public get parent(): Shape | undefined {
@@ -92,10 +92,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this._children.find(child => child.name === name);
     }
 
-    public r_findChild(name: string): Shape | undefined {
+    public findDescendant(name: string): Shape | undefined {
         return (
             this._children.find(child => child.name === name) ??
-            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.r_findChild(name), undefined)
+            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.findDescendant(name), undefined)
         );
     }
 
@@ -103,12 +103,12 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this._children.filter(child => child.name === name);
     }
 
-    public r_findChildren(name: string): Shape[] {
+    public findDescendants(name: string): Shape[] {
         return this._children.reduce<Shape[]>((acc, child) => {
             if (child.name === name) {
                 acc.push(child);
             }
-            return acc.concat(child.r_findChildren(name));
+            return acc.concat(child.findDescendants(name));
         }, []);
     }
 
@@ -116,10 +116,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this._children.find(filter);
     }
 
-    public r_findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    public findDescendantWhere(filter: (child: Shape) => boolean): Shape | undefined {
         return (
             this._children.find(filter) ??
-            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.r_findChildWhere(filter), undefined)
+            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.findDescendantWhere(filter), undefined)
         );
     }
 
@@ -127,12 +127,12 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this._children.filter(filter);
     }
 
-    public r_findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+    public findDescendantsWhere(filter: (child: Shape) => boolean): Shape[] {
         return this._children.reduce<Shape[]>((acc, child) => {
             if (filter(child)) {
                 acc.push(child);
             }
-            return acc.concat(child.r_findChildrenWhere(filter));
+            return acc.concat(child.findDescendantsWhere(filter));
         }, []);
     }
 
@@ -140,14 +140,14 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this._children.find(filter)?.removeSelf();
     }
 
-    public r_removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    public removeDescendantWhere(filter: (child: Shape) => boolean): Shape | undefined {
         const child = this._children.find(filter);
         if (child) {
             this.removeChild(child);
             return child;
         }
         return this._children.reduce<Shape | undefined>(
-            (acc, child) => acc ?? child.r_removeChildWhere(filter),
+            (acc, child) => acc ?? child.removeDescendantWhere(filter),
             undefined
         );
     }
@@ -164,10 +164,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return removed;
     }
 
-    public r_removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+    public removeDescendantsWhere(filter: (child: Shape) => boolean): Shape[] {
         const removed: Shape[] = [];
         this._children = this._children.filter(child => {
-            removed.push(...child.r_removeChildrenWhere(filter));
+            removed.push(...child.removeDescendantsWhere(filter));
             if (filter(child)) {
                 removed.push(child);
                 return false;
