@@ -6,7 +6,7 @@ import { PositionType } from "./sharc/types/Common";
 
 postMessage("Hello from worker!");
 
-const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
+const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.Black);
 
 const test: string = "1.5";
 if (test === "perf") {
@@ -237,8 +237,6 @@ if (test === "perf") {
                 stage.postCustomMessage(`${sprite.name}`);
                 sprite.center = pos;
                 sprite.bringToFront();
-                // console.log(sprite.parent);
-                // sprite.root.logHierarchy();
             })
             .on("release", (sprite, _, e) => {
                 sprite.root.logHierarchy();

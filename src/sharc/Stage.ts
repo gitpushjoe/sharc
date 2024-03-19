@@ -95,6 +95,15 @@ export class Stage<RootDetailsType = any> {
         return this;
     }
 
+    public includeEventListener<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
+        event: E,
+        callback: StageEventListeners<this>[E][0]
+    ): this {
+        this.removeEventListener(event, callback);
+        this.addEventListener(event, callback);
+        return this;
+    }
+
     protected pointerDownHandler(e: PointerEvent) {
         if (!this.active) {
             return;

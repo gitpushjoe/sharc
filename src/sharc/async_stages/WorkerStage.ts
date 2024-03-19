@@ -1,5 +1,5 @@
 import type { ColorType } from "../types/Common";
-import { AsyncStageEventListeners, EventCollection, PointerEventCallback } from "../types/Events";
+import { AsyncStageEventListeners, EventCollection, PointerEventCallback, SpriteEventListeners } from "../types/Events";
 import { AsyncMessage, CanvasInterface, StageStateMessage } from "../types/Stage";
 import { Stage } from "../Stage";
 import { Colors, Position } from "../Utils";
@@ -94,6 +94,17 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<this>)
         );
+        return this;
+    }
+
+    public includeEventListener<
+        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        this.removeEventListener(event, callback);
+        this.addEventListener(event, callback);
         return this;
     }
 

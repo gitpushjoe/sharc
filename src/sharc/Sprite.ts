@@ -270,6 +270,9 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract removeEventListener<
         E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
     >(event: E, callback?: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
+    public abstract includeEventListener<
+        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
+    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
 
     public abstract hasEventListeners(): boolean;
     public abstract spriteOrChildrenHaveEventListeners(): boolean;
@@ -443,6 +446,14 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<this>)
         );
+        return this;
+    }
+
+    public includeEventListener<
+        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
+    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this {
+        this.removeEventListener(event, callback);
+        this.addEventListener(event, callback);
         return this;
     }
 

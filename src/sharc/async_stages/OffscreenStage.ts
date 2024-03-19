@@ -1,4 +1,4 @@
-import { AsyncStageEventListeners, PositionedPointerEvent, PointerEventCallback } from "../types/Events";
+import { AsyncStageEventListeners, PositionedPointerEvent, PointerEventCallback, SpriteEventListeners } from "../types/Events";
 import { StageStateMessage, AsyncMessage } from "../types/Stage";
 import { Stage } from "../Stage";
 import { Colors } from "../Utils";
@@ -189,6 +189,17 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<this>)
         );
+        return this;
+    }
+
+    public includeEventListener<
+        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        this.removeEventListener(event, callback);
+        this.addEventListener(event, callback);
         return this;
     }
 
