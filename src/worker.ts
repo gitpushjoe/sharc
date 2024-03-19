@@ -1,9 +1,8 @@
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />
-import { Ellipse, Rect, Line, LabelSprite, BezierCurve, ImageSprite, Shape } from "./sharc/Sprites";
+import { Ellipse, Rect, Line, LabelSprite, BezierCurve, ImageSprite } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
-import { Sprite } from "./sharc/Sprite";
 
 postMessage("Hello from worker!");
 
@@ -85,15 +84,11 @@ if (test === "perf") {
         text.text = `(${pos.x}, ${pos.y})`;
     });
     stage.root.addChild(rect);
-    rect.on("hover", function () {
-        this.color = Colors.Red;
-    });
-    rect.on("hoverEnd", function () {
-        this.color = Colors.Blue;
-    });
-    rect.on("click", function () {
+    rect.on("hover", sprite => sprite.color = Colors.Red );
+    rect.on("hoverEnd", sprite => sprite.color = Colors.Blue );
+    rect.on("click", sprite => {
         stage.postCustomMessage(`click on ${performance.now()}`);
-        this.channels[0].push({
+        sprite.channels[0].push({
             property: "rotation",
             from: null,
             to: x => x + 360,
@@ -108,26 +103,20 @@ if (test === "perf") {
         details: { center: { x: 200, y: 200 }, click: { x: 0, y: 0 } },
         stroke: { lineWidth: 10 }
     });
-    circle.on("click", function (_, pos) {
-        this.details!.click = pos;
-        this.details!.center = this.center;
+    circle.on("click", function (sprite, pos) {
+        sprite.details!.click = pos;
+        sprite.details!.center = this.center;
     });
-    circle.on("drag", function (_, pos) {
-        if (!this.details) return;
-        this.center = {
-            x: this.details!.center.x + (pos.x - this.details!.click.x),
-            y: this.details!.center.y + (pos.y - this.details!.click.y)
+    circle.on("drag", function (sprite, pos) {
+        if (!sprite.details) return;
+        sprite.center = {
+            x: sprite.details!.center.x + (pos.x - this.details!.click.x),
+            y: sprite.details!.center.y + (pos.y - this.details!.click.y)
         };
     });
-    circle.on("hover", function () {
-        this.color = Colors.Red;
-    });
-    circle.on("hoverEnd", function () {
-        this.color = Colors.Green;
-    });
-    circle.on("release", function () {
-        console.log("released");
-    });
+    circle.on("hover", sprite => sprite.color = Colors.Red );
+    circle.on("hoverEnd", sprite => sprite.color = Colors.Green );
+    circle.on("release", _ => console.log("released") );
     stage.on("click", function () {
         stage.postCustomMessage(`stage click on ${Date.now()}`);
     });
@@ -138,8 +127,10 @@ if (test === "perf") {
     cpy2.centerY += 200;
     stage.root.addChildren(text, circle, cpy, cpy2);
 
-    stage.on("beforeDraw", function (frame) {
-        if (frame > 60 * 10) this.stop();
+    stage.on("beforeDraw", (sprite, frame) => {
+        if (frame > 60 * 10) {
+            sprite.stop();
+        }
     });
 } else if (test === "key") {
     const label = new LabelSprite({
@@ -152,7 +143,7 @@ if (test === "perf") {
         positionIsCenter: true,
         position: { x: 600, y: 300 }
     });
-    stage.on("keydown", function (e) {
+    stage.on("keydown", (_, e) => {
         if (e.key === "Backspace") {
             label.text = label.text.slice(0, -1);
         } else if (e.key.length === 1) {
@@ -205,14 +196,14 @@ if (test === "perf") {
     const image = new ImageSprite({
         bounds: Rect.Bounds(100, 100, 200, 200)
     });
-    image.on("beforeDraw", function (frame) {
+    image.on("beforeDraw", (sprite, frame) => {
         if (frame === 0) {
             fetch(
                 "https://images.squarespace-cdn.com/content/v1/5b80290bee1759a50e3a86b3/1535916876568-9PPRFSDF7X6X1U5LC9LX/leatherback+art.png"
             )
                 .then(response => response.blob())
                 .then(blob => createImageBitmap(blob))
-                .then(image => (this.image = image))
+                .then(image => (sprite.image = image))
                 .then(() => {
                     console.group("Image loaded");
                     console.log(image.src);
@@ -242,19 +233,19 @@ if (test === "perf") {
             center: { x: 50 + (i + 2) * 40, y: 50 + (i % 2) * 40 },
             name: `ellipse${i}`
         })
-            .on("drag", function (_, pos) {
-                stage.postCustomMessage(`${this.name}`);
-                this.center = pos;
-                this.bringToFront();
-                // console.log(this.parent);
-                // this.root.logHierarchy();
+            .on("drag", (sprite, pos) => {
+                stage.postCustomMessage(`${sprite.name}`);
+                sprite.center = pos;
+                sprite.bringToFront();
+                // console.log(sprite.parent);
+                // sprite.root.logHierarchy();
             })
-            .on("release", function (e) {
-                this.root.logHierarchy();
+            .on("release", (sprite, _, e) => {
+                sprite.root.logHierarchy();
                 if (e.button === 0) {
-                    this.sendToBack();
+                    sprite.sendToBack();
                 } else {
-                    this.sendBackward();
+                    sprite.sendBackward();
                 }
             });
         stage.root.addChild(ellipse);
@@ -272,8 +263,8 @@ if (test === "perf") {
 // arr.push(arr[0].removeSelf());
 // arr[0].addChild(arr[1].parent!);
 
-stage.on("beforeDraw", function () {
-    this.currentFrame = this.currentFrame >= 60 * 10 ? 0 : this.currentFrame;
+stage.on("beforeDraw", sprite => {
+    sprite.currentFrame = sprite.currentFrame >= 60 * 10 ? 0 : sprite.currentFrame;
 });
 
 onmessage = stage.onmessage;

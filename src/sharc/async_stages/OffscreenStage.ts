@@ -39,12 +39,12 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
     }
 
     private onmessage(e: AsyncMessage<MessageType>) {
-        this.eventListeners.message.forEach(callback => callback.call(this, e));
+        this.eventListeners.message.forEach(callback => callback(this, e));
         switch (e.type) {
             case "render":
                 if (this.active) {
                     this.currentFrame = e.currentFrame;
-                    this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
+                    this.eventListeners.beforeDraw.forEach(callback => callback(this, this.currentFrame));
                     (this.canvas as HTMLCanvasElement)!.getContext("bitmaprenderer")!.transferFromImageBitmap(e.img);
                 }
                 break;

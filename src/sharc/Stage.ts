@@ -107,7 +107,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        this.eventListeners.click.forEach(callback => callback.call(this, e, position));
+        this.eventListeners.click.forEach(callback => callback(this, position, e));
         this.drawEvents.down = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
         this.canvas?.focus && this.canvas.focus();
     }
@@ -124,7 +124,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        this.eventListeners.release.forEach(callback => callback.call(this, e, position));
+        this.eventListeners.release.forEach(callback => callback(this, position, e));
         this.drawEvents.up = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
@@ -140,7 +140,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        this.eventListeners.move.forEach(callback => callback.call(this, e, position));
+        this.eventListeners.move.forEach(callback => callback(this, position, e));
         this.drawEvents.move = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
@@ -149,7 +149,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        this.eventListeners.keydown.forEach(callback => callback.call(this, e));
+        this.eventListeners.keydown.forEach(callback => callback(this, e));
         this.drawEvents.keydown = e;
     }
 
@@ -158,7 +158,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        this.eventListeners.keyup.forEach(callback => callback.call(this, e));
+        this.eventListeners.keyup.forEach(callback => callback(this, e));
         this.drawEvents.keyup = e;
     }
 
@@ -166,7 +166,7 @@ export class Stage<RootDetailsType = any> {
         if (!this.active) {
             return;
         }
-        this.eventListeners.scroll.forEach(callback => callback.call(this, e));
+        this.eventListeners.scroll.forEach(callback => callback(this, e));
         this.drawEvents.scroll = e;
         e.preventDefault();
     }
@@ -212,7 +212,7 @@ export class Stage<RootDetailsType = any> {
 
     public draw(ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
         ctx ??= this.ctx;
-        this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
+        this.eventListeners.beforeDraw.forEach(callback => callback(this, this.currentFrame));
         this.root.setPointerEvents(this.drawEvents);
         ctx!.fillStyle = ColorToString(this.bgColor);
         ctx!.fillRect(0, 0, this.width ?? 0, this.height ?? 0);

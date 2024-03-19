@@ -520,13 +520,13 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             // future update:
             // this.schedulers = this.schedulers.filter(scheduler => {
             //     if (scheduler.remainingFrames-- <= 0) {
-            //         scheduler.callback.call(this);
+            //         schedulerback.call(this);
             //         return false;
             //     }
             //     return true;
             // });
             this.eventListeners.beforeDraw.forEach(callback => {
-                callback.call(this, event.currentFrame);
+                callback(this, event.currentFrame);
             });
         }
         const region = this.drawFunction(ctx, properties!);
@@ -570,12 +570,12 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
         if (this.eventListeners.hover.length > 0 && !this.hovered && pointIsInPath) {
             this.eventListeners.hover.forEach(callback =>
-                callback.call(
+                callback(
                     this,
-                    this.events!.move?.event ?? this.events!.down?.event ?? this.events!.up!.event,
                     this.events!.move?.translatedPoint ??
                         this.events!.down?.translatedPoint ??
-                        this.events!.up!.translatedPoint
+                        this.events!.up!.translatedPoint,
+                    this.events!.move?.event ?? this.events!.down?.event ?? this.events!.up!.event,
                 )
             );
             this.hovered = true;
@@ -585,7 +585,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     return e !== undefined && !this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
                 });
                 this.eventListeners.hoverEnd.forEach(callback => {
-                    callback.call(this, unHoverEvent!.event, unHoverEvent!.translatedPoint);
+                    callback(this, unHoverEvent!.translatedPoint, unHoverEvent!.event);
                 });
             }
             this.hovered = false;
@@ -601,7 +601,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
-            const callback = () => {
+            const callback = function() {
                 ctx.save();
                 ctx.setTransform(
                     transformationMatrix.a,
@@ -611,7 +611,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                eventListeners.forEach(callback => callback.call(self, event, transformedPos));
+                eventListeners.forEach(c => c(self, transformedPos, event));
                 ctx.restore();
             };
             (root as Sprite).rootPointerEventCallback = callback.bind(this);
@@ -783,7 +783,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             throw new Error(`Property ${animation.property as string} is not a valid property`);
         }
         if (animation.frame === animation.duration) {
-            this.eventListeners.animationFinish.forEach(callback => callback.call(this, animation as never));
+            this.eventListeners.animationFinish.forEach(callback => callback(this, animation as never));
         }
     }
 
@@ -962,7 +962,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     // }
     //
     // public unschedule(callback: (this: this) => void) {
-    //     this.schedulers = this.schedulers.filter(scheduler => scheduler.callback !== callback);
+    //     this.schedulers = this.schedulers.filter(scheduler => schedulerback !== callback);
     //     return this;
     // }
     //
