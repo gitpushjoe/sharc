@@ -1,7 +1,7 @@
-import { AsyncStageEventListeners, PositionedPointerEvent, PointerEventCallback, SpriteEventListeners } from "../types/Events";
+import { AsyncStageEventListeners, PositionedPointerEvent, PointerEventCallback } from "../types/Events";
 import { StageStateMessage, AsyncMessage } from "../types/Stage";
 import { Stage } from "../Stage";
-import { Colors } from "../Utils";
+import { Colors, callAndPrune } from "../Utils";
 import { NullSprite } from "../Sprites";
 
 export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<DetailsType> {
@@ -39,12 +39,12 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
     }
 
     private onmessage(e: AsyncMessage<MessageType>) {
-        this.eventListeners.message.forEach(callback => callback(this, e));
+        callAndPrune(this.eventListeners, "message", [this, e]);
         switch (e.type) {
             case "render":
                 if (this.active) {
                     this.currentFrame = e.currentFrame;
-                    this.eventListeners.beforeDraw.forEach(callback => callback(this, this.currentFrame));
+                    callAndPrune(this.eventListeners, "beforeDraw", [this, e.currentFrame]);
                     (this.canvas as HTMLCanvasElement)!.getContext("bitmaprenderer")!.transferFromImageBitmap(e.img);
                 }
                 break;

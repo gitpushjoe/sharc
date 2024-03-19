@@ -1,8 +1,8 @@
 import type { ColorType } from "../types/Common";
-import { AsyncStageEventListeners, EventCollection, PointerEventCallback, SpriteEventListeners } from "../types/Events";
+import { AsyncStageEventListeners, EventCollection, PointerEventCallback, } from "../types/Events";
 import { AsyncMessage, CanvasInterface, StageStateMessage } from "../types/Stage";
 import { Stage } from "../Stage";
-import { Colors, Position } from "../Utils";
+import { Colors, Position, callAndPrune } from "../Utils";
 
 const DEFAULT_CANVAS_INTERFACE: CanvasInterface = {
     width: 0,
@@ -125,8 +125,13 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.canvas!.getBoundingClientRect = () => e.canvasProperties.boundingClientRect;
     }
 
+    private sendErrorString(e: string) {
+        const error = new Error(e);
+        this.onError(error);
+    }
+
     public readonly onmessage = (event: MessageEvent<AsyncMessage<MessageType>>): void => {
-        this.eventListeners.message.forEach(callback => callback(this, event.data));
+        callAndPrune(this.eventListeners, "message", [this, event.data], this.sendErrorString.bind(this));
         const e = event.data;
         switch (e.type) {
             case "init":
@@ -157,48 +162,29 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.drawEvents = this.nextDrawEvents
             ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
             : this.drawEvents;
-        this.eventListeners.beforeDraw.forEach(callback => callback(this, this.currentFrame));
+        callAndPrune(this.eventListeners, 'beforeDraw', [this, this.currentFrame], this.sendErrorString.bind(this));
         const { down, up, move, keydown, keyup, scroll } = this.drawEvents;
-        if (down) {
-            this.eventListeners.click.forEach(callback =>
-                callback(this, {
-                    x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                    y:
-                        (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
-                        (this.rootStyle === "centered" ? -1 : 1)
-                }, down.event)
-            );
-        }
-        if (up) {
-            this.eventListeners.release.forEach(callback =>
-                callback(this, {
-                    x: up.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                    y:
-                        (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
-                        (this.rootStyle === "centered" ? -1 : 1)
-                }, up.event)
-            );
-        }
-        if (move) {
-            this.eventListeners.move.forEach(callback =>
-                callback(this, {
-                    x: move.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                    y:
-                        (move.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
-                        (this.rootStyle === "centered" ? -1 : 1)
-                }, move.event)
-            );
-        }
-        if (keydown) {
-            this.eventListeners.keydown.forEach(callback => callback(this, keydown));
-        }
-        if (keyup) {
-            this.eventListeners.keyup.forEach(callback => callback(this, keyup));
-        }
-        if (scroll) {
-            this.eventListeners.scroll.forEach(callback => callback(this, scroll));
-        }
-        this.eventListeners.beforeDraw.forEach(callback => callback(this, this.currentFrame));
+        down && callAndPrune(this.eventListeners, "click", [this, {
+            x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+            y:
+            (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                (this.rootStyle === "centered" ? -1 : 1)
+        }, down.event], this.sendErrorString.bind(this));
+        up && callAndPrune(this.eventListeners, "release", [this, {
+            x: up.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+            y:
+            (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                (this.rootStyle === "centered" ? -1 : 1)
+        }, up.event], this.sendErrorString.bind(this));
+        move && callAndPrune(this.eventListeners, "move", [this, {
+            x: move.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+            y:
+            (move.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                (this.rootStyle === "centered" ? -1 : 1)
+        }, move.event], this.sendErrorString.bind(this));
+        keydown && callAndPrune(this.eventListeners, "keydown", [this, keydown], this.sendErrorString.bind(this));
+        keyup && callAndPrune(this.eventListeners, "keyup", [this, keyup], this.sendErrorString.bind(this));
+        scroll && callAndPrune(this.eventListeners, "scroll", [this, scroll], this.sendErrorString.bind(this));
         try {
             super.draw(ctx);
         } catch (e: unknown) {

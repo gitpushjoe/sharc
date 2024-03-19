@@ -1,7 +1,7 @@
-import { Position, ColorToString, Corners, Color } from "./Utils";
+import { Position, ColorToString, Corners, Color, callAndPrune } from "./Utils";
 import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
 import { PositionType, BoundsType, ColorType } from "./types/Common";
-import { EventCollection, PositionedPointerEvent } from "./types/Events";
+import { EventCollection, PositionedPointerEvent, StageEventCallback } from "./types/Events";
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
@@ -536,9 +536,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             //     }
             //     return true;
             // });
-            this.eventListeners.beforeDraw.forEach(callback => {
-                callback(this, event.currentFrame);
-            });
+            callAndPrune(this.eventListeners, "beforeDraw", [this, event.currentFrame]);
         }
         const region = this.drawFunction(ctx, properties!);
         if (region !== undefined) {
@@ -580,24 +578,20 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         );
 
         if (this.eventListeners.hover.length > 0 && !this.hovered && pointIsInPath) {
-            this.eventListeners.hover.forEach(callback =>
-                callback(
-                    this,
-                    this.events!.move?.translatedPoint ??
-                        this.events!.down?.translatedPoint ??
-                        this.events!.up!.translatedPoint,
-                    this.events!.move?.event ?? this.events!.down?.event ?? this.events!.up!.event,
-                )
-            );
+            callAndPrune(this.eventListeners, "hover", [
+                this,
+                this.events.move?.translatedPoint ??
+                    this.events.down?.translatedPoint ??
+                    this.events.up!.translatedPoint,
+                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event,
+            ]);
             this.hovered = true;
         } else if (!pointIsInPath && this.hovered) {
             if (this.eventListeners.hoverEnd.length > 0) {
                 const unHoverEvent = [this.events.down, this.events.up, this.events.move].find(e => {
                     return e !== undefined && !this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
                 });
-                this.eventListeners.hoverEnd.forEach(callback => {
-                    callback(this, unHoverEvent!.translatedPoint, unHoverEvent!.event);
-                });
+                callAndPrune(this.eventListeners, 'hoverEnd', [this, unHoverEvent!.translatedPoint, unHoverEvent!.event]);
             }
             this.hovered = false;
         }
@@ -607,7 +601,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             positionedPointerEvent: PositionedPointerEvent,
             root: Shape,
             self: this,
-            eventListeners: PointerEventCallback<this>[]
+            listener: 'click' | 'drag' | 'release'
         ) => {
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
@@ -622,7 +616,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                eventListeners.forEach(c => c(self, transformedPos, event));
+                callAndPrune(self.eventListeners, listener, [self, transformedPos, event]);
                 ctx.restore();
             };
             (root as Sprite).rootPointerEventCallback = callback.bind(this);
@@ -632,7 +626,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             if (this.pointerId !== undefined && this.eventListeners.drag.length > 0) {
                 ctx.restore();
                 ctxRestored = true;
-                registerCallback(ctx, this.events.move, this.root, this, this.eventListeners.drag);
+                registerCallback(ctx, this.events.move, this.root, this, 'drag');
             }
         }
         if (this.events.up) {
@@ -640,7 +634,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             ctxRestored = true;
             if (this.eventListeners.release.length > 0 && this.pointerId !== undefined) {
                 const event = this.events.up;
-                registerCallback(ctx, event, this.root, this, this.eventListeners.release);
+                registerCallback(ctx, event, this.root, this, 'release');
             }
             this.pointerId = undefined;
         } else if (this.events.down && pointIsInPath) {
@@ -650,7 +644,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             this.pointerId = event.event.pointerId;
             this.pointerButton = event.event.button;
             if (this.eventListeners.click.length > 0) {
-                registerCallback(ctx, event, this.root, this, this.eventListeners.click);
+                registerCallback(ctx, event, this.root, this, 'click');
             }
         }
         return ctxRestored;
@@ -794,7 +788,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             throw new Error(`Property ${animation.property as string} is not a valid property`);
         }
         if (animation.frame === animation.duration) {
-            this.eventListeners.animationFinish.forEach(callback => callback(this, animation as never));
+            callAndPrune(this.eventListeners, "animationFinish", [this, animation as never]);
         }
     }
 

@@ -1,12 +1,11 @@
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
-/// <reference path="./sharc/async_stages/WorkerStage.ts" />
-import { Ellipse, Rect, Line, LabelSprite, BezierCurve, ImageSprite } from "./sharc/Sprites";
+import { Ellipse, Rect, Line, LabelSprite, BezierCurve, ImageSprite, TextSprite } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
 
 postMessage("Hello from worker!");
 
-const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.Black);
+const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 
 const test: string = "1.5";
 if (test === "perf") {
@@ -84,8 +83,8 @@ if (test === "perf") {
         text.text = `(${pos.x}, ${pos.y})`;
     });
     stage.root.addChild(rect);
-    rect.on("hover", sprite => sprite.color = Colors.Red );
-    rect.on("hoverEnd", sprite => sprite.color = Colors.Blue );
+    rect.on("hover", sprite => {sprite.color = Colors.Red;} );
+    rect.on("hoverEnd", sprite => {sprite.color = Colors.Blue;} );
     rect.on("click", sprite => {
         stage.postCustomMessage(`click on ${performance.now()}`);
         sprite.channels[0].push({
@@ -114,8 +113,8 @@ if (test === "perf") {
             y: sprite.details!.center.y + (pos.y - this.details!.click.y)
         };
     });
-    circle.on("hover", sprite => sprite.color = Colors.Red );
-    circle.on("hoverEnd", sprite => sprite.color = Colors.Green );
+    circle.on("hover", sprite => { sprite.color = Colors.Red; } );
+    circle.on("hoverEnd", sprite => { sprite.color = Colors.Green; } );
     circle.on("release", _ => console.log("released") );
     stage.on("click", function () {
         stage.postCustomMessage(`stage click on ${Date.now()}`);
@@ -216,6 +215,7 @@ if (test === "perf") {
         if (frame === 120) {
             image.src =
                 "noresize:https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Eopsaltria_australis_-_Mogo_Campground.jpg/640px-Eopsaltria_australis_-_Mogo_Campground.jpg";
+            return 1;
         }
     });
     stage.root.addChild(image);
@@ -244,10 +244,29 @@ if (test === "perf") {
                     sprite.sendToBack();
                 } else {
                     sprite.sendBackward();
+                    return 1;
                 }
             });
         stage.root.addChild(ellipse);
     }
+    const max = 100;
+    const countup = function (sprite: TextSprite<number>, frame: number) {
+        sprite.details! +=+ (frame % 4 == 3);
+        sprite.text = `Counting up to ${max}: ${sprite.details}`;
+        if (sprite.details! == max / 2) {
+            return "invalid return value" as unknown as 1;
+        }
+        if (sprite.details! >= max) {
+            return 1;
+        }
+    };
+    stage.root.addChild(new TextSprite<number>({
+        text: `Counting up to ${max}: 0`,
+        fontSize: 50,
+        position: { x: 1175, y: 725 },
+        textAlign: 'right',
+        details: 0
+    }).includeEventListener("beforeDraw", countup).includeEventListener("beforeDraw", countup).includeEventListener("beforeDraw", countup));
 }
 
 // const arr: Shape[] = [new Ellipse({}), new Rect({}), new Line({}), new BezierCurve({}), new LabelSprite({})];
@@ -261,8 +280,8 @@ if (test === "perf") {
 // arr.push(arr[0].removeSelf());
 // arr[0].addChild(arr[1].parent!);
 
-stage.on("beforeDraw", sprite => {
-    sprite.currentFrame = sprite.currentFrame >= 60 * 10 ? 0 : sprite.currentFrame;
+stage.on("beforeDraw", stage => {
+    stage.currentFrame = (stage.currentFrame >= 60 * 10) ? 0 : stage.currentFrame;
 });
 
 onmessage = stage.onmessage;

@@ -113,12 +113,12 @@ if (!useOffscreen) {
                     center: { x: 50 + (i + 2) * 40, y: 50 + (i % 2) * 40 },
                     name: `ellipse${i}`
                 })
-                .on("drag", (sprite, _, pos) => {
+                .on("drag", (sprite, pos, _) => {
                     console.log(pos);
                     sprite.center = pos;
                     sprite.bringToFront();
                 })
-                .on("release", (sprite, e) => {
+                .on("release", (sprite, _, e) => {
                     sprite.root.logHierarchy();
                     if (e.button === 0) {
                         sprite.sendToBack();

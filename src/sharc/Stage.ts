@@ -1,5 +1,5 @@
 import { NullSprite } from "./Sprites";
-import { ColorToString, Colors, Position } from "./Utils";
+import { ColorToString, Colors, Position, callAndPrune } from "./Utils";
 import { ColorType, PositionType } from "./types/Common";
 import { PointerEventCallback, EventCollection, StageEventListeners } from "./types/Events";
 import { DEFAULT_PROPERTIES } from "./types/Sprites";
@@ -90,7 +90,7 @@ export class Stage<RootDetailsType = any> {
             return this;
         }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-            cb => cb !== (callback as unknown as PointerEventCallback<Stage>)
+                cb => cb !== (callback as unknown as PointerEventCallback<Stage>)
         );
         return this;
     }
@@ -116,7 +116,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        this.eventListeners.click.forEach(callback => callback(this, position, e));
+        callAndPrune(this.eventListeners, "click", [this, position, e]);
         this.drawEvents.down = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
         this.canvas?.focus && this.canvas.focus();
     }
@@ -133,7 +133,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        this.eventListeners.release.forEach(callback => callback(this, position, e));
+        callAndPrune(this.eventListeners, "release", [this, position, e]);
         this.drawEvents.up = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
@@ -149,7 +149,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        this.eventListeners.move.forEach(callback => callback(this, position, e));
+        callAndPrune(this.eventListeners, "move", [this, position, e]);
         this.drawEvents.move = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
@@ -158,7 +158,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        this.eventListeners.keydown.forEach(callback => callback(this, e));
+        callAndPrune(this.eventListeners, "keydown", [this, e]);
         this.drawEvents.keydown = e;
     }
 
@@ -167,7 +167,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        this.eventListeners.keyup.forEach(callback => callback(this, e));
+        callAndPrune(this.eventListeners, "keyup", [this, e]);
         this.drawEvents.keyup = e;
     }
 
@@ -175,7 +175,7 @@ export class Stage<RootDetailsType = any> {
         if (!this.active) {
             return;
         }
-        this.eventListeners.scroll.forEach(callback => callback(this, e));
+        callAndPrune(this.eventListeners, "scroll", [this, e]);
         this.drawEvents.scroll = e;
         e.preventDefault();
     }
@@ -221,7 +221,7 @@ export class Stage<RootDetailsType = any> {
 
     public draw(ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
         ctx ??= this.ctx;
-        this.eventListeners.beforeDraw.forEach(callback => callback(this, this.currentFrame));
+        callAndPrune(this.eventListeners, "beforeDraw", [this, this.currentFrame]);
         this.root.setPointerEvents(this.drawEvents);
         ctx!.fillStyle = ColorToString(this.bgColor);
         ctx!.fillRect(0, 0, this.width ?? 0, this.height ?? 0);

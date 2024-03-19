@@ -7,11 +7,11 @@ export type PointerEventCallback<CallerType> = (
     caller: CallerType,
     translatedPoint: PositionType,
     event: PointerEvent,
-) => void;
+) => boolean | 0 | 1 | void;
 
-export type ScrollEventCallback<CallerType> = (caller: CallerType, event: WheelEvent) => void;
+export type ScrollEventCallback<CallerType> = (caller: CallerType, event: WheelEvent) => boolean | 0 | 1 | void;
 
-export type KeyboardEventCallback<CallerType> = (caller: CallerType, event: KeyboardEvent) => void;
+export type KeyboardEventCallback<CallerType> = (caller: CallerType, event: KeyboardEvent) => boolean | 0 | 1 | void;
 
 export type PositionedPointerEvent = {
     event: PointerEvent;
@@ -28,14 +28,14 @@ export type EventCollection<DetailsType = any> = {
     scroll?: WheelEvent;
 };
 
-export type StageEventCallback<CallerType> = (caller: CallerType, frame: number) => void;
+export type StageEventCallback<CallerType> = (caller: CallerType, frame: number) => boolean | 0 | 1 | void;
 
 export type AnimationFinishCallback<CallerType, PrivateAnimationType> = (
     caller: CallerType,
     animation: PrivateAnimationType
-) => void;
+) => boolean | 0 | 1 | void;
 
-export type MessageCallback<CallerType, MessageType> = (caller: CallerType, message: MessageType) => void;
+export type MessageCallback<CallerType, MessageType> = (caller: CallerType, message: MessageType) => boolean | 0 | 1 | void;
 
 export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     click: PointerEventCallback<CallerType>[];
