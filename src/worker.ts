@@ -257,6 +257,7 @@ if (test === "perf") {
                 sprite.sendBackward();
                 return 1;
             }
+            stage.root.logHierarchy();
         });
         stage.root.addChild(ellipse);
 
@@ -273,7 +274,7 @@ if (test === "perf") {
                     duration: 30,
                     easing: Easing.Bounce(Easing.EASE_IN_OUT)
                 });
-        });
+            });
 
         ellipse.when(
             sprite => sprite.currentFrame < 50,
@@ -288,7 +289,7 @@ if (test === "perf") {
         ellipse.schedule(119, sprite => { 
             sprite.currentFrame = 0;
         });
-    
+
         ellipse.selfSchedule(120, sprite => {
             sprite.removeEventListener("beforeDraw", bounce);
         });
@@ -313,18 +314,30 @@ if (test === "perf") {
         textAlign: 'right',
         details: 0
     }).includeEventListener("beforeDraw", countup).includeEventListener("beforeDraw", countup).includeEventListener("beforeDraw", countup));
-}
 
-// const arr: Shape[] = [new Ellipse({}), new Rect({}), new Line({}), new BezierCurve({}), new LabelSprite({})];
-// arr;
-//
-// const t: Line[] = [];
-//
-// t.push(t[1].removeSelf());
-// arr.push(...(new Line({})).children);
-//
-// arr.push(arr[0].removeSelf());
-// arr[0].addChild(arr[1].parent!);
+    [...Array(8).keys()].forEach(i => {
+        stage.root.addChild(new LabelSprite({
+            text: "Click me and type!",
+            position: {x: 50, y: 200 + 72 * i},
+            fontSize: 50,
+            backgroundColor: Colors.LightBlue,
+            backgroundRadius: [10, 10],
+            stroke: {lineWidth: 5},
+            color: Colors.Black,
+            name: `label ${i % 49}`
+        }).on("release", sprite => {
+                stage.keyTarget = sprite.name;
+                sprite.text = "";
+            }).on("keydown", (sprite, e) => {
+                if (e.key === "Backspace") {
+                    sprite.text = sprite.text.slice(0, -1);
+                } else if (e.key.length === 1) {
+                    sprite.text += e.key;
+                }
+            }));
+    });
+
+}
 
 stage.on("beforeDraw", stage => {
     stage.currentFrame = (stage.currentFrame >= 60 * 10) ? 0 : stage.currentFrame;

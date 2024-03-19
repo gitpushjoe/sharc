@@ -44,6 +44,8 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     hover: PointerEventCallback<CallerType>[];
     hoverEnd: PointerEventCallback<CallerType>[];
     hold: ((sprite: CallerType) => boolean | 0 | 1 | void)[];
+    keydown: KeyboardEventCallback<CallerType>[];
+    keyup: KeyboardEventCallback<CallerType>[];
     scroll: ScrollEventCallback<CallerType>[];
     beforeDraw: StageEventCallback<CallerType>[];
     animationFinish: AnimationFinishCallback<

@@ -185,6 +185,13 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         keydown && callAndPrune(this.eventListeners, "keydown", [this, keydown], this.sendErrorString.bind(this));
         keyup && callAndPrune(this.eventListeners, "keyup", [this, keyup], this.sendErrorString.bind(this));
         scroll && callAndPrune(this.eventListeners, "scroll", [this, scroll], this.sendErrorString.bind(this));
+        if (this.resetKeyTargetOnClick && this.drawEvents.up && this.keyTarget !== "" && this.root.findDescendants(this.keyTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+            this.keyTarget = "";
+        }
+        if (this.resetScrollTargetOnClick && this.drawEvents.down && this.scrollTarget !== "" && this.root.findDescendants(this.scrollTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+            this.scrollTarget = "";
+        }
+
         try {
             super.draw(ctx);
         } catch (e: unknown) {

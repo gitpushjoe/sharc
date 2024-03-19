@@ -24,6 +24,10 @@ export class Stage<RootDetailsType = any> {
     public lastRenderMs = 0;
     public currentFrame = 0;
     protected drawEvents: EventCollection<RootDetailsType> = {};
+    public keyTarget = "";
+    public scrollTarget = "";
+    public resetKeyTargetOnClick = true;
+    public resetScrollTargetOnClick = true;
     protected onError = (e?: Error, stack?: string) => {
         stack = stack?.slice(0, stack?.indexOf("FrameRequestCallback*"));
         console.error(`WorkerStage: ${e?.message ?? "Error"}\n${stack ?? ""}`);
@@ -234,6 +238,12 @@ export class Stage<RootDetailsType = any> {
             return false;
         }
         this.drawEvents = { stage: this };
+        if (this.resetKeyTargetOnClick && this.drawEvents.up && this.keyTarget !== "" && this.root.findDescendants(this.keyTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+            this.keyTarget = "";
+        }
+        if (this.resetScrollTargetOnClick && this.drawEvents.down && this.scrollTarget !== "" && this.root.findDescendants(this.scrollTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+            this.scrollTarget = "";
+        }
         this.currentFrame++;
         return true;
     }

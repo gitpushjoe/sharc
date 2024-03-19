@@ -171,9 +171,6 @@ const delays: number[] = [];
 
 const cnv = document.getElementById("canvas") as HTMLCanvasElement;
 cnv.tabIndex = 1;
-cnv.addEventListener("keydown", function (e) {
-    console.log(`${e.key} pressed`);
-});
 cnv.style.cursor = "default";
 
 var interval =

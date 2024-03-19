@@ -423,6 +423,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         hoverEnd: [],
         hold: [],
         release: [],
+        keydown: [],
+        keyup: [],
         scroll: [],
         beforeDraw: [],
         animationFinish: []
@@ -561,7 +563,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
         if (this.events === undefined) return false;
 
-        if (!this.events.down && !this.events.up && !this.events.move) {
+        if (!this.events.down && !this.events.up && !this.events.move && !this.events.scroll && !this.events.keydown && !this.events.keyup) {
             return false;
         }
 
@@ -572,6 +574,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 this.eventListeners.hold,
                 this.eventListeners.hover,
                 this.eventListeners.hoverEnd,
+                this.eventListeners.keydown,
+                this.eventListeners.keyup,
                 this.eventListeners.release
             ].every(listeners => listeners.length === 0)
         ) {
@@ -601,6 +605,21 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             this.hovered = false;
         }
 
+        if (this.name !== "") {
+
+            if (this.events?.keydown && this.eventListeners.keydown.length > 0 && this.events.stage!.keyTarget === this.name) {
+                callAndPrune(this.eventListeners, 'keydown', [this, this.events.keydown]);
+            }
+            if (this.events?.keyup && this.eventListeners.keyup.length > 0 && this.events.stage!.keyTarget === this.name) {
+                callAndPrune(this.eventListeners, 'keyup', [this, this.events.keyup]);
+            }
+
+            if (this.events.scroll && this.eventListeners.scroll.length > 0 && pointIsInPath && this.events.stage!.scrollTarget === this.name) {
+                callAndPrune(this.eventListeners, 'scroll', [this, this.events.scroll]);
+            }
+
+        }
+
         const registerCallback = (
             ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
             positionedPointerEvent: PositionedPointerEvent,
@@ -612,7 +631,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
-            console.log("here");
             const callback = function(pointerId?: number) {
                 ctx.save();
                 ctx.setTransform(
