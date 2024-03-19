@@ -150,32 +150,32 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         const { down, up, move, keydown, keyup, scroll } = this.drawEvents;
         if (down) {
             this.eventListeners.click.forEach(callback =>
-                callback(this, down.event, {
+                callback(this, {
                     x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
                     y:
                         (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
                         (this.rootStyle === "centered" ? -1 : 1)
-                })
+                }, down.event)
             );
         }
         if (up) {
             this.eventListeners.release.forEach(callback =>
-                callback(this, up.event, {
+                callback(this, {
                     x: up.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
                     y:
                         (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
                         (this.rootStyle === "centered" ? -1 : 1)
-                })
+                }, up.event)
             );
         }
         if (move) {
             this.eventListeners.move.forEach(callback =>
-                callback(this, move.event, {
+                callback(this, {
                     x: move.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
                     y:
                         (move.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
                         (this.rootStyle === "centered" ? -1 : 1)
-                })
+                }, move.event)
             );
         }
         if (keydown) {
