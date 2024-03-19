@@ -130,7 +130,9 @@ export function callAndPrune<listeners extends Record<string, ((...args: any[]) 
     args: Parameters<listeners[key][number]>,
     log: (message: string) => any = console.error
 ) {
-    listeners[key] = listeners[key].filter(callback => {
+    const pruned: ((...args: any[]) => unknown)[] = [];
+    for (let i = 0; i < listeners[key].length; i++) {
+        const callback = listeners[key][i];
         const result = callback(...args);
         if (result !== undefined && result != 1 && result != 0) {
             const resultString = (() => {
@@ -145,8 +147,11 @@ export function callAndPrune<listeners extends Record<string, ((...args: any[]) 
 Event listeners should only return true (or 1), false (or 0), or undefined (including implicit return).`
             );
         }
-        return result != 1;
-    }) as listeners[key];
+        if (result == 1) {
+            pruned.push(callback);
+        }
+    }
+    listeners[key] = listeners[key].filter((callback) => !pruned.includes(callback)) as listeners[key];
 }
 
 

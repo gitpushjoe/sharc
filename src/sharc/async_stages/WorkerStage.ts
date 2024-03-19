@@ -162,7 +162,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.drawEvents = this.nextDrawEvents
             ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
             : this.drawEvents;
-        callAndPrune(this.eventListeners, 'beforeDraw', [this, this.currentFrame], this.sendErrorString.bind(this));
+        callAndPrune(this.eventListeners, 'beforeDraw', [this, this.currentFrame, this], this.sendErrorString.bind(this));
         const { down, up, move, keydown, keyup, scroll } = this.drawEvents;
         down && callAndPrune(this.eventListeners, "click", [this, {
             x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),

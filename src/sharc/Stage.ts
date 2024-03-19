@@ -221,7 +221,7 @@ export class Stage<RootDetailsType = any> {
 
     public draw(ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
         ctx ??= this.ctx;
-        callAndPrune(this.eventListeners, "beforeDraw", [this, this.currentFrame]);
+        callAndPrune(this.eventListeners, "beforeDraw", [this, this.currentFrame, this]);
         this.root.setPointerEvents(this.drawEvents);
         ctx!.fillStyle = ColorToString(this.bgColor);
         ctx!.fillRect(0, 0, this.width ?? 0, this.height ?? 0);

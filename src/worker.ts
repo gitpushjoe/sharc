@@ -225,7 +225,8 @@ if (test === "perf") {
         })
     );
 } else if (test === "1.5") {
-    for (let i = 0; i < 20; ++i) {
+    const ellipseCount = 20;
+    for (let i = 0; i < ellipseCount; ++i) {
         const ellipse = new Ellipse({
             color: (i % 2 && Colors.Red) || Colors.Blue,
             radius: 50,
@@ -247,7 +248,6 @@ if (test === "perf") {
             }
         })
         .on("release", (sprite, _, e) => {
-            sprite.root.logHierarchy();
             sprite.radius = 50;
             sprite.strokeDash = 0;
             sprite.strokeDashGap = 0;
@@ -259,6 +259,41 @@ if (test === "perf") {
             }
         });
         stage.root.addChild(ellipse);
+
+        const bounce = ellipse.whenStage(
+            stage => stage.currentFrame % 60 === 0,
+            (sprite, _, stage) => {
+                if (stage.currentFrame >= 240) {
+                    return 1;
+                }
+                sprite.channels[0].push({
+                    property: "scale",
+                    from: { x: 1, y: 1 },
+                    to: { x: 1.5, y: 1.5 },
+                    duration: 30,
+                    easing: Easing.Bounce(Easing.EASE_IN_OUT)
+                });
+        });
+
+        ellipse.when(
+            sprite => sprite.currentFrame < 50,
+            (sprite, _, stage) => {
+                sprite.centerX += 2;
+                if (stage.currentFrame > 130) {
+                    return 1;
+                }
+            }
+        );
+
+        ellipse.schedule(119, sprite => { 
+            sprite.currentFrame = 0;
+        });
+    
+        ellipse.selfSchedule(120, sprite => {
+            sprite.removeEventListener("beforeDraw", bounce);
+        });
+
+
     }
     const max = 100;
     const countup = function (sprite: TextSprite<number>, frame: number) {

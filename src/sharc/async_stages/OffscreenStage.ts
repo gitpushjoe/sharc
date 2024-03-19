@@ -44,7 +44,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             case "render":
                 if (this.active) {
                     this.currentFrame = e.currentFrame;
-                    callAndPrune(this.eventListeners, "beforeDraw", [this, e.currentFrame]);
+                    callAndPrune(this.eventListeners, "beforeDraw", [this, e.currentFrame, this]);
                     (this.canvas as HTMLCanvasElement)!.getContext("bitmaprenderer")!.transferFromImageBitmap(e.img);
                 }
                 break;

@@ -28,7 +28,7 @@ export type EventCollection<DetailsType = any> = {
     scroll?: WheelEvent;
 };
 
-export type StageEventCallback<CallerType> = (caller: CallerType, frame: number) => boolean | 0 | 1 | void;
+export type StageEventCallback<CallerType, StageType = Stage> = (caller: CallerType, frame: number, stage: StageType) => boolean | 0 | 1 | void;
 
 export type AnimationFinishCallback<CallerType, PrivateAnimationType> = (
     caller: CallerType,
@@ -59,7 +59,7 @@ export type StageEventListeners<CallerType = Stage> = {
     scroll: ScrollEventCallback<CallerType>[];
     keydown: KeyboardEventCallback<CallerType>[];
     keyup: KeyboardEventCallback<CallerType>[];
-    beforeDraw: StageEventCallback<CallerType>[];
+    beforeDraw: StageEventCallback<CallerType, CallerType>[];
 };
 
 export type AsyncStageEventListeners<CallerType = any, MessageType = any> = StageEventListeners<CallerType> & {

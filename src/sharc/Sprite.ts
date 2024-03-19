@@ -1,7 +1,7 @@
 import { Position, ColorToString, Corners, Color, callAndPrune } from "./Utils";
 import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
 import { PositionType, BoundsType, ColorType } from "./types/Common";
-import { EventCollection, PositionedPointerEvent } from "./types/Events";
+import { EventCollection, PositionedPointerEvent, StageEventCallback } from "./types/Events";
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
@@ -20,6 +20,7 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     protected _parent?: Shape = undefined;
     protected _region: Path2D = new Path2D();
     protected events?: EventCollection = undefined;
+    public currentFrame = 0;
     public name = "";
     public details?: DetailsType = undefined;
 
@@ -215,11 +216,15 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this;
     }
 
-    // future update:
-    // public abstract schedule(frames: number, callback: (this: this) => void): this;
-    // public abstract in(frames: number, callback: (this: this) => void): this;
-    // public abstract unschedule(callback: (this: this) => void): this;
-    // public abstract unscheduleAll(): this;
+    public abstract schedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract selfSchedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract scheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract selfScheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract delay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
+    public abstract selfDelay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
+
+    public abstract when<Listener extends StageEventCallback<this>>(condition: (sprite: this) => boolean, callback: Listener): Listener;
+    public abstract whenStage<Listener extends StageEventCallback<this>>(condition: (stage: Stage) => boolean, callback: Listener): Listener;
 
     public abstract effects: EffectsType;
     public abstract bounds: BoundsType;
@@ -292,6 +297,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     protected _region: Path2D = new Path2D();
     public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[]; // to-do: ensure that details can never be animated
     protected stage?: Stage;
+    public currentFrame = 0;
     // future update:
     // protected schedulers: SpriteSchedulers<this> = [];
 
@@ -504,6 +510,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 return;
             };
         }
+        this.currentFrame++;
         this.animate();
         ctx.save();
         this.effects(ctx);
@@ -528,15 +535,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         }
         if (this.events!.stage) {
             const event = this.events!.stage;
-            // future update:
-            // this.schedulers = this.schedulers.filter(scheduler => {
-            //     if (scheduler.remainingFrames-- <= 0) {
-            //         schedulerback.call(this);
-            //         return false;
-            //     }
-            //     return true;
-            // });
-            callAndPrune(this.eventListeners, "beforeDraw", [this, event.currentFrame]);
+            callAndPrune(this.eventListeners, "beforeDraw", [this, event.currentFrame, this.events!.stage]);
         }
         const region = this.drawFunction(ctx, properties!);
         if (region !== undefined) {
@@ -841,160 +840,102 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return this;
     }
 
-    // public findChild(name: string): Shape | undefined {
-    //     return this._children.find(child => {
-    //         return child.name === name;
-    //     });
-    // }
-    //
-    // public findChildren(name: string): Shape[] {
-    //     return this._children.filter(child => child.name === name);
-    // }
-    //
-    // public r_findChild(name: string): Shape | undefined {
-    //     return (
-    //         this._children.find(child => child.name === name) ??
-    //             this._children.map(child => child.r_findChild(name)).find(child => child !== undefined)
-    //     );
-    // }
-    //
-    // public r_findChildren(name: string): Shape[] {
-    //     return (
-    //         this._children.filter(child => child.name === name) ??
-    //             this._children.map(child => child.r_findChildren(name)).flat()
-    //     );
-    // }
-    //
-    // public r_getChildren() {
-    //     const children = [...this._children];
-    //     this._children.forEach(child => children.push(...child.r_getChildren()));
-    //     return children;
-    // }
+    public schedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (currentFrame >= frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
 
-    // public addChild(child: Shape) {
-    //     super.addChild(child);
-    //     return this;
-    // }
-    //
-    // public addChildren(...children: Shape[]) {
-    //     super.addChildren(...children);
-    //     return this;
-    // }
-    //
-    // public removeChild(child: Shape) {
-    //     super.removeChild(child);
-    //     return this;
-    // }
-    //
-    // public removeChildren(...children: Shape[]) {
-    //     super.removeChildren(...children);
-    //     return this;
-    // }
-    //
-    // public removeSelf() {
-    //     super.removeSelf();
-    //     return this;
-    // }
+    public selfSchedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (sprite.currentFrame >= frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
 
-    // public findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
-    //     return this._children.find(filter);
-    // }
-    //
-    // public findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
-    //     return this._children.filter(filter);
-    // }
-    //
-    // public r_findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
-    //     return (
-    //         this._children.find(filter) ??
-    //             this._children.map(child => child.r_findChildWhere(filter)).find(child => child !== undefined)
-    //     );
-    // }
-    //
-    // public r_findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
-    //     return (
-    //         this._children.filter(filter) ??
-    //             this._children.map(child => child.r_findChildrenWhere(filter)).flat()
-    //     );
-    // }
-    //
-    // public removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
-    //     const child = this._children.find(filter);
-    //     if (child) {
-    //         this.removeChild(child);
-    //     }
-    //     return child;
-    // }
-    //
-    // public removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
-    //     const children = this._children.filter(filter);
-    //     this.removeChildren(...children);
-    //     return children;
-    // }
-    //
-    // public r_removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
-    //     const child = this._children.find(filter);
-    //     if (child) {
-    //         this.removeChild(child);
-    //         return child;
-    //     }
-    //     for (const child of this._children) {
-    //         const removed = child.r_removeChildWhere(filter);
-    //         if (removed) {
-    //             return removed;
-    //         }
-    //     }
-    //     return undefined;
-    // }
-    //
-    // public r_removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
-    //     const removed: Shape[] = [];
-    //     for (const child of this._children) {
-    //         removed.push(...child.r_removeChildrenWhere(filter));
-    //     }
-    //     this.removeChildren(...removed);
-    //     return removed;
-    // }
-    //
-    // public bringForward() {
-    //     super.bringForward();
-    //     return this;
-    // }
-    //
-    // public bringToFront() {
-    //     super.bringToFront();
-    //     return this;
-    // }
-    //
-    // public sendBackward() {
-    //     super.sendBackward();
-    //     return this;
-    // }
-    //
-    // public sendToBack() {
-    //     super.sendToBack();
-    //     return this;
-    // }
+    public scheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (currentFrame === frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
 
-    // future update:
-    // public schedule(frames: number, callback: (this: this) => void) {
-    //     this.schedulers.push({ remainingFrames: Math.max(frames, 0), callback });
-    //     return this;
-    // }
-    //
-    // public in(frames: number, callback: (this: this) => void) {
-    //     return this.schedule(frames, callback);
-    // }
-    //
-    // public unschedule(callback: (this: this) => void) {
-    //     this.schedulers = this.schedulers.filter(scheduler => schedulerback !== callback);
-    //     return this;
-    // }
-    //
-    // public unscheduleAll() {
-    //     this.schedulers = [];
-    //     return this;
-    // }
+    public selfScheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (sprite.currentFrame === frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
+
+    public delay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener {
+        const start = (this.root as Sprite).stage?.currentFrame;
+        if (start === undefined) {
+            throw new Error("Sprite must be attached to a stage to use delay");
+        }
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (currentFrame >= start + delay) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
+
+    public selfDelay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener {
+        const start = this.currentFrame;
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (sprite.currentFrame >= start + delay) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
+
+    public when<Listener extends StageEventCallback<this>>(
+        condition: (sprite: this) => boolean,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (condition(sprite)) {
+                return callback(sprite, currentFrame, stage);
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
+
+    public whenStage<Listener extends StageEventCallback<this>>(
+        condition: (stage: Stage) => boolean,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (condition(stage)) {
+                return callback(sprite, currentFrame, stage);
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
+    }
 
     public hasEventListeners() {
         return Object.values(this.eventListeners).some(listeners => listeners.length > 0);
