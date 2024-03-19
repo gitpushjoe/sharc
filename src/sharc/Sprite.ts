@@ -29,38 +29,197 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         _isRoot?: boolean
     ): void;
 
-    public addChild(child: Shape) {
+    public addChild(child: Shape): this {
+        this._children.push(child.removeSelf());
         child._parent = this;
-        this._children.push(child);
         return this;
     }
 
     public addChildren(...children: Shape[]): this {
-        children.forEach(child => (child._parent = this));
-        this._children.push(...children);
+        children.forEach(child => this.addChild(child));
         return this;
     }
 
-    public removeChild(child: Shape): this {
+    public removeChild<S extends Shape>(child: S): S | undefined {
+        const idx = this._children.indexOf(child);
+        if (idx === -1) {
+            return undefined;
+        }
+        this._children.splice(idx, 1);
         child._parent = undefined;
-        this._children = this._children.filter(c => c !== child);
+        return child;
+    }
+
+    public removeChildren(...children: Shape[]): Shape[] {
+        const removed: Shape[] = [];
+        children.forEach(child => {
+            const idx = this._children.indexOf(child);
+            if (idx !== -1) {
+                this._children.splice(idx, 1);
+                child._parent = undefined;
+                removed.push(child);
+            }
+        });
+        return removed;
+    }
+
+    public removeAllChildren(): Shape[] {
+        return this.removeChildren(...this._children);
+    }
+
+    public removeSelf(): this {
+        this._parent?.removeChild(this);
         return this;
     }
 
-    public removeChildren(...children: Shape[]) {
-        children.forEach(child => (child._parent = undefined));
-        this._children = this._children.filter(child => !children.includes(child));
+    public get children(): Shape[] {
+        return [...this._children];
+    }
+
+    public r_getChildren(): Shape[] {
+        return this._children.reduce<Shape[]>((acc, child) => acc.concat(child.r_getChildren()), this._children);
+    }
+
+    public get parent(): Shape | undefined {
+        return this._parent;
+    }
+
+    public get root(): Shape {
+        return this._parent ? this._parent.root : this;
+    }
+
+    public findChild(name: string): Shape | undefined {
+        return this._children.find(child => child.name === name);
+    }
+
+    public r_findChild(name: string): Shape | undefined {
+        return (
+            this._children.find(child => child.name === name) ??
+            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.r_findChild(name), undefined)
+        );
+    }
+
+    public findChildren(name: string): Shape[] {
+        return this._children.filter(child => child.name === name);
+    }
+
+    public r_findChildren(name: string): Shape[] {
+        return this._children.reduce<Shape[]>((acc, child) => {
+            if (child.name === name) {
+                acc.push(child);
+            }
+            return acc.concat(child.r_findChildren(name));
+        }, []);
+    }
+
+    public findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        return this._children.find(filter);
+    }
+
+    public r_findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        return (
+            this._children.find(filter) ??
+            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.r_findChildWhere(filter), undefined)
+        );
+    }
+
+    public findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+        return this._children.filter(filter);
+    }
+
+    public r_findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+        return this._children.reduce<Shape[]>((acc, child) => {
+            if (filter(child)) {
+                acc.push(child);
+            }
+            return acc.concat(child.r_findChildrenWhere(filter));
+        }, []);
+    }
+
+    public removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        return this._children.find(filter)?.removeSelf();
+    }
+
+    public r_removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        const child = this._children.find(filter);
+        if (child) {
+            this.removeChild(child);
+            return child;
+        }
+        return this._children.reduce<Shape | undefined>(
+            (acc, child) => acc ?? child.r_removeChildWhere(filter),
+            undefined
+        );
+    }
+
+    public removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+        const removed: Shape[] = [];
+        this._children = this._children.filter(child => {
+            if (filter(child)) {
+                removed.push(child);
+                return false;
+            }
+            return true;
+        });
+        return removed;
+    }
+
+    public r_removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+        const removed: Shape[] = [];
+        this._children = this._children.filter(child => {
+            removed.push(...child.r_removeChildrenWhere(filter));
+            if (filter(child)) {
+                removed.push(child);
+                return false;
+            }
+            return true;
+        });
+        return removed;
+    }
+
+    public bringForward(): this {
+        if (this._parent) {
+            const idx = this._parent._children.indexOf(this);
+            if (idx == this._parent._children.length - 1) {
+                return this;
+            }
+            this._parent._children.splice(idx, 1);
+            this._parent._children.splice(idx + 1, 0, this);
+        }
         return this;
     }
 
-    public abstract get children(): Shape[];
-    public abstract get parent(): Shape | undefined;
-    public abstract get root(): Shape;
-    public abstract findChild(name: string): Shape | undefined;
-    public abstract findChildren(name: string): Shape[];
-    public abstract r_findChild(name: string): Shape | undefined;
-    public abstract r_findChildren(name: string): Shape[];
-    public abstract r_getChildren(): Shape[];
+    public sendBackward(): this {
+        if (this._parent) {
+            const idx = this._parent._children.indexOf(this);
+            if (idx === 0) {
+                return this;
+            }
+            this._parent._children.splice(idx, 1);
+            this._parent._children.splice(idx - 1, 0, this);
+        }
+        return this;
+    }
+
+    public bringToFront(): this {
+        this._parent?.addChild(this);
+        return this;
+    }
+
+    public sendToBack(): this {
+        const parent = this._parent;
+        if (parent) {
+            parent._children.unshift(this.removeSelf());
+            this._parent = parent;
+        }
+        return this;
+    }
+
+    // future update:
+    // public abstract schedule(frames: number, callback: (this: this) => void): this;
+    // public abstract in(frames: number, callback: (this: this) => void): this;
+    // public abstract unschedule(callback: (this: this) => void): this;
+    // public abstract unscheduleAll(): this;
 
     public abstract effects: EffectsType;
     public abstract bounds: BoundsType;
@@ -130,6 +289,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     protected _region: Path2D = new Path2D();
     public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[]; // to-do: ensure that details can never be animated
     protected stage?: Stage;
+    // future update:
+    // protected schedulers: SpriteSchedulers<this> = [];
 
     // NORMAL PROPERTIES
     public rotation = 0;
@@ -275,13 +436,13 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     public removeEventListener<
         E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
     >(event: E, callback?: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this {
-        if (callback) {
-            this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-                c => c !== (callback as unknown as PointerEventCallback<this>)
-            );
-        } else {
+        if (!callback) {
             this.eventListeners[event as "click"] = [];
+            return this;
         }
+        this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
+            cb => cb !== (callback as unknown as PointerEventCallback<this>)
+        );
         return this;
     }
 
@@ -356,6 +517,14 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         }
         if (this.events!.stage) {
             const event = this.events!.stage;
+            // future update:
+            // this.schedulers = this.schedulers.filter(scheduler => {
+            //     if (scheduler.remainingFrames-- <= 0) {
+            //         scheduler.callback.call(this);
+            //         return false;
+            //     }
+            //     return true;
+            // });
             this.eventListeners.beforeDraw.forEach(callback => {
                 callback.call(this, event.currentFrame);
             });
@@ -508,19 +677,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         };
     }
 
-    public get children() {
-        return [...this._children];
-    }
-
-    public get parent(): Shape | undefined {
-        return this._parent as unknown as Shape | undefined;
-    }
-
-    public get root(): Shape {
-        if (this._parent === undefined) return this as Shape;
-        return this._parent.root;
-    }
-
     public logHierarchy(indent = 0) {
         const name = this.name === "" ? this.constructor.name : this.name;
         const red = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.red;
@@ -660,55 +816,160 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return this;
     }
 
-    public findChild(name: string): Shape | undefined {
-        return this._children.find(child => {
-            return child.name === name;
-        });
-    }
+    // public findChild(name: string): Shape | undefined {
+    //     return this._children.find(child => {
+    //         return child.name === name;
+    //     });
+    // }
+    //
+    // public findChildren(name: string): Shape[] {
+    //     return this._children.filter(child => child.name === name);
+    // }
+    //
+    // public r_findChild(name: string): Shape | undefined {
+    //     return (
+    //         this._children.find(child => child.name === name) ??
+    //             this._children.map(child => child.r_findChild(name)).find(child => child !== undefined)
+    //     );
+    // }
+    //
+    // public r_findChildren(name: string): Shape[] {
+    //     return (
+    //         this._children.filter(child => child.name === name) ??
+    //             this._children.map(child => child.r_findChildren(name)).flat()
+    //     );
+    // }
+    //
+    // public r_getChildren() {
+    //     const children = [...this._children];
+    //     this._children.forEach(child => children.push(...child.r_getChildren()));
+    //     return children;
+    // }
 
-    public findChildren(name: string): Shape[] {
-        return this._children.filter(child => child.name === name);
-    }
+    // public addChild(child: Shape) {
+    //     super.addChild(child);
+    //     return this;
+    // }
+    //
+    // public addChildren(...children: Shape[]) {
+    //     super.addChildren(...children);
+    //     return this;
+    // }
+    //
+    // public removeChild(child: Shape) {
+    //     super.removeChild(child);
+    //     return this;
+    // }
+    //
+    // public removeChildren(...children: Shape[]) {
+    //     super.removeChildren(...children);
+    //     return this;
+    // }
+    //
+    // public removeSelf() {
+    //     super.removeSelf();
+    //     return this;
+    // }
 
-    public r_findChild(name: string): Shape | undefined {
-        return (
-            this._children.find(child => child.name === name) ??
-            this._children.map(child => child.r_findChild(name)).find(child => child !== undefined)
-        );
-    }
+    // public findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    //     return this._children.find(filter);
+    // }
+    //
+    // public findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+    //     return this._children.filter(filter);
+    // }
+    //
+    // public r_findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    //     return (
+    //         this._children.find(filter) ??
+    //             this._children.map(child => child.r_findChildWhere(filter)).find(child => child !== undefined)
+    //     );
+    // }
+    //
+    // public r_findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+    //     return (
+    //         this._children.filter(filter) ??
+    //             this._children.map(child => child.r_findChildrenWhere(filter)).flat()
+    //     );
+    // }
+    //
+    // public removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    //     const child = this._children.find(filter);
+    //     if (child) {
+    //         this.removeChild(child);
+    //     }
+    //     return child;
+    // }
+    //
+    // public removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+    //     const children = this._children.filter(filter);
+    //     this.removeChildren(...children);
+    //     return children;
+    // }
+    //
+    // public r_removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    //     const child = this._children.find(filter);
+    //     if (child) {
+    //         this.removeChild(child);
+    //         return child;
+    //     }
+    //     for (const child of this._children) {
+    //         const removed = child.r_removeChildWhere(filter);
+    //         if (removed) {
+    //             return removed;
+    //         }
+    //     }
+    //     return undefined;
+    // }
+    //
+    // public r_removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+    //     const removed: Shape[] = [];
+    //     for (const child of this._children) {
+    //         removed.push(...child.r_removeChildrenWhere(filter));
+    //     }
+    //     this.removeChildren(...removed);
+    //     return removed;
+    // }
+    //
+    // public bringForward() {
+    //     super.bringForward();
+    //     return this;
+    // }
+    //
+    // public bringToFront() {
+    //     super.bringToFront();
+    //     return this;
+    // }
+    //
+    // public sendBackward() {
+    //     super.sendBackward();
+    //     return this;
+    // }
+    //
+    // public sendToBack() {
+    //     super.sendToBack();
+    //     return this;
+    // }
 
-    public r_findChildren(name: string): Shape[] {
-        return (
-            this._children.filter(child => child.name === name) ??
-            this._children.map(child => child.r_findChildren(name)).flat()
-        );
-    }
-
-    public r_getChildren() {
-        const children = [...this._children];
-        this._children.forEach(child => children.push(...child.r_getChildren()));
-        return children;
-    }
-
-    public addChild(child: Shape) {
-        super.addChild(child);
-        return this;
-    }
-
-    public addChildren(...children: Shape[]) {
-        super.addChildren(...children);
-        return this;
-    }
-
-    public removeChild(child: Shape) {
-        super.removeChild(child);
-        return this;
-    }
-
-    public removeChildren(...children: Shape[]) {
-        super.removeChildren(...children);
-        return this;
-    }
+    // future update:
+    // public schedule(frames: number, callback: (this: this) => void) {
+    //     this.schedulers.push({ remainingFrames: Math.max(frames, 0), callback });
+    //     return this;
+    // }
+    //
+    // public in(frames: number, callback: (this: this) => void) {
+    //     return this.schedule(frames, callback);
+    // }
+    //
+    // public unschedule(callback: (this: this) => void) {
+    //     this.schedulers = this.schedulers.filter(scheduler => scheduler.callback !== callback);
+    //     return this;
+    // }
+    //
+    // public unscheduleAll() {
+    //     this.schedulers = [];
+    //     return this;
+    // }
 
     public hasEventListeners() {
         return Object.values(this.eventListeners).some(listeners => listeners.length > 0);

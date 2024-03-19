@@ -24,8 +24,9 @@ export class Stage<RootDetailsType = any> {
     public lastRenderMs = 0;
     public currentFrame = 0;
     protected drawEvents: EventCollection<RootDetailsType> = {};
-    protected onError = (e?: Error) => {
-        console.error(e);
+    protected onError = (e?: Error, stack?: string) => {
+        stack = stack?.slice(0, stack?.indexOf("FrameRequestCallback*"));
+        console.error(`WorkerStage: ${e?.message ?? "Error"}\n${stack ?? ""}`);
     };
 
     public eventListeners = {
@@ -67,24 +68,31 @@ export class Stage<RootDetailsType = any> {
     public addEventListener<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
         event: E,
         callback: StageEventListeners<this>[E][0]
-    ) {
+    ): this {
         this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<Stage>);
+        return this;
     }
 
     public on<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
         event: E,
         callback: StageEventListeners<this>[E][0]
-    ) {
+    ): this {
         this.addEventListener(event, callback);
+        return this;
     }
 
     public removeEventListener<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
         event: E,
-        callback: StageEventListeners<this>[E][0]
-    ) {
+        callback?: StageEventListeners<this>[E][0]
+    ): this {
+        if (!callback) {
+            this.eventListeners[event as "click"] = [];
+            return this;
+        }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<Stage>)
         );
+        return this;
     }
 
     protected pointerDownHandler(e: PointerEvent) {
@@ -170,7 +178,7 @@ export class Stage<RootDetailsType = any> {
         );
     }
 
-    public loop(frameRate = 60) {
+    public loop(frameRate = 60): this {
         this.stop();
         this.canvas!.addEventListener("pointerdown", this.pointerDownHandler.bind(this));
         this.canvas!.addEventListener("pointerup", this.pointerUpHandler.bind(this));
@@ -183,6 +191,7 @@ export class Stage<RootDetailsType = any> {
         this.nextRenderTime = performance.now();
         this.currentFrame = 0;
         requestAnimationFrame(this.drawLoop.bind(this));
+        return this;
     }
 
     protected drawLoop() {
@@ -201,7 +210,7 @@ export class Stage<RootDetailsType = any> {
         return;
     }
 
-    public draw(ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+    public draw(ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
         ctx ??= this.ctx;
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
         this.root.setPointerEvents(this.drawEvents);
@@ -213,12 +222,14 @@ export class Stage<RootDetailsType = any> {
         } catch (e: unknown) {
             this.stop();
             this.onError(e as Error);
+            return false;
         }
         this.drawEvents = { stage: this };
         this.currentFrame++;
+        return true;
     }
 
-    public stop() {
+    public stop(): this {
         this.canvas!.removeEventListener("pointerdown", this.pointerDownHandler.bind(this));
         this.canvas!.removeEventListener("pointerup", this.pointerUpHandler.bind(this));
         this.canvas!.removeEventListener("pointermove", this.pointerMoveHandler.bind(this));
@@ -226,6 +237,7 @@ export class Stage<RootDetailsType = any> {
         this.canvas!.removeEventListener("keydown", this.keydownHandler.bind(this));
         this.canvas!.removeEventListener("keyup", this.keyupHandler.bind(this));
         this.active = false;
+        return this;
     }
 
     public get width() {

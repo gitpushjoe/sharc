@@ -40,7 +40,11 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
     };
 
     protected onError = function (this: WorkerStage, e?: Error) {
-        this.postMessage({ type: "error", error: e?.message ?? "Error" });
+        this.postMessage({
+            type: "error",
+            error: e?.message ?? "Error",
+            stack: e?.stack ?? "No stack"
+        });
     };
 
     private informOffscreenOfStop = true;
@@ -62,8 +66,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
         this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this>);
+        return this;
     }
 
     public on<
@@ -71,8 +76,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
         this.addEventListener(event, callback);
+        return this;
     }
 
     public removeEventListener<
@@ -80,10 +86,15 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        if (!callback) {
+            this.eventListeners[event as "click"] = [];
+            return this;
+        }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<this>)
         );
+        return this;
     }
 
     private setStageState(e: StageStateMessage) {
@@ -131,7 +142,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         }
     };
 
-    public draw(ctx?: OffscreenCanvasRenderingContext2D) {
+    public draw(ctx?: OffscreenCanvasRenderingContext2D): boolean {
         this.drawEvents = this.nextDrawEvents
             ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
             : this.drawEvents;
@@ -177,15 +188,20 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this.eventListeners.scroll.forEach(callback => callback.call(this, scroll));
         }
         this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
-        super.draw(ctx);
+        try {
+            super.draw(ctx);
+        } catch (e: unknown) {
+            this.onError(e as Error);
+            return false;
+        }
         this.postMessage({
             type: "render",
             img: this.offscreenCanvas.transferToImageBitmap(),
             lastRenderMs: this.lastRenderMs,
             currentFrame: this.currentFrame
         });
-        // img.close();
         this.nextDrawEvents = undefined;
+        return true;
     }
 
     public postCustomMessage(message: MessageType, port?: MessagePort): void {
@@ -206,13 +222,14 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         port.postMessage(message);
     }
 
-    public loop(frameRate = 60) {
+    public loop(frameRate = 60): this {
         this.informOffscreenOfStop = false;
         super.loop(frameRate);
         this.informOffscreenOfStop = true;
+        return this;
     }
 
-    public stop() {
+    public stop(): this {
         super.stop();
         if (this.informOffscreenOfStop) {
             this.postMessage({
@@ -220,5 +237,6 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 source: "worker"
             });
         }
+        return this;
     }
 }

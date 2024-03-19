@@ -78,6 +78,7 @@ export type CustomMessage<MessageType = any> = {
 export type WorkerErrorMessage = {
     type: "error";
     error: string;
+    stack: string;
 };
 
 export type WorkerStopLoopMessage = {

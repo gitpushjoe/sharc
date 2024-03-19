@@ -57,7 +57,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                 this.workerReady = true;
                 break;
             case "error":
-                this.onError(new Error(e.error));
+                this.onError(new Error(e.error), e.stack);
                 break;
         }
     }
@@ -161,8 +161,9 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
         this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this>);
+        return this;
     }
 
     public on<
@@ -170,8 +171,9 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
         this.addEventListener(event, callback);
+        return this;
     }
 
     public removeEventListener<
@@ -179,13 +181,18 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback?: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        if (!callback) {
+            this.eventListeners[event as "click"] = [];
+            return this;
+        }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<this>)
         );
+        return this;
     }
 
-    public draw() {
+    public draw(): boolean {
         this.drawEvents.stage = undefined;
         const stageState: Omit<StageStateMessage, "type"> = this.getStageState();
         if (JSON.stringify(stageState) != JSON.stringify(this.lastEmittedStageState)) {
@@ -196,6 +203,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             });
         }
         this.drawEvents = {};
+        return true;
     }
 
     public async postCustomMessage(message: MessageType): Promise<AsyncMessage<MessageType>> {
@@ -222,7 +230,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
         });
     }
 
-    public loop(frameRate = 60) {
+    public loop(frameRate = 60): this {
         if (!this.workerReady) {
             console.warn("Worker not ready");
         }
@@ -234,14 +242,16 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             frameRate,
             stageState: this.getStageState()
         });
+        return this;
     }
 
-    public stop() {
+    public stop(): this {
         if (this.workerReady) {
             void this.postMessage({
                 type: "stopLoop",
                 source: "offscreen"
             });
         }
+        return this;
     }
 }

@@ -51,6 +51,14 @@ export type SpriteEventListeners<thisType = undefined, Properties = any> = {
     >[];
 };
 
+export type SpriteScheduler<thisType = undefined> = {
+    remainingFrames: number;
+    callback: (this: thisType) => void;
+};
+
+// future update:
+// export type SpriteSchedulers<thisType = undefined> = SpriteScheduler<thisType>[];
+
 export type StageEventListeners<thisType = Stage> = {
     click: PointerEventCallback<thisType>[];
     release: PointerEventCallback<thisType>[];

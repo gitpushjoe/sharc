@@ -1,14 +1,15 @@
 import { Colors, Easing } from "./sharc/Utils";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 /// <reference path="./sharc/async_stages/WorkerStage.ts" />
-import { Ellipse, Rect, Line, LabelSprite, BezierCurve, ImageSprite } from "./sharc/Sprites";
+import { Ellipse, Rect, Line, LabelSprite, BezierCurve, ImageSprite, Shape } from "./sharc/Sprites";
 import { PositionType } from "./sharc/types/Common";
+import { Sprite } from "./sharc/Sprite";
 
 postMessage("Hello from worker!");
 
 const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 
-const test: string = "image";
+const test: string = "1.5";
 if (test === "perf") {
     for (let i = 0; i < 70 * 31; i++) {
         const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
@@ -232,7 +233,44 @@ if (test === "perf") {
             loop: true
         })
     );
+} else if (test === "1.5") {
+    for (let i = 0; i < 20; ++i) {
+        const ellipse = new Ellipse({
+            color: (i % 2 && Colors.Red) || Colors.Blue,
+            radius: 50,
+            stroke: { lineWidth: 5 },
+            center: { x: 50 + (i + 2) * 40, y: 50 + (i % 2) * 40 },
+            name: `ellipse${i}`
+        })
+            .on("drag", function (_, pos) {
+                stage.postCustomMessage(`${this.name}`);
+                this.center = pos;
+                this.bringToFront();
+                // console.log(this.parent);
+                // this.root.logHierarchy();
+            })
+            .on("release", function (e) {
+                this.root.logHierarchy();
+                if (e.button === 0) {
+                    this.sendToBack();
+                } else {
+                    this.sendBackward();
+                }
+            });
+        stage.root.addChild(ellipse);
+    }
 }
+
+// const arr: Shape[] = [new Ellipse({}), new Rect({}), new Line({}), new BezierCurve({}), new LabelSprite({})];
+// arr;
+//
+// const t: Line[] = [];
+//
+// t.push(t[1].removeSelf());
+// arr.push(...(new Line({})).children);
+//
+// arr.push(arr[0].removeSelf());
+// arr[0].addChild(arr[1].parent!);
 
 stage.on("beforeDraw", function () {
     this.currentFrame = this.currentFrame >= 60 * 10 ? 0 : this.currentFrame;
