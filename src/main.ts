@@ -128,6 +128,7 @@ if (!useOffscreen) {
                 });
                 stage.root.addChild(ellipse);
             }
+
     }
 } else {
     const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
@@ -171,6 +172,7 @@ const delays: number[] = [];
 
 const cnv = document.getElementById("canvas") as HTMLCanvasElement;
 cnv.tabIndex = 1;
+
 cnv.style.cursor = "default";
 
 var interval =
@@ -184,5 +186,14 @@ var interval =
             document!.getElementsByClassName("title")![0]!.innerHTML =
                 `${Math.floor((stage.currentFrame / 600) * 10000) / 100}% complete`;
         }, 20);
+    setInterval(() => {
+        document!
+            .getElementById("container")!
+            .appendChild(document!.createTextNode(stage.currentFrame.toString() + " "));
+        document!.getElementById("canvas")!.style.transform =
+            `rotate(${-Math.floor((stage.currentFrame % 20) + 10)}deg)`;
+        document!.getElementsByClassName("title")![0]!.innerHTML =
+            `${Math.floor((stage.currentFrame / 600) * 10000) / 100}% complete`;
+    }, 20);
 
 stage.loop(framerate);
