@@ -18,13 +18,13 @@ const label = new LabelSprite<number>({
     stroke: { lineWidth: 5 },
 });
 
-label.on('release', function () {
-    this.details!++;
-    label.channels[0].enqueue([
+label.on('release', sprite => {
+    sprite.details!++;
+    sprite.channels[0].enqueue([
         Shrink(1.1, 5, 0, Easing.EASE_OUT),
         Grow(1.1, 5, 0, Easing.EASE_IN),
     ], 1);
-    label.text = `${this.details!} clicks!`;
+    sprite.text = `${sprite.details!} clicks!`;
 });
 
 stage.root.addChild(label);

@@ -1,10 +1,12 @@
 # Async Stages
 
-_[ * Note: This feature is currently in beta. ]_
+_[ * Note: As of v2.0.0, this is no longer a beta feature. ]_
 
 _[ * Also, this page will solely use Typescript for its examples, but this feature is also available in Javascript. ]_
 
-The `OffscreenStage` class and the `WorkerStage` class are used in tandem to render sprites off the main thread. This is useful for rendering complex scenes that would otherwise cause the main thread to lag, and often produces a more consistent framerate.
+[]
+
+The `OffscreenStage` class and the `WorkerStage` class are used in tandem to render sprites off the main thread. This is useful for rendering complex scenes that would otherwise cause the main thread to lag, and often produces a more consistent framerate. Scroll to the bottom to see a simple example of how to use these stages.
 
 []
 ### OffscreenStage
@@ -98,7 +100,6 @@ You will need to create two separate files: one for the main thread and one for 
 import { OffscreenStage } from "sharc-js/async_stages/OffscreenStage";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 const stage = new OffscreenStage(canvas, worker);
 

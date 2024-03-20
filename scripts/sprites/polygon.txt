@@ -14,11 +14,11 @@ const handle = new Ellipse({
 	radius: 12,
 	color: Colors.Red,
 	stroke: {lineWidth: 3},
-}).on('drag', function (_event, position) {
+}).on('drag', (sprite, position) => {
 	const radiusHandlePos = radiusHandle.center;
-	const deltaX = position.x - this.centerX;
-	const deltaY = position.y - this.centerY;
-	this.center = position;
+	const deltaX = position.x - sprite.centerX;
+	const deltaY = position.y - sprite.centerY;
+	sprite.center = position;
 	polygon.center = position;
 	radiusHandle.center = {x: radiusHandlePos.x + deltaX, y: radiusHandlePos.y + deltaY};
 });
@@ -28,11 +28,11 @@ const radiusHandle = new Ellipse({
 	radius: 12,
 	color: Colors.Blue,
 	stroke: {lineWidth: 3}
-}).on('drag', function (_event, position) {
+}).on('drag', (sprite, position) => {
 	const center = polygon.center;
 	const radius = Math.sqrt(Math.pow(position.x - center.x, 2) + Math.pow(position.y - center.y, 2));
 	polygon.radius = radius || 0.1;
-	this.center = position;
+	sprite.center = position;
 	polygon.rotation = Math.atan2(position.y - center.y, position.x - center.x) * 180 / Math.PI;
 });
 
@@ -78,17 +78,17 @@ function updateSlider() {
 	polygon.endRatio = endRatio;
 }
 
-sliderLayer.findChild('startRatio').on('drag', function (_event, position) {
+sliderLayer.findChild('startRatio').on('drag', (sprite, position) => {
 	let posX = Math.max(-250, Math.min(250, position.x));
 	posX = Math.round(posX);
-	this.centerX = posX;
+	sprite.centerX = posX;
 	updateSlider();
 });
 
-sliderLayer.findChild('endRatio').on('drag', function (_event, position) {
+sliderLayer.findChild('endRatio').on('drag', (sprite, position) => {
 	let posX = Math.max(-250, Math.min(250, position.x));
 	posX = Math.round(posX);
-	this.centerX = posX;
+	sprite.centerX = posX;
 	updateSlider();
 });
 
@@ -103,12 +103,12 @@ sidesSliderLayer.findChild('startRatio').name = 'sides-count';
 sidesSliderLayer.findChild('sides-count').centerX = -250/3;
 sidesSliderLayer.findChild('sides-count').color = Colors.Lime;
 
-sidesSliderLayer.findChild('sides-count').on('drag', function (_event, position) {
+sidesSliderLayer.findChild('sides-count').on('drag', (sprite, position) => {
 	let posX = Math.max(-250, Math.min(250, position.x));
 	posX = (250 + posX) / 500 * 9;
 	const sides = Math.max(3, Math.min(12, Math.round(posX + 3)));
 	posX = -250 + (sides - 3) / 9 * 500;
-	this.centerX = posX;
+	sprite.centerX = posX;
 	polygon.sides = sides;
 	sidesSliderLayer.findChild('sidesLine').corner2 = {x: posX, y: 0};
 });

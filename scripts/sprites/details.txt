@@ -7,79 +7,79 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 type PhysicsDetails = {
-		velocity: PositionType,
-		acceleration: PositionType,
+	velocity: PositionType,
+	acceleration: PositionType,
 };
 
 const label = new LabelSprite({
-		text: 'Reset!',
-		color: Colors.White,
-		position: { x: 0, y: 100 },
-		positionIsCenter: true,
-		backgroundColor: Colors.Blue,
-		padding: 10,
-		fontSize: 50,
-		stroke: { lineWidth: 5 },
+	text: 'Reset!',
+	color: Colors.White,
+	position: { x: 0, y: 100 },
+	positionIsCenter: true,
+	backgroundColor: Colors.Blue,
+	padding: 10,
+	fontSize: 50,
+	stroke: { lineWidth: 5 },
 })
 
 stage.root.addChild(label);
 
 const reset = () => {
-		stage.root.removeChildren(...stage.root.children.slice(1));
-		for (let i = 0; i < 7; i++) {
-				const circle = new Ellipse<PhysicsDetails>({
-						center: { 
-							x: -200 + i * 70, 
-							y: 100 - i * 20
-					},
-					radius: 20 + Math.random() * 35,
-					color: {
-							red: Math.random() * 180 + 55,
-							green: Math.random() *  180 + 55,
-							blue: Math.random() *  180 + 55,
-							alpha: 1
-					},
-					stroke: {
-							lineWidth: 5,
-					},
-					details: {
-							velocity: { x: 0, y: 0 },
-							acceleration: { x: Math.random(), y: 0 },
-					}
-				});
-				circle.on('beforeDraw', simulatePhysics);
-				stage.root.addChild(circle);
-		}
+	stage.root.removeChildren(...stage.root.children.slice(1));
+	for (let i = 0; i < 7; i++) {
+		const circle = new Ellipse<PhysicsDetails>({
+			center: { 
+				x: -200 + i * 70, 
+				y: 100 - i * 20
+			},
+			radius: 20 + Math.random() * 35,
+			color: {
+				red: Math.random() * 180 + 55,
+				green: Math.random() *  180 + 55,
+				blue: Math.random() *  180 + 55,
+				alpha: 1
+			},
+			stroke: {
+				lineWidth: 5,
+			},
+			details: {
+				velocity: { x: 0, y: 0 },
+				acceleration: { x: Math.random(), y: 0 },
+			}
+		});
+		circle.on('beforeDraw', simulatePhysics);
+		stage.root.addChild(circle);
+	}
 }
 
 const gravity = { x: 0, y: -.5 };
 
 // Note: I am not a physicist
-const simulatePhysics = function (this: Ellipse<PhysicsDetails>) {
-		const acceleration: PositionType = {
-					x: this.details!.acceleration.x + gravity.x,
-					y: this.details!.acceleration.y + gravity.y,
-		};
-		const friction = {
-				x: .95,
-				y: .95,
-		}
-		const width = canvas.width / 2 - this.radius[0];
-		const height = canvas.height / 2 - this.radius[1];
-		this.details!.velocity = addPositions(this.details!.velocity, acceleration);
-		this.details!.acceleration = multiplyPositions(this.details!.acceleration, friction);
-		this.center = addPositions(this.center, this.details!.velocity);
-		if (this.centerX > width || this.centerX < -width) {
-					this.details!.velocity.x *= -friction.x;
-					this.details!.acceleration.x *= -1;
-					this.centerX = this.centerX > 0 ? width : -width;
-		}
-		if (this.centerY < -height) {
-					this.centerY = -height;
-					this.details!.velocity.x *= friction.x;
-					this.details!.velocity.y *= -friction.y;
-					this.details!.acceleration.y *= -1;
-		}
+const simulatePhysics = (sprite: Ellipse<PhysicsDetails>) => {
+	const acceleration: PositionType = {
+		x: sprite.details!.acceleration.x + gravity.x,
+		y: sprite.details!.acceleration.y + gravity.y,
+	};
+	const friction = {
+		x: .95,
+		y: .95,
+	}
+	const width = canvas.width / 2 - sprite.radius[0];
+	const height = canvas.height / 2 - sprite.radius[1];
+	sprite.details!.velocity = addPositions(sprite.details!.velocity, acceleration);
+	sprite.details!.acceleration = multiplyPositions(sprite.details!.acceleration, friction);
+	sprite.center = addPositions(sprite.center, sprite.details!.velocity);
+	if (sprite.centerX > width || sprite.centerX < -width) {
+		sprite.details!.velocity.x *= -friction.x;
+		sprite.details!.acceleration.x *= -1;
+		sprite.centerX = sprite.centerX > 0 ? width : -width;
+	}
+	if (sprite.centerY < -height) {
+		sprite.centerY = -height;
+		sprite.details!.velocity.x *= friction.x;
+		sprite.details!.velocity.y *= -friction.y;
+		sprite.details!.acceleration.y *= -1;
+	}
 };
 
 label.on('click', reset);

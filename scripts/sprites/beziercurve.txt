@@ -56,8 +56,8 @@ for (const idx in properties) {
         color: color,
         stroke: {lineWidth: 3},
     });
-    handle.on('drag', function (_event, position) {
-        this.center = position;
+    handle.on('drag', (sprite, position) => {
+        sprite.center = position;
         if (property[0] === 'start') {
             curve.start = position;
         } else {
@@ -69,10 +69,10 @@ for (const idx in properties) {
 
 
 stage.on('beforeDraw', function (event) {
-    const line0 = stage.root.findChild('line0') as Line;
-    const line1 = stage.root.findChild('line1') as Line;
-    const line2 = stage.root.findChild('line2') as Line;
-    const line3 = stage.root.findChild('line3') as Line;
+    const line0 = stage.root.findChild('line0')! as Line;
+    const line1 = stage.root.findChild('line1')! as Line;
+    const line2 = stage.root.findChild('line2')! as Line;
+    const line3 = stage.root.findChild('line3')! as Line;
 
     line0.corner1 = curve.start;
     line0.corner2 = curve.points[0].control1;
