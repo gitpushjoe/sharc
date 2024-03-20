@@ -28,7 +28,7 @@ const DEFAULT_CANVAS_INTERFACE: CanvasInterface = {
 
 export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<DetailsType> {
     private offscreenCanvas: OffscreenCanvas;
-    public eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
+    protected eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
         beforeDraw: [],
         click: [],
         release: [],

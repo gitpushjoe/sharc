@@ -7,7 +7,7 @@ import { NullSprite } from "../Sprites";
 export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<DetailsType> {
     private workerReady = false;
     private lastEmittedStageState?: Omit<StageStateMessage, "type">;
-    public eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
+    protected eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
         beforeDraw: [],
         click: [],
         release: [],

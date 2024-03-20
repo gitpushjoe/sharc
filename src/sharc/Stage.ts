@@ -33,7 +33,7 @@ export class Stage<RootDetailsType = any> {
         console.error(`WorkerStage: ${e?.message ?? "Error"}\n${stack ?? ""}`);
     };
 
-    public eventListeners = {
+    protected eventListeners = {
         beforeDraw: [] as StageEventListeners["beforeDraw"],
         click: [] as StageEventListeners["click"],
         release: [] as StageEventListeners["release"],
