@@ -36,7 +36,7 @@ stage.root.addChildren(
 
 stage.root.addChild(text);
 
-stage.on('click', (stage, position, event) => {
+stage.on('click', function (stage, position, event) {
 	const button = event.button === 0 ? 'Left' : event.button === 1 ? 'Middle' : 'Right';
 	const text = `${button} click at (${Math.round(position.x)}, ${Math.round(position.y)})`;
 	(stage.root.children[3] as TextSprite).text = text;

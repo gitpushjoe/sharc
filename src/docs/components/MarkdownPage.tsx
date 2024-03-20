@@ -27,7 +27,12 @@ export default function MarkdownPage({ path }: {path: string}) {
         const replaceNewlines = (str: string) => {
             return str.split(/(\[\d*\])/g).map((str, index) => {
                 if (str.match(/(\[\d*\])/g)) {
-                    const count = parseInt(str.match(/\[(\d*)\]/)![1]);
+                    const match = str.match(/\[(\d*)\]/)![1];
+                    const count = parseInt(match);
+                    console.log(`count: ${count}`);
+                    if (count === 0) {
+                        return <div style={{marginBottom: '1em'}} key={index} />;
+                    }
                     return Array(1 && isNaN(count) || count).fill(0).map((_, i) => <br key={`${index} ${i}`} />);
                 }
                 return str;
@@ -71,6 +76,7 @@ export default function MarkdownPage({ path }: {path: string}) {
         'sprites/image': () => new Worker(new URL('../../scripts/sprites/image.ts', import.meta.url), { type: 'module' }),
         'sprites/nullsprite': () => new Worker(new URL('../../scripts/sprites/nullsprite.ts', import.meta.url), { type: 'module' }),
         'animation/channels': () => new Worker(new URL('../../scripts/animation/channels.ts', import.meta.url), { type: 'module' }),
+        'animation/distribute': () => new Worker(new URL('../../scripts/animation/distribute.ts', import.meta.url), { type: 'module' }),
         'animation/from-null': () => new Worker(new URL('../../scripts/animation/from-null.ts', import.meta.url), { type: 'module' }),
         'animation/to-callback': () => new Worker(new URL('../../scripts/animation/to-callback.ts', import.meta.url), { type: 'module' }),
     } as Record<string, () => Worker>;
@@ -100,6 +106,7 @@ export default function MarkdownPage({ path }: {path: string}) {
         return <div className={styles.markdown}>
         <ReactMarkdown components={{
             p({ className, children, ...props }) {
+                    console.log(`children: ${children}`);
                 return <p className={className} style={{marginBottom: "0"}} {...props}>{textParse(children)}</p>;
             },
             a({ href, children, ...props }) {

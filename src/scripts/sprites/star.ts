@@ -15,11 +15,11 @@ const handle = new Ellipse({
     radius: 12,
     color: Colors.Red,
     stroke: {lineWidth: 3},
-}).on('drag', function (_event, position) {
+}).on('drag', (sprite, position) => {
     const radiusHandlePos = radiusHandle.center;
-    const deltaX = position.x - this.centerX;
-    const deltaY = position.y - this.centerY;
-    this.center = position;
+    const deltaX = position.x - sprite.centerX;
+    const deltaY = position.y - sprite.centerY;
+    sprite.center = position;
     star.center = position;
     radiusHandle.center = {x: radiusHandlePos.x + deltaX, y: radiusHandlePos.y + deltaY};
 });
@@ -30,13 +30,13 @@ const radiusHandle = new Ellipse({
     color: Colors.Blue,
     stroke: {lineWidth: 3},
     name: 'radiusHandle'
-}).on('drag', function (_event, position) {
+}).on('drag', (sprite, position) => {
     const center = star.center;
     const radius = Math.sqrt(Math.pow(position.x - center.x, 2) + Math.pow(position.y - center.y, 2));
     star.radius = radius || 0.1;
-    this.center = position;
+    sprite.center = position;
     star.rotation = (Math.atan2(position.y - center.y, position.x - center.x) * 180 / Math.PI) - 12;
-    this.children[0].rotation = star.rotation - 90 + 12;
+    sprite.children[0].rotation = star.rotation - 90 + 12;
 }).addChild(new NullSprite({})
     .addChild(new Ellipse({
         center: { x: 0, y: -100 * (3 - Math.sqrt(5)) / 2},
@@ -45,12 +45,12 @@ const radiusHandle = new Ellipse({
         stroke: {lineWidth: 3}
     })));
 
-radiusHandle.children[0].children[0]!.on('drag', function (_event, position) {
+radiusHandle.children[0].children[0]!.on('drag', (sprite, position) => {
     const center = star.center;
     const innerRadius = Math.sqrt(Math.pow(position.x - center.x, 2) + Math.pow(position.y - center.y, 2));
     // console.log(innerRadius)
     star.innerRadius = innerRadius || 0.1;
-    this.centerY = position.y;
+    sprite.centerY = position.y;
 });
 
 stage.root.addChildren(star, handle, radiusHandle);
@@ -95,17 +95,17 @@ function updateSlider() {
     star.endRatio = endRatio;
 }
 
-sliderLayer.findChild('startRatio')!.on('drag', function (_event, position) {
+sliderLayer.findChild('startRatio')!.on('drag', (sprite, position) => {
     let posX = Math.max(-250, Math.min(250, position.x));
     posX = Math.round(posX);
-    this.centerX = posX;
+    sprite.centerX = posX;
     updateSlider();
 });
 
-sliderLayer.findChild('endRatio')!.on('drag', function (_event, position) {
+sliderLayer.findChild('endRatio')!.on('drag', (sprite, position) => {
     let posX = Math.max(-250, Math.min(250, position.x));
     posX = Math.round(posX);
-    this.centerX = posX;
+    sprite.centerX = posX;
     updateSlider();
 });
 

@@ -14,9 +14,9 @@ stage.root.addChild(new TextSprite({
     bold: true,
 }));
 
-stage.on('beforeDraw', function (frame) {
-    this.bgColor = frame % 2 === 0 ? Colors.DarkBlue : Colors.DarkRed;
-    this.root.children[0].text = (frame % 2 === 0 ? 'even' : 'odd') + ' frame';
+stage.on('beforeDraw', (stage, frame) => {
+    stage.bgColor = frame % 2 === 0 ? Colors.DarkBlue : Colors.DarkRed;
+	(stage.root.children[0] as TextSprite).text = (frame % 2 === 0 ? 'even' : 'odd') + ' frame';
 });
 
 stage.postCustomMessage({"framerate": 0.25});

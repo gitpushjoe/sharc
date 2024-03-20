@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef  } from 'react'
 import styles from './Home.module.css';
 import { Stage } from 'sharc-js/Stage.js'
 import { Ellipse, NullSprite } from 'sharc-js/Sprites'
-import { Animate, Color, Colors, Easing, addXCallback } from 'sharc-js/Utils'
+import { Animate, Color, Colors } from 'sharc-js/Utils'
 import { LinkContainer } from 'react-router-bootstrap';
 
 function App() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [debug, setDebug] = useState('test');
 
     useEffect(() => {
 
@@ -35,11 +34,11 @@ function App() {
                 canvasRef.current!.style.cursor = 'pointer';
             }).on('hoverEnd', () => {
                 canvasRef.current!.style.cursor = 'default';
-            }).on('release', function () {
+            }).on('release',sprite => {
                 if (root.name !== 'animating') {
                     const randomEllipse = root.children[Math.floor(Math.random() * root.children.length)].children[0];
-                    this.channels[0].push(Animate('centerX', this.centerX, randomEllipse.centerX, 20));
-                    randomEllipse.channels[0].push(Animate('centerX', randomEllipse.centerX, this.centerX, 20));
+                    sprite.channels[0].push(Animate('centerX', sprite.centerX, randomEllipse.centerX, 20));
+                    randomEllipse.channels[0].push(Animate('centerX', randomEllipse.centerX, sprite.centerX, 20));
                     root.name = 'animating';
                 }
             });

@@ -4,7 +4,7 @@ import { Colors } from "sharc-js/Utils";
 
 type CircleColors = "red" | "green" | "blue" | "yellow";
 
-const stage = new WorkerStage<any, CircleColors>(postMessage.bind(null), "centered", Colors.DarkSlateGray);
+const stage = new WorkerStage<undefined, CircleColors>(postMessage.bind(null), "centered", Colors.DarkSlateGray);
 onmessage = stage.onmessage;
 
 const redCircle = new Ellipse<CircleColors>({
@@ -40,10 +40,10 @@ const text =  new TextSprite({
 });
 
 [redCircle, greenCircle, yellowCircle, blueCircle].forEach(circle => {
-    circle.on("click", function () {
-        stage.postCustomMessage(this.details!);
-        text.text = `You clicked the ${this.details} circle!`;
-        text.color = this.color;
+    circle.on("click", sprite => {
+        stage.postCustomMessage(sprite.details!);
+        text.text = `You clicked the ${sprite.details} circle!`;
+        text.color = sprite.color;
     });
     stage.root.addChild(circle);
 });

@@ -29,15 +29,27 @@ Adds multiple children to `sprite`.
 
 []
 ~~~ts-header
-sprite.removeChild(child: Shape) -> this
+sprite.removeChild(child: Shape) -> Shape | undefined
 ~~~
-Tries to remove `child` from `sprite`'s children.
+Tries to remove `child` from `sprite`'s children, only if `child` is not a child of `sprite`. Returns `child` if it was removed, otherwise returns `undefined`.
 
 []
 ~~~ts-header
-sprite.removeChildren(...children: Shape[]) -> this
+sprite.removeChildren(...children: Shape[]) -> Shape[]
 ~~~
-Tries to remove all of `children` from `sprite`'s children.
+Tries to remove all of `children` from `sprite`'s children. Returns an array of the children that were removed.
+
+[]
+~~~ts-header
+sprite.removeAllChildren() -> this
+~~~
+Removes all of `sprite`'s children.
+
+[]
+~~~ts-header
+sprite.removeSelf() -> this
+~~~
+Removes `sprite` from its parent. If `sprite` has no parent, then it does nothing.
 
 []
 ~~~ts-header
@@ -47,15 +59,15 @@ Returns a copy of `sprite`'s children array.
 
 []
 ~~~ts-header
-sprite.r_getChildren() -> Shape[]
+sprite.descendants -> Shape[]
 ~~~
 Returns all of `sprite`'s descendants. (Recursive)
 
 []
 ~~~ts-header
-sprite.parent -> Shape|undefined
+sprite.parent -> Shape | undefined
 ~~~
-Returns `sprite`'s parent.
+Returns `sprite`'s parent, or `undefined` if `sprite` has no parent.
 
 []
 ~~~ts-header
@@ -71,24 +83,97 @@ Logs `sprite` and all of its descendants to the console, including their positio
 
 []
 ~~~ts-header
-sprite.findChild(name: string) -> Shape|undefined
+sprite.findChild(name: string) -> Shape | undefined
 ~~~
-Returns the first child of `sprite` with the name `name`. Non-recursive.
+Returns the first child of `sprite` with the name `name`.
+
+[]
+~~~ts-header
+sprite.findDescendant(name: string) -> Shape | undefined
+~~~
+Returns the first descendant of `sprite` with the name `name`. If no descendant has that name, it returns `undefined`. (Recursive.)
 
 []
 ~~~ts-header
 sprite.findChildren(name: string) -> Shape[]
 ~~~
-Returns all of the children of `sprite` with the name `name`. Non-recursive.
+Returns all of the children of `sprite` with the name `name`.
 
 []
 ~~~ts-header
-sprite.r_findChild(name: string) -> Shape|undefined
+sprite.findDescendants(name: string) -> Shape[]
 ~~~
-Returns the first descendant of `sprite` with the name `name`. If no descendant has that name, it returns `undefined`. Recursive.
+Returns all of the descendants of `sprite` with the name `name`. If no descendant has that name, it returns an empty array. (Recursive.)
 
 []
 ~~~ts-header
-sprite.r_findChildren(name: string) -> Shape[]
+sprite.findChildWhere(filter: (child: Shape) => boolean) -> Shape | undefined
 ~~~
-Returns all of the descendants of `sprite` with the name `name`. If no descendant has that name, it returns an empty array. Recursive.
+Returns the first child of `sprite` that satisfies the `filter` function. If no child satisfies the `filter` function, it returns `undefined`.
+
+[]
+~~~ts-header
+sprite.findDescendantWhere(filter: (descendant: Shape) => boolean) -> Shape | undefined
+~~~
+Returns the first descendant of `sprite` that satisfies the `filter` function. If no descendant satisfies the `filter` function, it returns `undefined`. (Recursive.)
+
+[]
+~~~ts-header
+sprite.findChildrenWhere(filter: (child: Shape) => boolean) -> Shape[]
+~~~
+Returns all of the children of `sprite` that satisfy the `filter` function.
+
+[]
+~~~ts-header
+sprite.findDescendantsWhere(filter: (descendant: Shape) => boolean) -> Shape[]
+~~~
+Returns all of the descendants of `sprite` that satisfy the `filter` function. If no descendant satisfies the `filter` function, it returns an empty array. (Recursive.)
+
+[]
+~~~ts-header
+sprite.removeChildWhere(filter: (child: Shape) => boolean) -> Shape | undefined
+~~~
+Removes the first child of `sprite` that satisfies the `filter` function. Returns the removed child if it was removed, otherwise returns `undefined`.
+
+[]
+~~~ts-header
+sprite.removeDescendantWhere(filter: (descendant: Shape) => boolean) -> Shape | undefined
+~~~
+Calls `removeSelf()` on the first descendant of `sprite` that satisfies the `filter` function. Returns the removed descendant if it was removed, otherwise returns `undefined`. (Recursive.)
+
+[]
+~~~ts-header
+sprite.removeChildrenWhere(filter: (child: Shape) => boolean) -> Shape[]
+~~~
+Removes all of the children of `sprite` that satisfy the `filter` function. Returns an array of the children that were removed.
+
+[]
+~~~ts-header
+sprite.removeDescendantsWhere(filter: (descendant: Shape) => boolean) -> Shape[]
+~~~
+Calls `removeSelf()` on all of the descendants of `sprite` that satisfy the `filter` function. Returns an array of the descendants that were removed. (Recursive.)
+
+[]
+~~~ts-header
+sprite.bringForward() -> this
+~~~
+Moves `sprite` forward one position in its parent's children array.
+
+[]
+~~~ts-header
+sprite.sendBackward() -> this
+~~~
+Moves `sprite` backwards one position in its parent's children array.
+
+[]
+~~~ts-header
+sprite.bringToFront() -> this
+~~~
+Moves `sprite` to the front of its parent's children array.
+
+[]
+~~~ts-header
+sprite.sendToBack() -> this
+~~~
+Moves `sprite` to the back of its parent's children array.
+

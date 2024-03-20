@@ -29,15 +29,14 @@ for (const idx in colors) {
         color: color,
         stroke: {lineWidth: 3},
     });
-    handle.on('drag', function (_event, position) {
-        this.center = position;
+    handle.on('drag', (sprite, position) => {
+        sprite.center = position;
         path.path[idx] = position;
     });
     stage.root.addChild(handle);
 }
 
 const sliderLayer = new NullSprite({position: {x: 0, y: -167.5}});
-
 
 sliderLayer.addChildren(new Line({
     bounds: Line.Bounds(-250, 0, 250, 0),
@@ -77,17 +76,17 @@ function updateSlider() {
     path.endRatio = endRatio;
 }
 
-sliderLayer.findChild('startRatio')!.on('drag', function (_event, position) {
+sliderLayer.findChild('startRatio')!.on('drag', (sprite, position) => {
     let posX = Math.max(-250, Math.min(250, position.x));
     posX = Math.round(posX);
-    this.centerX = posX;
+    sprite.centerX = posX;
     updateSlider();
 });
 
-sliderLayer.findChild('endRatio')!.on('drag', function (_event, position) {
+sliderLayer.findChild('endRatio')!.on('drag', (sprite, position) => {
     let posX = Math.max(-250, Math.min(250, position.x));
     posX = Math.round(posX);
-    this.centerX = posX;
+    sprite.centerX = posX;
     updateSlider();
 });
 

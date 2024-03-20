@@ -29,7 +29,7 @@ const sliderLine = new Line({
 
 stage.root.addChildren(sliderText, sliderLine, slider);
 
-stage.on('scroll', function (event) {
+stage.on('scroll',(_, event) => {
 	const delta = event.deltaY;
 	const sliderX = slider.centerX;
 	if (delta < 0) {

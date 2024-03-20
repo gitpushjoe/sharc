@@ -1,6 +1,6 @@
 import { WorkerStage } from "sharc-js/async_stages/WorkerStage";
 import { Ellipse, Line, NullSprite } from 'sharc-js/Sprites';
-import { CenterBounds, Colors } from 'sharc-js/Utils';
+import { Colors } from 'sharc-js/Utils';
 
 const stage = new WorkerStage(postMessage.bind(null), "centered", Colors.LightSlateGray);
 onmessage = stage.onmessage;
@@ -16,7 +16,7 @@ const ellipse = new Ellipse({
 
 stage.root.addChildren(ellipse);
 
-const properties = ['corner1', 'corner2'];
+const properties = ['corner1', 'corner2'] as const;
 const colors = [Colors.Red, Colors.Blue];
 
 for (const idx in properties) {
@@ -29,8 +29,8 @@ for (const idx in properties) {
                 color: color,
                 stroke: {lineWidth: 3},
         });
-        handle.on('drag', function (_event, position) {
-                this.center = position;
+        handle.on('drag', (sprite, position) => {
+                sprite.center = position;
                 ellipse[property] = position;
         });
         stage.root.addChild(handle);
@@ -63,32 +63,32 @@ sliderLayer.addChildren(new Line({
 }));
 
 function updateSlider() {
-        const sliderLine = sliderLayer.findChild('angleLine');
-        sliderLine.corner1 = sliderLayer.findChild('startAngle').center;
-        sliderLine.corner2 = sliderLayer.findChild('endAngle').center;
-        let startAngle = sliderLayer.findChild('startAngle').centerX;
-        let endAngle = sliderLayer.findChild('endAngle').centerX;
+        const sliderLine = sliderLayer.findChild('angleLine')!;
+        sliderLine.corner1 = sliderLayer.findChild('startAngle')!.center;
+        sliderLine.corner2 = sliderLayer.findChild('endAngle')!.center;
+        let startAngle = sliderLayer.findChild('startAngle')!.centerX;
+        let endAngle = sliderLayer.findChild('endAngle')!.centerX;
         startAngle = (startAngle + 250) / 500 * 360;
         endAngle = (endAngle + 250) / 500 * 360;
         ellipse.startAngle = startAngle;
         ellipse.endAngle = endAngle;
 }
 
-sliderLayer.findChild('startAngle').on('drag', function (_event, position) {
+sliderLayer.findChild('startAngle').on('drag', (sprite, position) => {
         const endAngle = sliderLayer.findChild('endAngle');
         let posX = Math.max(-250, Math.min(250, position.x));
         posX = Math.round(posX);
-        posX = Math.min(posX, endAngle.centerX - 24);
-        this.centerX = posX;
+        posX = Math.min(posX, endAngle!.centerX - 24);
+        sprite.centerX = posX;
         updateSlider();
 });
 
-sliderLayer.findChild('endAngle').on('drag', function (_event, position) {
+sliderLayer.findChild('endAngle').on('drag', (sprite, position) => {
         const startAngle = sliderLayer.findChild('startAngle');
         let posX = Math.max(-250, Math.min(250, position.x));
         posX = Math.round(posX);
-        posX = Math.max(posX, startAngle.centerX + 24);
-        this.centerX = posX;
+        posX = Math.max(posX, startAngle!.centerX + 24);
+        sprite.centerX = posX;
         updateSlider();
 });
 

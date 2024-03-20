@@ -11,7 +11,7 @@ const layer = new NullSprite<string>({
 
 stage.root.addChild(layer);
 
-const handleKey = function (event: KeyboardEvent) {
+const handleKey = (_: WorkerStage, event: KeyboardEvent) => {
 	if (event.key === 'Backspace') {
 		if (event.ctrlKey) {
 			let deleteIdx = layer.details!.lastIndexOf('\n');
@@ -52,14 +52,13 @@ const handleKey = function (event: KeyboardEvent) {
 	layer.positionY = 40 * (lines.length - 1) / 2;
 };
 
-handleKey(({key: '!'} as KeyboardEvent));
+handleKey(stage, ({key: '!'} as KeyboardEvent));
 
-const firstKeyPress = function (this: WorkerStage) {
+stage.on('keydown', () => {
 	layer.details = '';
-	this.removeEventListener('keydown', firstKeyPress);
-}
+	return true;
+});
+
+stage.on('keydown', handleKey);
 
 stage.postCustomMessage({clickable: true});
-
-stage.on('keydown', firstKeyPress);
-stage.on('keydown', handleKey);

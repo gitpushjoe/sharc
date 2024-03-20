@@ -1,6 +1,6 @@
 import { WorkerStage } from "sharc-js/async_stages/WorkerStage";
 import { Ellipse, Line, BezierCurve } from 'sharc-js/Sprites';
-import { CenterBounds, Colors } from 'sharc-js/Utils';
+import { Colors } from 'sharc-js/Utils';
 
 const stage = new WorkerStage(postMessage.bind(null), "centered", Colors.LightSlateGray);
 onmessage = stage.onmessage;
@@ -34,7 +34,7 @@ const properties = [
     ['control1', 1],
     ['control2', 1],
     ['end', 1],
-];
+] as const;
 const colors = [Colors.Red, Colors.OrangeRed, Colors.Orange, Colors.Yellow, Colors.GreenYellow, Colors.Green, Colors.Blue];
 
 for (const idx of [0, 1, 2, 3]) {
@@ -56,8 +56,8 @@ for (const idx in properties) {
         color: color,
         stroke: {lineWidth: 3},
     });
-    handle.on('drag', function (_event, position) {
-        this.center = position;
+    handle.on('drag', (sprite, position) => {
+        sprite.center = position;
         if (property[0] === 'start') {
             curve.start = position;
         } else {
@@ -68,18 +68,18 @@ for (const idx in properties) {
 }
 
 
-stage.on('beforeDraw', function (event) {
+stage.on('beforeDraw', (stage) => {
     const line0 = stage.root.findChild('line0');
     const line1 = stage.root.findChild('line1');
     const line2 = stage.root.findChild('line2');
     const line3 = stage.root.findChild('line3');
 
-    line0.corner1 = curve.start;
-    line0.corner2 = curve.points[0].control1;
-    line1.corner1 = curve.points[0].control2;
-    line1.corner2 = curve.points[0].end;
-    line2.corner1 = curve.points[0].end;
-    line2.corner2 = curve.points[1].control1;
-    line3.corner1 = curve.points[1].control2;
-    line3.corner2 = curve.points[1].end;
+    line0!.corner1 = curve.start;
+    line0!.corner2 = curve.points[0].control1;
+    line1!.corner1 = curve.points[0].control2;
+    line1!.corner2 = curve.points[0].end;
+    line2!.corner1 = curve.points[0].end;
+    line2!.corner2 = curve.points[1].control1;
+    line3!.corner1 = curve.points[1].control2;
+    line3!.corner2 = curve.points[1].end;
 });

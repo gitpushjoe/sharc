@@ -69,6 +69,9 @@ function Docs() {
                     Download{'\u00A0\u00A0'}
                 </button>
                 <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1Z86cmklHfvaYNVcZGo6sxgOdJTU4KcbO?usp=sharing">release v2.0.0</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1I3s5xR4A5pxEHy0lEQv7sCiAUtmzfzYH?usp=drive_link">release v1.4.0</a>
+                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1XnoScU9DRUdjcIN7HQ8wWjTRNkCASWUu?usp=drive_link">release v1.3.2</a>
                     <a className="dropdown-item" href="https://drive.google.com/drive/folders/11ZEeAiAO7F-YRpSgM08XcRuj8LUhCyr5?usp=sharing">release v1.3.1</a>
                     <a className="dropdown-item" href="https://drive.google.com/drive/folders/1wdG0XfqM10HLGGbW4ktO4uRbWwNI3Wy8?usp=drive_link">release v1.2.0</a>
                     <a className="dropdown-item" href="https://drive.google.com/drive/folders/1M_PzHl7_uyRRhZnGtiCiSXayV93i5Nnb?usp=sharing">release v1.1.1</a>

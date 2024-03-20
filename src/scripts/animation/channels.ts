@@ -13,7 +13,7 @@ const circle = new Ellipse({
 
 stage.root.addChild(circle);
 
-stage.on('move', function(_event, position) {
+stage.on('move', (_, position) => {
     circle.channels[0].enqueue([
     {
         property: 'center',

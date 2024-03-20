@@ -82,3 +82,35 @@ See [Event Listeners](stage/event-listeners).
 stage.removeEventListener(event: string, callback?: Function)
 ~~~
 See [Event Listeners](stage/event-listeners).
+
+[]
+~~~ts-header
+stage.includeEventListener(event: string, callback: Function)
+~~~
+See [Event Listeners](stage/event-listeners).
+
+[]
+~~~ts-header
+stage.keyTarget -> string
+~~~
+See [Sprites/Event Listeners](sprites/event-listeners).
+
+[]
+~~~ts-header
+stage.scrollTarget -> string
+~~~
+See [Sprites/Event Listeners](sprites/event-listeners).
+
+[]
+~~~ts-header
+stage.resetKeyTargetOnClick -> boolean 
+~~~
+See [Sprites/Event Listeners](sprites/event-listeners).
+
+[]
+~~~ts-header
+stage.resetScrollTargetOnClick -> boolean 
+~~~
+See [Sprites/Event Listeners](sprites/event-listeners).
+
+

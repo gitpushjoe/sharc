@@ -15,8 +15,8 @@ const smart_circle = new Ellipse({
     radius: 25,
     color: Colors.Aqua,
     stroke: {lineWidth: 5},
-}).on('click', function () {
-    this.channels[0].enqueue([
+}).on('click', sprite => {
+    sprite.channels[0].enqueue([
         {
             property: 'center',
             from: null,
@@ -25,6 +25,7 @@ const smart_circle = new Ellipse({
             easing: Easing.EASE_IN_OUT,
         }
     ], 1);
+	sprite.bringToFront();
 }).addChild(new TextSprite({
     text: 'from: null',
     color: Colors.Aqua,
@@ -38,8 +39,8 @@ const normal_circle = new Ellipse({
     radius: 25,
     color: Colors.DarkMagenta,
     stroke: {lineWidth: 5},
-}).on('click', function () {
-    this.channels[0].enqueue([
+}).on('click', sprite => {
+    sprite.channels[0].enqueue([
         {
             property: 'center',
             from: {x: 0, y: 0},
@@ -48,6 +49,7 @@ const normal_circle = new Ellipse({
             easing: Easing.EASE_IN_OUT,
         }
     ], 1);
+	sprite.bringToFront();
 }).addChild(new TextSprite({
     text: 'from: (0, 0)',
     color: Colors.DarkMagenta,

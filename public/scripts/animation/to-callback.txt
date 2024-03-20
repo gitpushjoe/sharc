@@ -10,8 +10,8 @@ const circle = new Ellipse({
     radius: 25,
     color: Colors.Aqua,
     stroke: {lineWidth: 5},
-}).on('click', function () {
-    this.channels[0].enqueue([
+}).on('click', sprite => {
+    sprite.channels[0].enqueue([
         {
             property: 'center',
             from: null,

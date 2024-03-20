@@ -5,6 +5,29 @@ export default function Changelog() {
 
     const changelog: { version: string, changes: React.ReactNode[] }[] = [
         {
+            version: "v2.0.0",
+            changes: [
+                <>Async stages are no longer a beta feature.</>,
+                <>Implement new parenting methods for sprites.</>,
+                <>Implement scroll targets and keypress targets to <InlineCode>Stage</InlineCode>, so that sprites can receive and handle keypress and scroll events.</>,
+                <>Event listeners that return <InlineCode>true</InlineCode> (or <InlineCode>1</InlineCode>), will automatically remove/detach themselves.</>,
+                <>Move <InlineCode>"event"</InlineCode> to last argument position in <InlineCode>PointerEventCallback</InlineCode>.</>,
+                <>Event listeners are all now typed as returning <InlineCode>boolean | 0 | 1 | undefined</InlineCode>.</>,
+                <>Refactor all event listeners to make caller pass themselves as first argument instead of using <InlineCode>"this"</InlineCode>.</>,
+                <>Implement helpful wrappers around creating beforeDraw event listeners: <InlineCode>schedule</InlineCode>, <InlineCode>selfSchedule</InlineCode>, <InlineCode>scheduleExactly</InlineCode>, <InlineCode>selfScheduleExactly</InlineCode>, <InlineCode>delay</InlineCode>, <InlineCode>selfDelay</InlineCode>, <InlineCode>when</InlineCode>, <InlineCode>whenStage</InlineCode>.</>,
+                <>Implement <InlineCode>includeEventListener()</InlineCode> for stages and sprites to add an event listener if and only if the event listener is not already present.</>,
+                <>Implement <InlineCode>hold</InlineCode> event listener for sprites.</>,
+                <>Create Sprite public <InlineCode>currentFrame</InlineCode> member variable that counts up with each draw call.</>,
+                <>Remove <InlineCode>"r_"</InlineCode> in recursive sprite parenting functions, choosing to replace <InlineCode>"child"</InlineCode> with <InlineCode>"descendant"</InlineCode> and <InlineCode>"children"</InlineCode> with <InlineCode>"descendants"</InlineCode>.</>,
+                <>Create Sprite public <InlineCode>currentFrame</InlineCode> member variable that counts up with each draw call.</>,
+                <>Replace <InlineCode>r_getChildren()</InlineCode> with <InlineCode>descendants()</InlineCode> getter.</>,
+                <>Update <InlineCode>WorkerStage</InlineCode> to use new ordering in pointer event listeners.</>,
+                <>Include stack trace in <InlineCode>WorkerStage</InlineCode> error messages sent to <InlineCode>OffscreenStage</InlineCode>.</>,
+                <>Fix bug where parent-child sprite relationships would not be properly updated after using parenting methods.</>,
+                <>Update stages' <InlineCode>removeEventListener</InlineCode> methods to remove all event listenrers when a callback is not provided (improve parity with Sprite).</>,
+            ],
+        },
+        {
             version: "v1.4.1",
             changes: [
                 <>Fix <InlineCode>package.json</InlineCode> to support type definitions in Javascript files.</>,

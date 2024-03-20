@@ -47,8 +47,8 @@ for (const idx in Array.from({length: 2})) {
         radius: 12,
         color: color,
         stroke: {lineWidth: 3},
-    }).on('drag', function (_event, position) {
-            this.center = position;
+    }).on('drag', (sprite, position) => {
+            sprite.center = position;
             image[property] = position;
         }));
 
@@ -58,12 +58,12 @@ for (const idx in Array.from({length: 2})) {
         radius: 12,
         color: color,
         stroke: {lineWidth: 3},
-    }).on('drag', function (_event, position) {
+    }).on('drag', (sprite, position) => {
             if (sourceImage.x1 - 10 <= position.x &&
                 position.x <= sourceImage.x2 + 10 &&
                 sourceImage.y1 - 10 <= position.y &&
                 position.y <= sourceImage.y2 + 10) {
-                this.center = position;
+                sprite.center = position;
                 sourceImageSelected[property] = position;
                 sourceImageSelected[sourceProperty] = {
                     x: (position.x - sourceImage.x1) * 5,

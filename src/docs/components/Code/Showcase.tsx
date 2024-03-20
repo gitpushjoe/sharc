@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from './Showcase.module.css'
 import { useRef } from "react";
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter';
@@ -52,7 +52,10 @@ export default function CodeShowcase(props: {code: string|Promise<string>, canva
         ['(r as [number, number])', 'r'],
         [': Shape', ''],
         [' as const', ''],
-        [' as any', '']
+        [' as any', ''],
+        ['<any, CircleColors>', ''],
+        ['<CircleColors>', ''],
+        ['<any, "red"|"green"|"blue"|"yellow">', '']
     ])
     
     const tsReplaces = [
@@ -127,7 +130,7 @@ export function AsyncCodeShowcase(props: {worker: Worker, prefix?: string, path:
     useEffect(() => {
         let framerate = 60;
         const offscreenStage = new OffscreenStage(canvasRef.current!, props.worker);
-        offscreenStage.on('message', message => {
+        offscreenStage.on('message', (_, message) => {
             if (message.type === 'ready') {
                 offscreenStage.loop(framerate);
             } else if (message.type === 'custom') {

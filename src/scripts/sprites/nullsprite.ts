@@ -1,6 +1,6 @@
 import { WorkerStage } from "sharc-js/async_stages/WorkerStage";
 import { NullSprite, Star } from 'sharc-js/Sprites'
-import { Colors, Easing } from 'sharc-js/Utils';
+import { Colors  } from 'sharc-js/Utils';
 
 const stage = new WorkerStage(postMessage.bind(null), "centered", Colors.LightSlateGray);
 onmessage = stage.onmessage;
@@ -17,8 +17,8 @@ const nullsprite = new NullSprite({});
 nullsprite.addChild(star);
 stage.root.addChild(nullsprite);
 
-stage.on('move', function (_, position) {
-    nullsprite.position = position;
+stage.on('move', (_, pos) => {
+    nullsprite.position = pos;
 });
 
 nullsprite.channels[0].push({

@@ -26,7 +26,7 @@ stage.root.addChild(circle);
 
 stage.on('move', (_, position) => {
 	circle.center = position;
-	circle.children[0].text = `(\
+	(circle.children[0] as TextSprite).text = `(\
 ${Math.round(position.x)}, \
 ${Math.round(position.y)})`;
 });

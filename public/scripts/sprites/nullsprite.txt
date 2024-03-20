@@ -17,7 +17,7 @@ const nullsprite = new NullSprite({});
 nullsprite.addChild(star);
 stage.root.addChild(nullsprite);
 
-stage.on('move', function (_, position) {
+stage.on('move',(_, position) => {
     nullsprite.position = position;
 });
 
