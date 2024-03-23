@@ -10,7 +10,7 @@ function App() {
 
     useEffect(() => {
 
-        const stage = new Stage(canvasRef.current!, 'centered', Color(5, 10, 50, 1));
+        const stage = new Stage(canvasRef.current!, 'centered', Color(5, 10, 50, 0.01));
         const root = stage.root;
 
         for (let i = 1; i < 7; i++) {
@@ -54,8 +54,11 @@ function App() {
             root.addChild(parent);
         }
 
+        const ctx = canvasRef.current!.getContext('2d')!;
+        ctx.beginPath();
+        ctx.arc(stage.width! / 2, stage.height! / 2, stage.width! / 2, 0, 2 * Math.PI);
+        ctx.clip();
         stage.on('beforeDraw', () => {
-            stage.bgColor = Color(5, 10, 50, .01);
         });
 
         stage.loop(90);

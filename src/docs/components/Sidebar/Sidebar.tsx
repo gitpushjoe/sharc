@@ -7,7 +7,7 @@ export default function Sidebar(props: {category: string, subcategory: string|nu
     return <>
             <div className='col-12 d-md-block p-2'>
             <br/>
-            <h1 className='h5'> stable: 2.0.0 </h1>
+            <h1 className='h5'> stable: 2.0.1 </h1>
             <hr/>
             <div className='nav flex-column nav-pills'  role='tablist' aria-orientation='vertical'>
                 {[...Object.entries(SidebarItems)].map(([key, items], idx) => {

@@ -1,6 +1,6 @@
 import { Stage } from 'sharc-js/Stage';
 import { Line, Rect, Ellipse, BezierCurve, Star } from 'sharc-js/Sprites';
-import { Colors, Corners } from './sharc/Utils';
+import { Colors, Corners } from 'sharc-js/Utils';
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'classic', Colors.LightSlateGray);

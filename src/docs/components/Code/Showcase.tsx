@@ -10,7 +10,7 @@ export default function CodeShowcase(props: {code: string|Promise<string>, canva
     const copyButtonRef = useRef<HTMLButtonElement>(null);
     const [showcaseExpanded, setShowcaseExpanded] = useState(false);
     const tsOnly = props.tsOnly ?? false;
-    const [tsEnabled, setTsEnabled] = useState(tsOnly);
+    const [tsEnabled, setTsEnabled] = useState(true);
     const [ text, setText ] = useState(typeof props.code === 'string' ? props.code : 'Loading...');
 
     useEffect(() => {
@@ -26,7 +26,6 @@ export default function CodeShowcase(props: {code: string|Promise<string>, canva
         ['<string>', ''],
         [`from 'sharc/`, `from 'sharc-js/`],
         [' as HTMLCanvasElement;', ';'],
-        [`from 'sharc-js/`, `from 'sharc-js/dist/`],
         ['as number[];', ';'],
         ['as number;', ';'],
         [`')!;`, `');`],

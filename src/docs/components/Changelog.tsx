@@ -5,6 +5,16 @@ export default function Changelog() {
 
     const changelog: { version: string, changes: React.ReactNode[] }[] = [
         {
+            version: "v2.0.1",
+            changes: [
+                <>Fix <InlineCode>package.json</InlineCode> to support type definitions in Javascript files.</>,
+                <>Fix main thread <InlineCode>Stage</InlineCode> showing errors as being from <InlineCode>WorkerStage</InlineCode>.</>,
+                <>Fix bug with <InlineCode>resetKeyTargetOnClick</InlineCode> and <InlineCode>resetScrollTargetOnClick</InlineCode> not working on main thread <InlineCode>Stage</InlineCode>.</>,
+                <>Fix bug with <InlineCode>WorkerStage</InlineCode> double-calling <InlineCode>beforeDraw</InlineCode> event listeners.</>,
+                <>Improve stage framerate consistency.</>,
+            ],
+        },
+        {
             version: "v2.0.0",
             changes: [
                 <>Async stages are no longer a beta feature.</>,
