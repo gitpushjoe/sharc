@@ -1,8 +1,8 @@
 import type { ColorType } from "../types/Common";
-import { AsyncStageEventListeners, EventCollection, PointerEventCallback } from "../types/Events";
+import { AsyncStageEventListeners, EventCollection, PointerEventCallback, } from "../types/Events";
 import { AsyncMessage, CanvasInterface, StageStateMessage } from "../types/Stage";
 import { Stage } from "../Stage";
-import { Colors, Position } from "../Utils";
+import { Colors, Position, callAndPrune } from "../Utils";
 
 const DEFAULT_CANVAS_INTERFACE: CanvasInterface = {
     width: 0,
@@ -28,7 +28,7 @@ const DEFAULT_CANVAS_INTERFACE: CanvasInterface = {
 
 export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<DetailsType> {
     private offscreenCanvas: OffscreenCanvas;
-    public eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
+    protected eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
         beforeDraw: [],
         click: [],
         release: [],
@@ -40,7 +40,11 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
     };
 
     protected onError = function (this: WorkerStage, e?: Error) {
-        this.postMessage({ type: "error", error: e?.message ?? "Error" });
+        this.postMessage({
+            type: "error",
+            error: e?.message ?? "Error",
+            stack: e?.stack ?? "No stack"
+        });
     };
 
     private informOffscreenOfStop = true;
@@ -62,8 +66,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
         this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this>);
+        return this;
     }
 
     public on<
@@ -71,8 +76,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
         this.addEventListener(event, callback);
+        return this;
     }
 
     public removeEventListener<
@@ -80,10 +86,26 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this,
             AsyncMessage<MessageType>
         >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]) {
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        if (!callback) {
+            this.eventListeners[event as "click"] = [];
+            return this;
+        }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<this>)
         );
+        return this;
+    }
+
+    public includeEventListener<
+        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >
+    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        this.removeEventListener(event, callback);
+        this.addEventListener(event, callback);
+        return this;
     }
 
     private setStageState(e: StageStateMessage) {
@@ -103,8 +125,13 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.canvas!.getBoundingClientRect = () => e.canvasProperties.boundingClientRect;
     }
 
+    private sendErrorString(e: string) {
+        const error = new Error(e);
+        this.onError(error);
+    }
+
     public readonly onmessage = (event: MessageEvent<AsyncMessage<MessageType>>): void => {
-        this.eventListeners.message.forEach(callback => callback.call(this, event.data));
+        callAndPrune(this.eventListeners, "message", [this, event.data], this.sendErrorString.bind(this));
         const e = event.data;
         switch (e.type) {
             case "init":
@@ -120,7 +147,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 break;
             case "beginLoop":
                 this.setStageState({ ...e.stageState, type: "stageState" });
-                this.loop(e.frameRate * 1.25);
+                this.loop(e.frameRate);
                 break;
             case "stageState":
                 this.setStageState(e);
@@ -131,61 +158,53 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         }
     };
 
-    public draw(ctx?: OffscreenCanvasRenderingContext2D) {
+    public draw(ctx?: OffscreenCanvasRenderingContext2D): boolean {
         this.drawEvents = this.nextDrawEvents
             ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
             : this.drawEvents;
-        this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
         const { down, up, move, keydown, keyup, scroll } = this.drawEvents;
-        if (down) {
-            this.eventListeners.click.forEach(callback =>
-                callback.call(this, down.event, {
-                    x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                    y:
-                        (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
-                        (this.rootStyle === "centered" ? -1 : 1)
-                })
-            );
+        down && callAndPrune(this.eventListeners, "click", [this, {
+            x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+            y:
+            (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                (this.rootStyle === "centered" ? -1 : 1)
+        }, down.event], this.sendErrorString.bind(this));
+        up && callAndPrune(this.eventListeners, "release", [this, {
+            x: up.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+            y:
+            (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                (this.rootStyle === "centered" ? -1 : 1)
+        }, up.event], this.sendErrorString.bind(this));
+        move && callAndPrune(this.eventListeners, "move", [this, {
+            x: move.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+            y:
+            (move.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                (this.rootStyle === "centered" ? -1 : 1)
+        }, move.event], this.sendErrorString.bind(this));
+        keydown && callAndPrune(this.eventListeners, "keydown", [this, keydown], this.sendErrorString.bind(this));
+        keyup && callAndPrune(this.eventListeners, "keyup", [this, keyup], this.sendErrorString.bind(this));
+        scroll && callAndPrune(this.eventListeners, "scroll", [this, scroll], this.sendErrorString.bind(this));
+        if (this.resetKeyTargetOnClick && this.drawEvents.up && this.keyTarget !== "" && this.root.findDescendants(this.keyTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+            this.keyTarget = "";
         }
-        if (up) {
-            this.eventListeners.release.forEach(callback =>
-                callback.call(this, up.event, {
-                    x: up.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                    y:
-                        (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
-                        (this.rootStyle === "centered" ? -1 : 1)
-                })
-            );
+        if (this.resetScrollTargetOnClick && this.drawEvents.down && this.scrollTarget !== "" && this.root.findDescendants(this.scrollTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+            this.scrollTarget = "";
         }
-        if (move) {
-            this.eventListeners.move.forEach(callback =>
-                callback.call(this, move.event, {
-                    x: move.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
-                    y:
-                        (move.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
-                        (this.rootStyle === "centered" ? -1 : 1)
-                })
-            );
+
+        try {
+            super.draw(ctx);
+        } catch (e: unknown) {
+            this.onError(e as Error);
+            return false;
         }
-        if (keydown) {
-            this.eventListeners.keydown.forEach(callback => callback.call(this, keydown));
-        }
-        if (keyup) {
-            this.eventListeners.keyup.forEach(callback => callback.call(this, keyup));
-        }
-        if (scroll) {
-            this.eventListeners.scroll.forEach(callback => callback.call(this, scroll));
-        }
-        this.eventListeners.beforeDraw.forEach(callback => callback.call(this, this.currentFrame));
-        super.draw(ctx);
         this.postMessage({
             type: "render",
             img: this.offscreenCanvas.transferToImageBitmap(),
             lastRenderMs: this.lastRenderMs,
             currentFrame: this.currentFrame
         });
-        // img.close();
         this.nextDrawEvents = undefined;
+        return true;
     }
 
     public postCustomMessage(message: MessageType, port?: MessagePort): void {
@@ -206,13 +225,14 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         port.postMessage(message);
     }
 
-    public loop(frameRate = 60) {
+    public loop(frameRate = 60): this {
         this.informOffscreenOfStop = false;
         super.loop(frameRate);
         this.informOffscreenOfStop = true;
+        return this;
     }
 
-    public stop() {
+    public stop(): this {
         super.stop();
         if (this.informOffscreenOfStop) {
             this.postMessage({
@@ -220,5 +240,6 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 source: "worker"
             });
         }
+        return this;
     }
 }

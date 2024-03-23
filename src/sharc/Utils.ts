@@ -124,6 +124,37 @@ export function AnimateTo<props>(
     return { property, from: null, to, duration, delay, easing, name };
 }
 
+export function callAndPrune<listeners extends Record<string, ((...args: any[]) => unknown)[]>, key extends keyof listeners>(
+    listeners: listeners,
+    key: key,
+    args: Parameters<listeners[key][number]>,
+    log: (message: string) => any = console.error
+) {
+    const pruned: ((...args: any[]) => unknown)[] = [];
+    for (let i = 0; i < listeners[key].length; i++) {
+        const callback = listeners[key][i];
+        const result = callback(...args);
+        if (result !== undefined && result != 1 && result != 0) {
+            const resultString = (() => {
+                try {
+                    return JSON.stringify(result);
+                } catch (e) {
+                    return result!.toString();
+                }
+            })();
+            log(
+`WARNING: Event listener ${key.toString()} returned non-meaningful value ${resultString}, ignored.
+Event listeners should only return true (or 1), false (or 0), or undefined (including implicit return).`
+            );
+        }
+        if (result == 1) {
+            pruned.push(callback);
+        }
+    }
+    listeners[key] = listeners[key].filter((callback) => !pruned.includes(callback)) as listeners[key];
+}
+
+
 export const Easing = {
     LINEAR: (x: number) => x,
     EASE_IN: (x: number) => 1 - Math.pow(1 - x, 2),

@@ -96,7 +96,8 @@ export default class TextSprite<DetailsType = any>
         const { text, maxWidth } = properties;
         const metrics = ctx.measureText(text ?? "");
         const textWidth = metrics.width;
-        const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+        const height = properties.fontSize! * .725;
+        // const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
         ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
             StrokeableSprite.strokeRegion(ctx, properties.stroke);

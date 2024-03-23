@@ -1,11 +1,13 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "1.4.1",
+  "version": "2.0.1",
   "type": "module",
   "files": [
-    "dist/*"
+    "dist",
+    "*.d.ts"
   ],
+  "types": "./dist/index.d.ts",
   "exports": {
     "./Animation.js": "./dist/Animation.js",
     "./Stage.js": "./dist/Stage.js",
@@ -15,12 +17,12 @@
     "./async_stages/OffscreenStage.js": "./dist/async_stages/OffscreenStage.js",
     "./async_stages/WorkerStage.js": "./dist/async_stages/WorkerStage.js",
     "./Animation": {
-      "import": "./dist/Animation.js",
-      "types": "./dist/Animation.d.ts"
+      "types": "./dist/Animation.d.ts",
+      "import": "./dist/Animation.js"
     },
     "./Stage": {
-      "import": "./dist/Stage.js",
-      "types": "./dist/Stage.d.ts"
+      "types": "./dist/Stage.d.ts",
+      "import": "./dist/Stage.js"
     },
     "./Sprites": {
       "import": "./dist/Sprites.js",
@@ -73,16 +75,32 @@
   },
   "typesVersions": {
     "*": {
-      "*": [
-        "dist/AnimationUtils.d.ts",
-        "dist/Animation.d.ts",
-        "dist/Stage.d.ts",
-        "dist/Sprites.d.ts",
-        "dist/Channels.d.ts",
-        "dist/Utils.d.ts",
-        "dist/async_stages/OffscreenStage.d.ts",
-        "dist/async_stages/WorkerStage.d.ts"
-      ]
+      "Stage": [ "./dist/Stage.d.ts" ],
+      "sharc-js/Stage": [ "./dist/Stage.js" ],
+      "Sprites": [ "./dist/Sprites.d.ts" ],
+      "sharc-js/Sprites": [ "./dist/Sprites.js" ],
+      "Channels": [ "./dist/Channels.d.ts" ],
+      "sharc-js/Channels": [ "./dist/Channels.js" ],
+      "Utils": [ "./dist/Utils.d.ts" ],
+      "sharc-js/Utils": [ "./dist/Utils.js" ],
+      "async_stages/OffscreenStage": [ "./dist/async_stages/OffscreenStage.d.ts" ],
+      "sharc-js/async_stages/OffscreenStage": [ "./dist/async_stages/OffscreenStage.js" ],
+      "async_stages/WorkerStage": [ "./dist/async_stages/WorkerStage.d.ts" ],
+      "sharc-js/async_stages/WorkerStage": [ "./dist/async_stages/WorkerStage.js" ],
+      "AnimationUtils": [ "./dist/AnimationUtils.d.ts" ],
+      "sharc-js/AnimationUtils": [ "./dist/AnimationUtils.js" ],
+      "types/Animation": [ "./dist/types/Animation.d.ts" ],
+      "sharc-js/types/Animation": [ "./dist/types/Animation.js" ],
+      "types/Common": [ "./dist/types/Common.d.ts" ],
+      "sharc-js/types/Common": [ "./dist/types/Common.js" ],
+      "types/Channels": [ "./dist/types/Channels.d.ts" ],
+      "sharc-js/types/Channels": [ "./dist/types/Channels.js" ],
+      "types/Events": [ "./dist/types/Events.d.ts" ],
+      "sharc-js/types/Events": [ "./dist/types/Events.js" ],
+      "types/Sprites": [ "./dist/types/Sprites.d.ts" ],
+      "sharc-js/types/Sprites": [ "./dist/types/Sprites.js" ],
+      "types/Stage": [ "./dist/types/Stage.d.ts" ],
+      "sharc-js/types/Stage": [ "./dist/types/Stage.js" ]
     }
   },
   "references": [

@@ -1,7 +1,7 @@
-import { Position, ColorToString, Corners, Color } from "./Utils";
+import { Position, ColorToString, Corners, Color, callAndPrune } from "./Utils";
 import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
 import { PositionType, BoundsType, ColorType } from "./types/Common";
-import { EventCollection, PositionedPointerEvent } from "./types/Events";
+import { EventCollection, PositionedPointerEvent, StageEventCallback } from "./types/Events";
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
@@ -20,6 +20,7 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     protected _parent?: Shape = undefined;
     protected _region: Path2D = new Path2D();
     protected events?: EventCollection = undefined;
+    public currentFrame = 0;
     public name = "";
     public details?: DetailsType = undefined;
 
@@ -29,38 +30,201 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         _isRoot?: boolean
     ): void;
 
-    public addChild(child: Shape) {
+    public addChild(child: Shape): this {
+        this._children.push(child.removeSelf());
         child._parent = this;
-        this._children.push(child);
         return this;
     }
 
     public addChildren(...children: Shape[]): this {
-        children.forEach(child => (child._parent = this));
-        this._children.push(...children);
+        children.forEach(child => this.addChild(child));
         return this;
     }
 
-    public removeChild(child: Shape): this {
+    public removeChild<S extends Shape>(child: S): S | undefined {
+        const idx = this._children.indexOf(child);
+        if (idx === -1) {
+            return undefined;
+        }
+        this._children.splice(idx, 1);
         child._parent = undefined;
-        this._children = this._children.filter(c => c !== child);
+        return child;
+    }
+
+    public removeChildren(...children: Shape[]): Shape[] {
+        const removed: Shape[] = [];
+        children.forEach(child => {
+            const idx = this._children.indexOf(child);
+            if (idx !== -1) {
+                this._children.splice(idx, 1);
+                child._parent = undefined;
+                removed.push(child);
+            }
+        });
+        return removed;
+    }
+
+    public removeAllChildren(): Shape[] {
+        return this.removeChildren(...this._children);
+    }
+
+    public removeSelf(): this {
+        this._parent?.removeChild(this);
         return this;
     }
 
-    public removeChildren(...children: Shape[]) {
-        children.forEach(child => (child._parent = undefined));
-        this._children = this._children.filter(child => !children.includes(child));
+    public get children(): Shape[] {
+        return [...this._children];
+    }
+
+    public get descendants(): Shape[] {
+        return this._children.reduce<Shape[]>((acc, child) => acc.concat(child, child.descendants), []);
+    }
+
+    public get parent(): Shape | undefined {
+        return this._parent;
+    }
+
+    public get root(): Shape {
+        return this._parent ? this._parent.root : this;
+    }
+
+    public findChild(name: string): Shape | undefined {
+        return this._children.find(child => child.name === name);
+    }
+
+    public findDescendant(name: string): Shape | undefined {
+        return (
+            this._children.find(child => child.name === name) ??
+            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.findDescendant(name), undefined)
+        );
+    }
+
+    public findChildren(name: string): Shape[] {
+        return this._children.filter(child => child.name === name);
+    }
+
+    public findDescendants(name: string): Shape[] {
+        return this._children.reduce<Shape[]>((acc, child) => {
+            if (child.name === name) {
+                acc.push(child);
+            }
+            return acc.concat(child.findDescendants(name));
+        }, []);
+    }
+
+    public findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        return this._children.find(filter);
+    }
+
+    public findDescendantWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        return (
+            this._children.find(filter) ??
+            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.findDescendantWhere(filter), undefined)
+        );
+    }
+
+    public findChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+        return this._children.filter(filter);
+    }
+
+    public findDescendantsWhere(filter: (child: Shape) => boolean): Shape[] {
+        return this._children.reduce<Shape[]>((acc, child) => {
+            if (filter(child)) {
+                acc.push(child);
+            }
+            return acc.concat(child.findDescendantsWhere(filter));
+        }, []);
+    }
+
+    public removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        return this._children.find(filter)?.removeSelf();
+    }
+
+    public removeDescendantWhere(filter: (child: Shape) => boolean): Shape | undefined {
+        const child = this._children.find(filter);
+        if (child) {
+            this.removeChild(child);
+            return child;
+        }
+        return this._children.reduce<Shape | undefined>(
+            (acc, child) => acc ?? child.removeDescendantWhere(filter),
+            undefined
+        );
+    }
+
+    public removeChildrenWhere(filter: (child: Shape) => boolean): Shape[] {
+        const removed: Shape[] = [];
+        this._children = this._children.filter(child => {
+            if (filter(child)) {
+                removed.push(child);
+                return false;
+            }
+            return true;
+        });
+        return removed;
+    }
+
+    public removeDescendantsWhere(filter: (child: Shape) => boolean): Shape[] {
+        const removed: Shape[] = [];
+        this._children = this._children.filter(child => {
+            removed.push(...child.removeDescendantsWhere(filter));
+            if (filter(child)) {
+                removed.push(child);
+                return false;
+            }
+            return true;
+        });
+        return removed;
+    }
+
+    public bringForward(): this {
+        if (this._parent) {
+            const idx = this._parent._children.indexOf(this);
+            if (idx == this._parent._children.length - 1) {
+                return this;
+            }
+            this._parent._children.splice(idx, 1);
+            this._parent._children.splice(idx + 1, 0, this);
+        }
         return this;
     }
 
-    public abstract get children(): Shape[];
-    public abstract get parent(): Shape | undefined;
-    public abstract get root(): Shape;
-    public abstract findChild(name: string): Shape | undefined;
-    public abstract findChildren(name: string): Shape[];
-    public abstract r_findChild(name: string): Shape | undefined;
-    public abstract r_findChildren(name: string): Shape[];
-    public abstract r_getChildren(): Shape[];
+    public sendBackward(): this {
+        if (this._parent) {
+            const idx = this._parent._children.indexOf(this);
+            if (idx === 0) {
+                return this;
+            }
+            this._parent._children.splice(idx, 1);
+            this._parent._children.splice(idx - 1, 0, this);
+        }
+        return this;
+    }
+
+    public bringToFront(): this {
+        this._parent?.addChild(this);
+        return this;
+    }
+
+    public sendToBack(): this {
+        const parent = this._parent;
+        if (parent) {
+            parent._children.unshift(this.removeSelf());
+            this._parent = parent;
+        }
+        return this;
+    }
+
+    public abstract schedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract selfSchedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract scheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract selfScheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract delay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
+    public abstract selfDelay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
+
+    public abstract when<Listener extends StageEventCallback<this>>(condition: (sprite: this) => boolean, callback: Listener): Listener;
+    public abstract whenStage<Listener extends StageEventCallback<this>>(condition: (stage: Stage) => boolean, callback: Listener): Listener;
 
     public abstract effects: EffectsType;
     public abstract bounds: BoundsType;
@@ -111,6 +275,9 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract removeEventListener<
         E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
     >(event: E, callback?: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
+    public abstract includeEventListener<
+        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
+    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
 
     public abstract hasEventListeners(): boolean;
     public abstract spriteOrChildrenHaveEventListeners(): boolean;
@@ -130,6 +297,9 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     protected _region: Path2D = new Path2D();
     public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[]; // to-do: ensure that details can never be animated
     protected stage?: Stage;
+    public currentFrame = 0;
+    // future update:
+    // protected schedulers: SpriteSchedulers<this> = [];
 
     // NORMAL PROPERTIES
     public rotation = 0;
@@ -244,7 +414,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     protected pointerId?: number = undefined;
-    protected pointerButton?: number = undefined;
     protected hovered = false;
 
     private eventListeners: SpriteEventListeners<this, Properties & HiddenProperties> = {
@@ -252,7 +421,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         drag: [],
         hover: [],
         hoverEnd: [],
+        hold: [],
         release: [],
+        keydown: [],
+        keyup: [],
         scroll: [],
         beforeDraw: [],
         animationFinish: []
@@ -275,13 +447,21 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     public removeEventListener<
         E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
     >(event: E, callback?: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this {
-        if (callback) {
-            this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-                c => c !== (callback as unknown as PointerEventCallback<this>)
-            );
-        } else {
+        if (!callback) {
             this.eventListeners[event as "click"] = [];
+            return this;
         }
+        this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
+            cb => cb !== (callback as unknown as PointerEventCallback<this>)
+        );
+        return this;
+    }
+
+    public includeEventListener<
+        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
+    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this {
+        this.removeEventListener(event, callback);
+        this.addEventListener(event, callback);
         return this;
     }
 
@@ -332,6 +512,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 return;
             };
         }
+        this.currentFrame++;
         this.animate();
         ctx.save();
         this.effects(ctx);
@@ -356,9 +537,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         }
         if (this.events!.stage) {
             const event = this.events!.stage;
-            this.eventListeners.beforeDraw.forEach(callback => {
-                callback.call(this, event.currentFrame);
-            });
+            callAndPrune(this.eventListeners, "beforeDraw", [this, event.currentFrame, this.events!.stage]);
         }
         const region = this.drawFunction(ctx, properties!);
         if (region !== undefined) {
@@ -368,7 +547,12 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             (child as Sprite).events = this.events;
             child.draw(ctx, undefined, false);
         });
-        if (!this.handlePointerEvents(ctx)) ctx.restore();
+        if (!this.handlePointerEvents(ctx)) {
+            ctx.restore();
+        }
+        if (this.pointerId !== undefined) {
+            callAndPrune(this.eventListeners, "hold", [this]);
+        }
         if (isRoot) {
             this.rootPointerEventCallback();
         }
@@ -379,7 +563,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
         if (this.events === undefined) return false;
 
-        if (!this.events.down && !this.events.up && !this.events.move) {
+        if (!this.events.down && !this.events.up && !this.events.move && !this.events.scroll && !this.events.keydown && !this.events.keyup) {
             return false;
         }
 
@@ -387,8 +571,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             [
                 this.eventListeners.click,
                 this.eventListeners.drag,
+                this.eventListeners.hold,
                 this.eventListeners.hover,
                 this.eventListeners.hoverEnd,
+                this.eventListeners.keydown,
+                this.eventListeners.keyup,
                 this.eventListeners.release
             ].every(listeners => listeners.length === 0)
         ) {
@@ -400,26 +587,37 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         );
 
         if (this.eventListeners.hover.length > 0 && !this.hovered && pointIsInPath) {
-            this.eventListeners.hover.forEach(callback =>
-                callback.call(
-                    this,
-                    this.events!.move?.event ?? this.events!.down?.event ?? this.events!.up!.event,
-                    this.events!.move?.translatedPoint ??
-                        this.events!.down?.translatedPoint ??
-                        this.events!.up!.translatedPoint
-                )
-            );
+            callAndPrune(this.eventListeners, "hover", [
+                this,
+                this.events.move?.translatedPoint ??
+                    this.events.down?.translatedPoint ??
+                    this.events.up!.translatedPoint,
+                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event,
+            ]);
             this.hovered = true;
         } else if (!pointIsInPath && this.hovered) {
             if (this.eventListeners.hoverEnd.length > 0) {
                 const unHoverEvent = [this.events.down, this.events.up, this.events.move].find(e => {
                     return e !== undefined && !this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
                 });
-                this.eventListeners.hoverEnd.forEach(callback => {
-                    callback.call(this, unHoverEvent!.event, unHoverEvent!.translatedPoint);
-                });
+                callAndPrune(this.eventListeners, 'hoverEnd', [this, unHoverEvent!.translatedPoint, unHoverEvent!.event]);
             }
             this.hovered = false;
+        }
+
+        if (this.name !== "") {
+
+            if (this.events?.keydown && this.eventListeners.keydown.length > 0 && this.events.stage!.keyTarget === this.name) {
+                callAndPrune(this.eventListeners, 'keydown', [this, this.events.keydown]);
+            }
+            if (this.events?.keyup && this.eventListeners.keyup.length > 0 && this.events.stage!.keyTarget === this.name) {
+                callAndPrune(this.eventListeners, 'keyup', [this, this.events.keyup]);
+            }
+
+            if (this.events.scroll && this.eventListeners.scroll.length > 0 && pointIsInPath && this.events.stage!.scrollTarget === this.name) {
+                callAndPrune(this.eventListeners, 'scroll', [this, this.events.scroll]);
+            }
+
         }
 
         const registerCallback = (
@@ -427,12 +625,13 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             positionedPointerEvent: PositionedPointerEvent,
             root: Shape,
             self: this,
-            eventListeners: PointerEventCallback<this>[]
+            listener?: 'click' | 'drag' | 'release',
+            pointerId?: number
         ) => {
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
-            const callback = () => {
+            const callback = function(pointerId?: number) {
                 ctx.save();
                 ctx.setTransform(
                     transformationMatrix.a,
@@ -442,17 +641,28 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                eventListeners.forEach(callback => callback.call(self, event, transformedPos));
+                callAndPrune(self.eventListeners, listener!, [self, transformedPos, event]);
+                if (pointerId !== undefined) {
+                    self.pointerId = pointerId;
+                }
                 ctx.restore();
             };
-            (root as Sprite).rootPointerEventCallback = callback.bind(this);
+            if (listener === undefined) {
+                (root as Sprite).rootPointerEventCallback = (function(pointerId?: number) {
+                    if (pointerId !== undefined) {
+                        self.pointerId = pointerId;
+                    }
+                }).bind(this, pointerId);
+            } else {
+                (root as Sprite).rootPointerEventCallback = callback.bind(this, pointerId);
+            }
         };
 
         if (this.events.move && !this.events.up && !this.events.down) {
             if (this.pointerId !== undefined && this.eventListeners.drag.length > 0) {
                 ctx.restore();
                 ctxRestored = true;
-                registerCallback(ctx, this.events.move, this.root, this, this.eventListeners.drag);
+                registerCallback(ctx, this.events.move, this.root, this, 'drag', this.pointerId);
             }
         }
         if (this.events.up) {
@@ -460,19 +670,20 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             ctxRestored = true;
             if (this.eventListeners.release.length > 0 && this.pointerId !== undefined) {
                 const event = this.events.up;
-                registerCallback(ctx, event, this.root, this, this.eventListeners.release);
+                registerCallback(ctx, event, this.root, this, 'release');
             }
             this.pointerId = undefined;
         } else if (this.events.down && pointIsInPath) {
             ctx.restore();
             ctxRestored = true;
             const event = this.events.down;
-            this.pointerId = event.event.pointerId;
-            this.pointerButton = event.event.button;
             if (this.eventListeners.click.length > 0) {
-                registerCallback(ctx, event, this.root, this, this.eventListeners.click);
+                registerCallback(ctx, event, this.root, this, 'click', event.event.pointerId);
+            } else {
+                registerCallback(ctx, event, this.root, this, undefined, event.event.pointerId);
             }
         }
+
         return ctxRestored;
     }
 
@@ -506,19 +717,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     return;
                 })
         };
-    }
-
-    public get children() {
-        return [...this._children];
-    }
-
-    public get parent(): Shape | undefined {
-        return this._parent as unknown as Shape | undefined;
-    }
-
-    public get root(): Shape {
-        if (this._parent === undefined) return this as Shape;
-        return this._parent.root;
     }
 
     public logHierarchy(indent = 0) {
@@ -627,7 +825,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             throw new Error(`Property ${animation.property as string} is not a valid property`);
         }
         if (animation.frame === animation.duration) {
-            this.eventListeners.animationFinish.forEach(callback => callback.call(this, animation as never));
+            callAndPrune(this.eventListeners, "animationFinish", [this, animation as never]);
         }
     }
 
@@ -660,54 +858,101 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return this;
     }
 
-    public findChild(name: string): Shape | undefined {
-        return this._children.find(child => {
-            return child.name === name;
-        });
+    public schedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (currentFrame >= frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
-    public findChildren(name: string): Shape[] {
-        return this._children.filter(child => child.name === name);
+    public selfSchedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (sprite.currentFrame >= frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
-    public r_findChild(name: string): Shape | undefined {
-        return (
-            this._children.find(child => child.name === name) ??
-            this._children.map(child => child.r_findChild(name)).find(child => child !== undefined)
-        );
+    public scheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (currentFrame === frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
-    public r_findChildren(name: string): Shape[] {
-        return (
-            this._children.filter(child => child.name === name) ??
-            this._children.map(child => child.r_findChildren(name)).flat()
-        );
+    public selfScheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (sprite.currentFrame === frame) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
-    public r_getChildren() {
-        const children = [...this._children];
-        this._children.forEach(child => children.push(...child.r_getChildren()));
-        return children;
+    public delay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener {
+        const start = (this.root as Sprite).stage?.currentFrame;
+        if (start === undefined) {
+            throw new Error("Sprite must be attached to a stage to use delay");
+        }
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (currentFrame >= start + delay) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
-    public addChild(child: Shape) {
-        super.addChild(child);
-        return this;
+    public selfDelay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener {
+        const start = this.currentFrame;
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (sprite.currentFrame >= start + delay) {
+                callback(sprite, currentFrame, stage);
+                return 1;
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
-    public addChildren(...children: Shape[]) {
-        super.addChildren(...children);
-        return this;
+    public when<Listener extends StageEventCallback<this>>(
+        condition: (sprite: this) => boolean,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (condition(sprite)) {
+                return callback(sprite, currentFrame, stage);
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
-    public removeChild(child: Shape) {
-        super.removeChild(child);
-        return this;
-    }
-
-    public removeChildren(...children: Shape[]) {
-        super.removeChildren(...children);
-        return this;
+    public whenStage<Listener extends StageEventCallback<this>>(
+        condition: (stage: Stage) => boolean,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+            if (condition(stage)) {
+                return callback(sprite, currentFrame, stage);
+            }
+        };
+        this.addEventListener("beforeDraw", listener);
+        return listener as Listener;
     }
 
     public hasEventListeners() {

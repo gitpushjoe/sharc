@@ -3,15 +3,15 @@ import { PositionType } from "./Common";
 import { DEFAULT_PROPERTIES, HIDDEN_SHAPE_PROPERTIES } from "./Sprites";
 import { PrivateAnimationType } from "./Animation";
 
-export type PointerEventCallback<thisType> = (
-    this: thisType,
+export type PointerEventCallback<CallerType> = (
+    caller: CallerType,
+    translatedPoint: PositionType,
     event: PointerEvent,
-    translatedPoint: PositionType
-) => void;
+) => boolean | 0 | 1 | void;
 
-export type ScrollEventCallback<thisType> = (this: thisType, event: WheelEvent) => void;
+export type ScrollEventCallback<CallerType> = (caller: CallerType, event: WheelEvent) => boolean | 0 | 1 | void;
 
-export type KeyboardEventCallback<thisType> = (this: thisType, event: KeyboardEvent) => void;
+export type KeyboardEventCallback<CallerType> = (caller: CallerType, event: KeyboardEvent) => boolean | 0 | 1 | void;
 
 export type PositionedPointerEvent = {
     event: PointerEvent;
@@ -28,39 +28,42 @@ export type EventCollection<DetailsType = any> = {
     scroll?: WheelEvent;
 };
 
-export type StageEventCallback<thisType> = (this: thisType, frame: number) => void;
+export type StageEventCallback<CallerType, StageType = Stage> = (caller: CallerType, frame: number, stage: StageType) => boolean | 0 | 1 | void;
 
-export type AnimationFinishCallback<thisType, PrivateAnimationType> = (
-    this: thisType,
+export type AnimationFinishCallback<CallerType, PrivateAnimationType> = (
+    caller: CallerType,
     animation: PrivateAnimationType
-) => void;
+) => boolean | 0 | 1 | void;
 
-export type MessageCallback<thisType, MessageType> = (this: thisType, message: MessageType) => void;
+export type MessageCallback<CallerType, MessageType> = (caller: CallerType, message: MessageType) => boolean | 0 | 1 | void;
 
-export type SpriteEventListeners<thisType = undefined, Properties = any> = {
-    click: PointerEventCallback<thisType>[];
-    drag: PointerEventCallback<thisType>[];
-    release: PointerEventCallback<thisType>[];
-    hover: PointerEventCallback<thisType>[];
-    hoverEnd: PointerEventCallback<thisType>[];
-    scroll: ScrollEventCallback<thisType>[];
-    beforeDraw: StageEventCallback<thisType>[];
+export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
+    click: PointerEventCallback<CallerType>[];
+    drag: PointerEventCallback<CallerType>[];
+    release: PointerEventCallback<CallerType>[];
+    hover: PointerEventCallback<CallerType>[];
+    hoverEnd: PointerEventCallback<CallerType>[];
+    hold: ((sprite: CallerType) => boolean | 0 | 1 | void)[];
+    keydown: KeyboardEventCallback<CallerType>[];
+    keyup: KeyboardEventCallback<CallerType>[];
+    scroll: ScrollEventCallback<CallerType>[];
+    beforeDraw: StageEventCallback<CallerType>[];
     animationFinish: AnimationFinishCallback<
-        thisType,
+        CallerType,
         PrivateAnimationType<Properties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
     >[];
 };
 
-export type StageEventListeners<thisType = Stage> = {
-    click: PointerEventCallback<thisType>[];
-    release: PointerEventCallback<thisType>[];
-    move: PointerEventCallback<thisType>[];
-    scroll: ScrollEventCallback<thisType>[];
-    keydown: KeyboardEventCallback<thisType>[];
-    keyup: KeyboardEventCallback<thisType>[];
-    beforeDraw: StageEventCallback<thisType>[];
+export type StageEventListeners<CallerType = Stage> = {
+    click: PointerEventCallback<CallerType>[];
+    release: PointerEventCallback<CallerType>[];
+    move: PointerEventCallback<CallerType>[];
+    scroll: ScrollEventCallback<CallerType>[];
+    keydown: KeyboardEventCallback<CallerType>[];
+    keyup: KeyboardEventCallback<CallerType>[];
+    beforeDraw: StageEventCallback<CallerType, CallerType>[];
 };
 
-export type AsyncStageEventListeners<thisType = any, MessageType = any> = StageEventListeners<thisType> & {
-    message: MessageCallback<thisType, MessageType>[];
+export type AsyncStageEventListeners<CallerType = any, MessageType = any> = StageEventListeners<CallerType> & {
+    message: MessageCallback<CallerType, MessageType>[];
 };
