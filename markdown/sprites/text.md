@@ -33,4 +33,5 @@ Draws text. When a `TextSprite` is drawn to a canvas with a centered root node, 
 #### HiddenTextProperties
 
 `bl:positionX: number` - the x-coordinate of the text position. Normal Property.
+
 `bl:positionY: number` - the y-coordinate of the text position. Normal Property.
