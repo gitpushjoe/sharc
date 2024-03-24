@@ -53,7 +53,7 @@ stage.loop();
 
 #### Sprites
 
-Then, you can create sprites and add them to the stage. Every stage has a root sprite that you can add children to, creating a tree of sprites. Here's an example of creating a red circle with a dotted brown outline:
+Then, you can create sprites and add them to the stage. Every stage has a root sprite that you can add children to, creating a tree of sprites. Here's an example of creating a red circle with a dotted pink outline:
 
 ~~~ts
 import { Ellipse } from 'sharc-js/Sprites'
@@ -107,18 +107,18 @@ circle.channels[1].push(
 
 #### Properties
 
-sharc also supports a vast properties system that lets you modify sprites quickly and easily. For example, if you wanted to change the color of the circle to green, you could do this:
+sharc also supports a vast properties system that lets you modify sprites quickly and easily. For example, if you wanted to change the color of the circle to blue, you could do this:
 
 ~~~ts
-circle.color = Colors.Green;
+circle.color = Colors.Blue; // { red: 0, green: 0, blue: 255, alpha: 1 }
 ~~~
 
 or this:
 
 ~~~ts
 circle.red = 0;
-circle.green = 255;
-circle.blue = 0;
+circle.green = 0;
+circle.blue = 255;
 ~~~
 
 Some properties are stored as-is, like `red`; some properties are collections of other properties, like `color`; and some properties are calculated from other properties, like `centerX` and `centerY`. All of these properties can be retrieved, modified, and animated in the exact same way! **sharc currently has more than 100 unique properties across eleven core sprite primitives.**
