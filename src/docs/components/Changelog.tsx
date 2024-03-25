@@ -5,6 +5,13 @@ export default function Changelog() {
 
     const changelog: { version: string, changes: React.ReactNode[] }[] = [
         {
+            version: "v2.0.2",
+            changes: [
+                <>Improve readme.</>,
+                <>Format code with prettier.</>,
+            ],
+        },
+        {
             version: "v2.0.1",
             changes: [
                 <>Fix <InlineCode>package.json</InlineCode> to support type definitions in Javascript files.</>,
