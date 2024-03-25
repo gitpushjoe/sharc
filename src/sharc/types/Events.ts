@@ -6,7 +6,7 @@ import { PrivateAnimationType } from "./Animation";
 export type PointerEventCallback<CallerType> = (
     caller: CallerType,
     translatedPoint: PositionType,
-    event: PointerEvent,
+    event: PointerEvent
 ) => boolean | 0 | 1 | void;
 
 export type ScrollEventCallback<CallerType> = (caller: CallerType, event: WheelEvent) => boolean | 0 | 1 | void;
@@ -28,14 +28,21 @@ export type EventCollection<DetailsType = any> = {
     scroll?: WheelEvent;
 };
 
-export type StageEventCallback<CallerType, StageType = Stage> = (caller: CallerType, frame: number, stage: StageType) => boolean | 0 | 1 | void;
+export type StageEventCallback<CallerType, StageType = Stage> = (
+    caller: CallerType,
+    frame: number,
+    stage: StageType
+) => boolean | 0 | 1 | void;
 
 export type AnimationFinishCallback<CallerType, PrivateAnimationType> = (
     caller: CallerType,
     animation: PrivateAnimationType
 ) => boolean | 0 | 1 | void;
 
-export type MessageCallback<CallerType, MessageType> = (caller: CallerType, message: MessageType) => boolean | 0 | 1 | void;
+export type MessageCallback<CallerType, MessageType> = (
+    caller: CallerType,
+    message: MessageType
+) => boolean | 0 | 1 | void;
 
 export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     click: PointerEventCallback<CallerType>[];

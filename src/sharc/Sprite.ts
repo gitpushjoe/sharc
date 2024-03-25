@@ -120,7 +120,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public findDescendantWhere(filter: (child: Shape) => boolean): Shape | undefined {
         return (
             this._children.find(filter) ??
-            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.findDescendantWhere(filter), undefined)
+            this._children.reduce<Shape | undefined>(
+                (acc, child) => acc ?? child.findDescendantWhere(filter),
+                undefined
+            )
         );
     }
 
@@ -217,14 +220,29 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     }
 
     public abstract schedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
-    public abstract selfSchedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
-    public abstract scheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
-    public abstract selfScheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract selfSchedule<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener;
+    public abstract scheduleExactly<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener;
+    public abstract selfScheduleExactly<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener;
     public abstract delay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
     public abstract selfDelay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
 
-    public abstract when<Listener extends StageEventCallback<this>>(condition: (sprite: this) => boolean, callback: Listener): Listener;
-    public abstract whenStage<Listener extends StageEventCallback<this>>(condition: (stage: Stage) => boolean, callback: Listener): Listener;
+    public abstract when<Listener extends StageEventCallback<this>>(
+        condition: (sprite: this) => boolean,
+        callback: Listener
+    ): Listener;
+    public abstract whenStage<Listener extends StageEventCallback<this>>(
+        condition: (stage: Stage) => boolean,
+        callback: Listener
+    ): Listener;
 
     public abstract effects: EffectsType;
     public abstract bounds: BoundsType;
@@ -563,7 +581,14 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
         if (this.events === undefined) return false;
 
-        if (!this.events.down && !this.events.up && !this.events.move && !this.events.scroll && !this.events.keydown && !this.events.keyup) {
+        if (
+            !this.events.down &&
+            !this.events.up &&
+            !this.events.move &&
+            !this.events.scroll &&
+            !this.events.keydown &&
+            !this.events.keyup
+        ) {
             return false;
         }
 
@@ -592,7 +617,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 this.events.move?.translatedPoint ??
                     this.events.down?.translatedPoint ??
                     this.events.up!.translatedPoint,
-                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event,
+                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event
             ]);
             this.hovered = true;
         } else if (!pointIsInPath && this.hovered) {
@@ -600,24 +625,39 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 const unHoverEvent = [this.events.down, this.events.up, this.events.move].find(e => {
                     return e !== undefined && !this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
                 });
-                callAndPrune(this.eventListeners, 'hoverEnd', [this, unHoverEvent!.translatedPoint, unHoverEvent!.event]);
+                callAndPrune(this.eventListeners, "hoverEnd", [
+                    this,
+                    unHoverEvent!.translatedPoint,
+                    unHoverEvent!.event
+                ]);
             }
             this.hovered = false;
         }
 
         if (this.name !== "") {
-
-            if (this.events?.keydown && this.eventListeners.keydown.length > 0 && this.events.stage!.keyTarget === this.name) {
-                callAndPrune(this.eventListeners, 'keydown', [this, this.events.keydown]);
+            if (
+                this.events?.keydown &&
+                this.eventListeners.keydown.length > 0 &&
+                this.events.stage!.keyTarget === this.name
+            ) {
+                callAndPrune(this.eventListeners, "keydown", [this, this.events.keydown]);
             }
-            if (this.events?.keyup && this.eventListeners.keyup.length > 0 && this.events.stage!.keyTarget === this.name) {
-                callAndPrune(this.eventListeners, 'keyup', [this, this.events.keyup]);
+            if (
+                this.events?.keyup &&
+                this.eventListeners.keyup.length > 0 &&
+                this.events.stage!.keyTarget === this.name
+            ) {
+                callAndPrune(this.eventListeners, "keyup", [this, this.events.keyup]);
             }
 
-            if (this.events.scroll && this.eventListeners.scroll.length > 0 && pointIsInPath && this.events.stage!.scrollTarget === this.name) {
-                callAndPrune(this.eventListeners, 'scroll', [this, this.events.scroll]);
+            if (
+                this.events.scroll &&
+                this.eventListeners.scroll.length > 0 &&
+                pointIsInPath &&
+                this.events.stage!.scrollTarget === this.name
+            ) {
+                callAndPrune(this.eventListeners, "scroll", [this, this.events.scroll]);
             }
-
         }
 
         const registerCallback = (
@@ -625,13 +665,13 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             positionedPointerEvent: PositionedPointerEvent,
             root: Shape,
             self: this,
-            listener?: 'click' | 'drag' | 'release',
+            listener?: "click" | "drag" | "release",
             pointerId?: number
         ) => {
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
-            const callback = function(pointerId?: number) {
+            const callback = function (pointerId?: number) {
                 ctx.save();
                 ctx.setTransform(
                     transformationMatrix.a,
@@ -648,11 +688,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 ctx.restore();
             };
             if (listener === undefined) {
-                (root as Sprite).rootPointerEventCallback = (function(pointerId?: number) {
+                (root as Sprite).rootPointerEventCallback = function (pointerId?: number) {
                     if (pointerId !== undefined) {
                         self.pointerId = pointerId;
                     }
-                }).bind(this, pointerId);
+                }.bind(this, pointerId);
             } else {
                 (root as Sprite).rootPointerEventCallback = callback.bind(this, pointerId);
             }
@@ -662,7 +702,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             if (this.pointerId !== undefined && this.eventListeners.drag.length > 0) {
                 ctx.restore();
                 ctxRestored = true;
-                registerCallback(ctx, this.events.move, this.root, this, 'drag', this.pointerId);
+                registerCallback(ctx, this.events.move, this.root, this, "drag", this.pointerId);
             }
         }
         if (this.events.up) {
@@ -670,7 +710,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             ctxRestored = true;
             if (this.eventListeners.release.length > 0 && this.pointerId !== undefined) {
                 const event = this.events.up;
-                registerCallback(ctx, event, this.root, this, 'release');
+                registerCallback(ctx, event, this.root, this, "release");
             }
             this.pointerId = undefined;
         } else if (this.events.down && pointIsInPath) {
@@ -678,7 +718,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             ctxRestored = true;
             const event = this.events.down;
             if (this.eventListeners.click.length > 0) {
-                registerCallback(ctx, event, this.root, this, 'click', event.event.pointerId);
+                registerCallback(ctx, event, this.root, this, "click", event.event.pointerId);
             } else {
                 registerCallback(ctx, event, this.root, this, undefined, event.event.pointerId);
             }

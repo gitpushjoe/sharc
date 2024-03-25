@@ -93,7 +93,7 @@ export class Stage<RootDetailsType = any> {
             return this;
         }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-                cb => cb !== (callback as unknown as PointerEventCallback<Stage>)
+            cb => cb !== (callback as unknown as PointerEventCallback<Stage>)
         );
         return this;
     }
@@ -224,10 +224,20 @@ export class Stage<RootDetailsType = any> {
 
     public draw(ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
         ctx ??= this.ctx;
-        if (this.resetKeyTargetOnClick && this.drawEvents.up && this.keyTarget !== "" && this.root.findDescendants(this.keyTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+        if (
+            this.resetKeyTargetOnClick &&
+            this.drawEvents.up &&
+            this.keyTarget !== "" &&
+            this.root.findDescendants(this.keyTarget).some(x => (x as Record<string, any>).pointerId === undefined)
+        ) {
             this.keyTarget = "";
         }
-        if (this.resetScrollTargetOnClick && this.drawEvents.down && this.scrollTarget !== "" && this.root.findDescendants(this.scrollTarget).some(x => (x as Record<string, any>).pointerId === undefined)) {
+        if (
+            this.resetScrollTargetOnClick &&
+            this.drawEvents.down &&
+            this.scrollTarget !== "" &&
+            this.root.findDescendants(this.scrollTarget).some(x => (x as Record<string, any>).pointerId === undefined)
+        ) {
             this.scrollTarget = "";
         }
         callAndPrune(this.eventListeners, "beforeDraw", [this, this.currentFrame, this]);

@@ -17,7 +17,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   plugins: ['react-refresh'],
-  ignorePatterns: ["src/main.ts", "src/worker.ts", "*/.eslintrc.cjs"],
+  ignorePatterns: ["src/main.ts", "src/worker.ts", "*/.eslintrc.cjs", "src/tests.ts"],
   rules: {
     'react-refresh/only-export-components': [
       'warn',

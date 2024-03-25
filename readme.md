@@ -78,6 +78,8 @@ stage.root.addChild(circle);
 Animations in sharc work using a "channels" system. Every sprite comes with any number of channels, which are basically parallel animation queues. All of the channels are initialized knowing the properties of the sprite it came from. Every time the sprite is rendered, all of its channels will advance by one step, and the sprite will be updated accordingly. Once the current animation in a channel completes, it will be removed from the queue. Here is an example of how you can make a simple [bouncing ball animation](https://www.sharcjs.org/#/docs/animation/distribute) using sharc:
 
 ~~~ts
+import { Easing } from 'sharc-js/Utils';
+
 circle.createChannels(1); // every sprite is created with 1 channel by default
 circle.channels[0].push(
     [

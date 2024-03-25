@@ -96,7 +96,7 @@ export default class TextSprite<DetailsType = any>
         const { text, maxWidth } = properties;
         const metrics = ctx.measureText(text ?? "");
         const textWidth = metrics.width;
-        const height = properties.fontSize! * .725;
+        const height = properties.fontSize! * 0.725;
         // const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
         ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
