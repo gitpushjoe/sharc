@@ -725,6 +725,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 registerCallback(ctx, this.events.move, this.root, this, "drag", this.pointerId);
             } else if (this.pointerId !== undefined) {
                 this.lastPointerPosition = ctx.getTransform().inverse().transformPoint(this.events.move.translatedPoint);
+                this.lastTransformationMatrix = ctx.getTransform();
             }
         }
         if (this.events.up) {
