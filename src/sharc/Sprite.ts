@@ -708,7 +708,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 ctx.restore();
                 ctxRestored = true;
                 registerCallback(ctx, this.events.move, this.root, this, "drag", this.pointerId);
-            } else {
+            } else if (this.pointerId !== undefined) {
                 registerCallback(ctx, this.events.move, this.root, this, undefined);
             }
         }
