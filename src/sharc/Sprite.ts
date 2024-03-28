@@ -432,6 +432,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     protected pointerId?: number = undefined;
+    private lastClickPosition?: PositionType = undefined;
     protected hovered = false;
 
     private eventListeners: SpriteEventListeners<this, Properties & HiddenProperties> = {
@@ -568,11 +569,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         if (this.events!.stage && !this.handlePointerEvents(ctx, this.events!.stage)) {
             ctx.restore();
         }
-        if (this.pointerId !== undefined) {
-            callAndPrune(this.eventListeners, "hold", [this]);
-        }
         if (isRoot) {
             this.rootPointerEventCallback();
+        }
+        if (this.events!.stage && this.pointerId !== undefined) {
+            callAndPrune(this.eventListeners, "hold", [this, this.lastClickPosition!, this.events!.move?.event, this.events!.stage]);
         }
     }
 
@@ -683,6 +684,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
+                self.lastClickPosition = transformedPos;
                 callAndPrune(self.eventListeners, listener!, [self, transformedPos, event, stage]);
                 if (pointerId !== undefined) {
                     self.pointerId = pointerId;
