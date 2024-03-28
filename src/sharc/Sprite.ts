@@ -690,6 +690,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
             self.lastPointerPosition = transformedPos;
+            self.lastTransformationMatrix = transformationMatrix;
             const callback = function (pointerId?: number) {
                 ctx.save();
                 ctx.setTransform(
