@@ -5,6 +5,17 @@ export default function Changelog() {
 
     const changelog: { version: string, changes: React.ReactNode[] }[] = [
         {
+            version: "v2.1.0",
+            changes: [
+                <>Fix placement of <InlineCode>TextSprite</InlineCode> and <InlineCode>LabelSprite</InlineCode> when <InlineCode>positionIsCenter</InlineCode> is false.</>,                
+                <>Make <InlineCode>"center"</InlineCode> getters and setters functional on <InlineCode>TextSprite</InlineCode> and <InlineCode>LabelSprite</InlineCode>.</>,
+                <>Add <InlineCode>Stage</InlineCode> parameter to <InlineCode>PointerEvent</InlineCode>, <InlineCode>KeyboardEvent</InlineCode>, and <InlineCode>WheelEvent</InlineCode> listeners.</>,
+                <>Fix bug where <InlineCode>WorkerStage</InlineCode> <InlineCode>width</InlineCode> property would not be immediately updated.</>,
+                <>Keep track of last known position from <InlineCode>"click"</InlineCode>, <InlineCode>"release"</InlineCode>, and <InlineCode>"drag"</InlineCode> events for use in <InlineCode>"hold"</InlineCode> event listener.</>,
+                <>Return a copy of animations from <InlineCode>channel.animations</InlineCode> instead of their references.</>,
+            ],
+        },
+        {
             version: "v2.0.2",
             changes: [
                 <>Improve readme.</>,

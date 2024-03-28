@@ -7,7 +7,7 @@ onmessage = stage.onmessage;
 
 const sliderText = new TextSprite({
 	text: 'Slider',
-	position: {x: -155, y: -15},
+	position: {x: -155, y: 22},
 	color: Colors.White,
 	fontSize: 40,
 	textAlign: 'right',

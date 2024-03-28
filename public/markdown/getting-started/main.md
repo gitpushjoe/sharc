@@ -34,4 +34,4 @@ $ git checkout
 
 []
 ### Manual Download
-Alternatively, you can download the dist and src files using the Download link in the nav bar.
+Alternatively, you can download the source files using the Download link in the nav bar.

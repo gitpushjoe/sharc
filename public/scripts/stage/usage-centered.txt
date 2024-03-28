@@ -6,7 +6,6 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'classic', Colors.LightSlateGray);
 
 const circle = new Ellipse({
-	center: {x: 0, y: 0},
 	radius: 10,
 	color: Colors.Gold,
 	stroke: {color: Colors.White, lineWidth: 3},
@@ -14,13 +13,26 @@ const circle = new Ellipse({
 
 circle.addChild(
 	new TextSprite({
+		position: {x: 12, y: -5},
 		text: '(0, 0)',
 		fontSize: 30,
 		bold: true,
 		color: Colors.Gold,
-		position: {x: 10, y: 7},
 	})
 )
+
+stage.root.addChildren(
+	new Line({
+		bounds: Line.Bounds(0, 300, 0, -300),
+		color: Colors.LightGrey,
+		lineWidth: 4,
+	}),
+	new Line({
+		bounds: Line.Bounds(300, 0, -300, 0),
+		color: Colors.LightGrey,
+		lineWidth: 4,
+	}),
+)    
 
 stage.root.addChild(circle);
 

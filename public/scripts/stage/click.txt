@@ -6,7 +6,7 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const stage = new Stage(canvas, 'centered', Colors.LightSlateGray);
 
 const text = new TextSprite({
-	position: {x: -275, y: -175},
+	position: {x: -stage.width / 2 + 10, y: -stage.height / 2 + 45},
 	text: 'Click me!',
 	color: Colors.White,
 	fontSize: 35,

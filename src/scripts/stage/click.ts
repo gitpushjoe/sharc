@@ -6,12 +6,14 @@ const stage = new WorkerStage(postMessage.bind(null), "centered", Colors.LightSl
 onmessage = stage.onmessage;
 
 const text = new TextSprite({
-	position: {x: -275, y: -175},
+	position: {x: -stage.width! / 2 + 10, y: -stage.height! / 2 + 45},
 	text: 'Click me!',
 	color: Colors.White,
 	fontSize: 35,
 	bold: true,
 });
+
+text.on('beforeDraw', t => { t.positionX = -stage.width! / 2 + 10; t.positionY = -stage.height! / 2 + 45; return 1;});
 
 stage.root.addChildren(
 	new Line({

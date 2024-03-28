@@ -69,16 +69,19 @@ function Docs() {
                     Download{'\u00A0\u00A0'}
                 </button>
                 <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1Hensu6rOjXEeaaX5rxmeFnIKZsUP7kG3?usp=sharing">release v2.0.1</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1Z86cmklHfvaYNVcZGo6sxgOdJTU4KcbO?usp=sharing">release v2.0.0</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1I3s5xR4A5pxEHy0lEQv7sCiAUtmzfzYH?usp=drive_link">release v1.4.0</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1XnoScU9DRUdjcIN7HQ8wWjTRNkCASWUu?usp=drive_link">release v1.3.2</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/11ZEeAiAO7F-YRpSgM08XcRuj8LUhCyr5?usp=sharing">release v1.3.1</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1wdG0XfqM10HLGGbW4ktO4uRbWwNI3Wy8?usp=drive_link">release v1.2.0</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1M_PzHl7_uyRRhZnGtiCiSXayV93i5Nnb?usp=sharing">release v1.1.1</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1bK432l4WjHF7pybB76sHIi5o-CjLFJbv?usp=sharing">release v1.1.0</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1xH-roxXxDQrMc1iRvsIAIIJp3tjaAM5L?usp=sharing">release v1.0.0</a>
-                    <a className="dropdown-item" href="https://drive.google.com/drive/folders/1DA7QlCm2AYLxfLz9NlM1DHVcrK1dIBqr?usp=drive_link">beta v1.0.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/3ec89edae46372e506e7d5b3703caa437b73ecee.zip">release v2.1.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/983f06c5a7b4dcf5072affab16ad7915b581ccbb.zip">release v2.0.2</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/c6563ff29efb4a7f72859ac561d053a1e850dbb8.zip">release v2.0.1</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/c6563ff29efb4a7f72859ac561d053a1e850dbb8.zip">release v2.0.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/456d01d3b91e6a0e46cd133cb2204d49a7ae12df.zip">release v1.4.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/d77a88d9561fb9d47103c221e7d03950b48b8f65.zip">release v1.3.2</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/eb02da45a0dc60d3cc8168c73467c915fc6eceb6.zip">release v1.3.1</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/e26470640b36dc067077da46c767c484a89467fc.zip">release v1.3.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/fd6aaf80dfdfb911f00067c816ef0e242a70d4c5.zip">release v1.2.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/f68f1a03a8adfff673732dfc96eb92a64ced3b58.zip">release v1.1.1</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/d80679e463b76e8c3c00a49d438bebed7456270d.zip">release v1.1.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/215b36ec5fc57e8403a4939019836c63b472a926.zip">release v1.0.0</a>
+                    <a className="dropdown-item" href="https://github.com/gitpushjoe/sharc/archive/4f7d0d7b6ad8f1c9a9b8ef0a3e87a5f63b2fa4da.zip">beta v1.0.0</a>
                 </div>
                 </div>
         </div></div>

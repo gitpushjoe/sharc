@@ -18,37 +18,37 @@ If an event listener returns `true` or `1`, then the event listener will automat
 
 [1]
 ~~~ts-header
-sprite.on('click', callback: (sprite: Sprite, callback: PointerEvent, position: Point) => boolean | 0 | 1 | undefined)
+sprite.on('click', callback: (sprite: Sprite, callback: PointerEvent, position: PositionType, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
-The `callback` is called whenever the user presses down their mouse on the sprite. The `Sprite` will pass the `PointerEvent` object as event and the location of the click as `position`, relative to the sprite.
+The `callback` is called whenever the user presses down their mouse on the sprite. The `Sprite` will pass the `PointerEvent` object as event and the location of the click as `position`, relative to the sprite. The `stage` that the sprite is being drawn to will also be passed to the callback.
 
 []
 ~~~ts-header
-sprite.on('drag', callback: (sprite: Sprite, event: PointerEvent, position: Point) => boolean | 0 | 1 | undefined)
+sprite.on('drag', callback: (sprite: Sprite, event: PointerEvent, position: PositionType, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
 The `callback` is called if the sprite has been clicked on, and the user moves their mouse. The event listener works the same way as the one above, except that it is triggered only when the user moves their mouse.
 
 []
 ~~~ts-header
-sprite.on('hold', callback: (sprite: Sprite) => boolean | 0 | 1 | undefined)
+sprite.on('hold', callback: (sprite: Sprite, event: PointerEvent | undefined, position: PositionType, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
-Unlike `sprite.on('drag')`, the `callback` is called on every frame the sprite is being held down (regardless of if the mouse is currently on the sprite, or moving).
+Unlike `sprite.on('drag')`, the `callback` is called on every frame the sprite is being held down (regardless of if the mouse is currently on the sprite, or moving). Whenever the mouse moves, any `hold` event listener will be passed the `mousemove` event, otherwise `event` will be `undefined`.
 
 []
 ~~~ts-header
-sprite.on('release', callback: (sprite: Sprite, event: PointerEvent, position: Point) => boolean | 0 | 1 | undefined)
+sprite.on('release', callback: (sprite: Sprite, event: PointerEvent, position: PositionType, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
 The `callback` is called if the sprite has been clicked on, and the user releases their mouse.
 
 []
 ~~~ts-header
-sprite.on('hover', callback: (sprite: Sprite, event: PointerEvent, position: Point) => boolean | 0 | 1 | undefined)
+sprite.on('hover', callback: (sprite: Sprite, event: PointerEvent, position: PositionType, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
 The `callback` is called on the first frame that a pointer hovers over the sprite. Note that the `PointerEvent` returned may or may not be a `mousemove` event.
 
 []
 ~~~ts-header
-sprite.on('hoverEnd', callback: (sprite: Sprite, event: PointerEvent, position: Point) => boolean | 0 | 1 | undefined)
+sprite.on('hoverEnd', callback: (sprite: Sprite, event: PointerEvent, position: PositionType, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
 The `callback` is called when the pointer stops hovering over the sprite. Note that the `PointerEvent` returned may or may not be a `mousemove` event.
 
@@ -77,17 +77,17 @@ The `keyup`, `keydown`, and `scroll` events work using a "target" system. Every 
 
 []
 ~~~ts-header
-sprite.on('keyup', (sprite: Sprite, event: KeyboardEvent) => boolean | 0 | 1 | undefined)
+sprite.on('keyup', (sprite: Sprite, event: KeyboardEvent, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
 
 []
 ~~~ts-header
-sprite.on('keydown', (sprite: Sprite, event: KeyboardEvent) => boolean | 0 | 1 | undefined)
+sprite.on('keydown', (sprite: Sprite, event: KeyboardEvent, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
 
 []
 ~~~ts-header
-sprite.on('scroll', (sprite: Sprite, event: WheelEvent) => boolean | 0 | 1 | undefined)
+sprite.on('scroll', (sprite: Sprite, event: WheelEvent, stage: Stage) => boolean | 0 | 1 | undefined)
 ~~~
 
 [2]
