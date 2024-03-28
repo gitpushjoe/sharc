@@ -433,6 +433,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
     protected pointerId?: number = undefined;
     private lastPointerPosition?: PositionType = undefined;
+    private lastTransformationMatrix?: DOMMatrix = undefined;
     protected hovered = false;
 
     private eventListeners: SpriteEventListeners<this, Properties & HiddenProperties> = {
@@ -573,7 +574,17 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             this.rootPointerEventCallback();
         }
         if (this.events!.stage && this.pointerId !== undefined) {
+            ctx.save();
+            ctx.setTransform(
+                this.lastTransformationMatrix!.a,
+                this.lastTransformationMatrix!.b,
+                this.lastTransformationMatrix!.c,
+                this.lastTransformationMatrix!.d,
+                this.lastTransformationMatrix!.e,
+                this.lastTransformationMatrix!.f
+            );
             callAndPrune(this.eventListeners, "hold", [this, this.lastPointerPosition!, this.events!.move?.event, this.events!.stage]);
+            ctx.restore();
         }
     }
 
@@ -606,6 +617,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             ].every(listeners => listeners.length === 0)
         ) {
             return false;
+        }
+
+        if (this.pointerId !== undefined) {
+            this.lastTransformationMatrix = ctx.getTransform();
         }
 
         const pointIsInPath = [this.events.down, this.events.up, this.events.move].every(
@@ -674,6 +689,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
+            self.lastPointerPosition = transformedPos;
             const callback = function (pointerId?: number) {
                 ctx.save();
                 ctx.setTransform(
@@ -684,7 +700,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                self.lastPointerPosition = transformedPos;
                 callAndPrune(self.eventListeners, listener!, [self, transformedPos, event, stage]);
                 if (pointerId !== undefined) {
                     self.pointerId = pointerId;
@@ -692,12 +707,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 ctx.restore();
             };
             if (listener === undefined) {
-                (root as Sprite).rootPointerEventCallback = function (pointerId?: number, translatedPoint?: PositionType) {
+                (root as Sprite).rootPointerEventCallback = function (pointerId?: number) {
                     if (pointerId !== undefined) {
                         self.pointerId = pointerId;
                     }
-                    self.lastPointerPosition = translatedPoint;
-                }.bind(this, pointerId, transformedPos);
+                }.bind(this, pointerId);
             } else {
                 (root as Sprite).rootPointerEventCallback = callback.bind(this, pointerId);
             }
@@ -708,8 +722,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 ctx.restore();
                 ctxRestored = true;
                 registerCallback(ctx, this.events.move, this.root, this, "drag", this.pointerId);
-            } else if (this.pointerId !== undefined) {
-                registerCallback(ctx, this.events.move, this.root, this, undefined);
             }
         }
         if (this.events.up) {

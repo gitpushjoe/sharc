@@ -1,7 +1,7 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "2.1.0-dev3",
+  "version": "2.1.0-dev4",
   "type": "module",
   "files": [
     "dist",
