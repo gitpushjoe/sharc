@@ -432,7 +432,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     protected pointerId?: number = undefined;
-    private lastClickPosition?: PositionType = undefined;
+    private lastPointerPosition?: PositionType = undefined;
     protected hovered = false;
 
     private eventListeners: SpriteEventListeners<this, Properties & HiddenProperties> = {
@@ -573,7 +573,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             this.rootPointerEventCallback();
         }
         if (this.events!.stage && this.pointerId !== undefined) {
-            callAndPrune(this.eventListeners, "hold", [this, this.lastClickPosition!, this.events!.move?.event, this.events!.stage]);
+            callAndPrune(this.eventListeners, "hold", [this, this.lastPointerPosition!, this.events!.move?.event, this.events!.stage]);
         }
     }
 
@@ -684,7 +684,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                self.lastClickPosition = transformedPos;
+                self.lastPointerPosition = transformedPos;
                 callAndPrune(self.eventListeners, listener!, [self, transformedPos, event, stage]);
                 if (pointerId !== undefined) {
                     self.pointerId = pointerId;
@@ -692,11 +692,12 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 ctx.restore();
             };
             if (listener === undefined) {
-                (root as Sprite).rootPointerEventCallback = function (pointerId?: number) {
+                (root as Sprite).rootPointerEventCallback = function (pointerId?: number, translatedPoint?: PositionType) {
                     if (pointerId !== undefined) {
                         self.pointerId = pointerId;
                     }
-                }.bind(this, pointerId);
+                    self.lastPointerPosition = translatedPoint;
+                }.bind(this, pointerId, transformedPos);
             } else {
                 (root as Sprite).rootPointerEventCallback = callback.bind(this, pointerId);
             }
@@ -707,6 +708,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 ctx.restore();
                 ctxRestored = true;
                 registerCallback(ctx, this.events.move, this.root, this, "drag", this.pointerId);
+            } else {
+                registerCallback(ctx, this.events.move, this.root, this, undefined);
             }
         }
         if (this.events.up) {
