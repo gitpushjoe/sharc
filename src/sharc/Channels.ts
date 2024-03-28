@@ -167,6 +167,6 @@ export class Channel<Properties> {
     }
 
     public get animations(): AnimationPackage<Properties>[] {
-        return [...this.queue];
+        return this.queue.map((pkg) => { return { ...pkg }; });
     }
 }

@@ -119,7 +119,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        callAndPrune(this.eventListeners, "click", [this, position, e]);
+        callAndPrune(this.eventListeners, "click", [this, position, e, this]);
         this.drawEvents.down = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
         this.canvas?.focus && this.canvas.focus();
     }
@@ -136,7 +136,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        callAndPrune(this.eventListeners, "release", [this, position, e]);
+        callAndPrune(this.eventListeners, "release", [this, position, e, this]);
         this.drawEvents.up = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
@@ -152,7 +152,7 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? this.height! / 2 : 0)) *
                 (this.rootStyle === "centered" ? -1 : 1)
         );
-        callAndPrune(this.eventListeners, "move", [this, position, e]);
+        callAndPrune(this.eventListeners, "move", [this, position, e, this]);
         this.drawEvents.move = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
     }
 
@@ -161,7 +161,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        callAndPrune(this.eventListeners, "keydown", [this, e]);
+        callAndPrune(this.eventListeners, "keydown", [this, e, this]);
         this.drawEvents.keydown = e;
     }
 
@@ -170,7 +170,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        callAndPrune(this.eventListeners, "keyup", [this, e]);
+        callAndPrune(this.eventListeners, "keyup", [this, e, this]);
         this.drawEvents.keyup = e;
     }
 
@@ -178,7 +178,7 @@ export class Stage<RootDetailsType = any> {
         if (!this.active) {
             return;
         }
-        callAndPrune(this.eventListeners, "scroll", [this, e]);
+        callAndPrune(this.eventListeners, "scroll", [this, e, this]);
         this.drawEvents.scroll = e;
         e.preventDefault();
     }

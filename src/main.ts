@@ -2,7 +2,7 @@ import { Stage } from "./sharc/Stage";
 import { OffscreenStage } from "./sharc/async_stages/OffscreenStage";
 import { tests } from "./tests";
 
-const useOffscreen = false;
+const useOffscreen = true;
 
 let framerate = 60;
 
@@ -23,6 +23,7 @@ tests.forEach(test => {
     detailsElement.addEventListener("toggle", () => {
         stage?.stop();
         if (detailsElement.open) {
+            localStorage.setItem("lastTest", test.name);
             document.querySelectorAll("details").forEach(details => {
                 if (details !== detailsElement) {
                     details.removeAttribute("open");
@@ -45,3 +46,5 @@ tests.forEach(test => {
         }
     });
 });
+
+localStorage.getItem("lastTest") && document.getElementById(localStorage.getItem("lastTest")!)?.parentElement?.setAttribute("open", "");

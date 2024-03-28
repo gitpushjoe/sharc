@@ -3,15 +3,16 @@ import { PositionType } from "./Common";
 import { DEFAULT_PROPERTIES, HIDDEN_SHAPE_PROPERTIES } from "./Sprites";
 import { PrivateAnimationType } from "./Animation";
 
-export type PointerEventCallback<CallerType> = (
+export type PointerEventCallback<CallerType, StageType = Stage> = (
     caller: CallerType,
     translatedPoint: PositionType,
-    event: PointerEvent
+    event: PointerEvent,
+    stage: StageType
 ) => boolean | 0 | 1 | void;
 
-export type ScrollEventCallback<CallerType> = (caller: CallerType, event: WheelEvent) => boolean | 0 | 1 | void;
+export type ScrollEventCallback<CallerType, StageType = Stage> = (caller: CallerType, event: WheelEvent, stage: StageType) => boolean | 0 | 1 | void;
 
-export type KeyboardEventCallback<CallerType> = (caller: CallerType, event: KeyboardEvent) => boolean | 0 | 1 | void;
+export type KeyboardEventCallback<CallerType, StageType = Stage> = (caller: CallerType, event: KeyboardEvent, stage: StageType) => boolean | 0 | 1 | void;
 
 export type PositionedPointerEvent = {
     event: PointerEvent;
@@ -50,7 +51,7 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     release: PointerEventCallback<CallerType>[];
     hover: PointerEventCallback<CallerType>[];
     hoverEnd: PointerEventCallback<CallerType>[];
-    hold: ((sprite: CallerType) => boolean | 0 | 1 | void)[];
+    hold: ((sprite: CallerType, translatedPoint: PositionType, event: PointerEvent|undefined, stage: Stage) => boolean | 0 | 1 | void)[];
     keydown: KeyboardEventCallback<CallerType>[];
     keyup: KeyboardEventCallback<CallerType>[];
     scroll: ScrollEventCallback<CallerType>[];
@@ -62,12 +63,12 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
 };
 
 export type StageEventListeners<CallerType = Stage> = {
-    click: PointerEventCallback<CallerType>[];
-    release: PointerEventCallback<CallerType>[];
-    move: PointerEventCallback<CallerType>[];
-    scroll: ScrollEventCallback<CallerType>[];
-    keydown: KeyboardEventCallback<CallerType>[];
-    keyup: KeyboardEventCallback<CallerType>[];
+    click: PointerEventCallback<CallerType, CallerType>[];
+    release: PointerEventCallback<CallerType, CallerType>[];
+    move: PointerEventCallback<CallerType, CallerType>[];
+    scroll: ScrollEventCallback<CallerType, CallerType>[];
+    keydown: KeyboardEventCallback<CallerType, CallerType>[];
+    keyup: KeyboardEventCallback<CallerType, CallerType>[];
     beforeDraw: StageEventCallback<CallerType, CallerType>[];
 };
 

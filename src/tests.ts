@@ -303,7 +303,7 @@ export const tests: Test[] = [
                 new TextSprite<number>({
                     text: `Counting up to ${max}: 0`,
                     fontSize: 50,
-                    position: { x: 1175, y: 725 },
+                    position: { x: 1175 , y: 725 },
                     textAlign: "right",
                     details: 0
                 })
@@ -382,6 +382,48 @@ export const tests: Test[] = [
                     }
                 ],
                 { loop: true }
+            );
+        }
+    },
+    {
+        name: "text-bounds",
+        apply: (stage: Stage | WorkerStage<any, string>) => {
+            const text = new LabelSprite<string>({
+                text: "Hello, world!!!",
+                fontSize: 50,
+                position: { x: 500, y: 100 },
+                color: Colors.Red,
+                bold: true,
+                textAlign: "right",
+                backgroundColor: Colors.DarkGray,
+                backgroundRadius: [20],
+                padding: 10,
+            });
+            console.log(text.bounds);
+            const outline = new Rect({
+                color: Colors.None,
+                stroke: {
+                    lineDash: 10,
+                    lineDashGap: 5,
+                    color: Colors.Black,
+                }
+            });
+            text.on("beforeDraw", (sprite, frame) => {
+                const property = 
+                    frame % 120 === 1 ? "center" :
+                    frame % 120 === 41 ? "corner1" :
+                    frame % 120 === 81 ? "corner2" :
+                "";
+                if (!property) {
+                    return;
+                }
+                sprite[property] = { x: 500, y: 100 };
+                outline.bounds = sprite.bounds;
+            });
+            stage.root.addChildren(outline, text,
+                new Ellipse({
+                    center: { x: 500, y: 100 },
+                })
             );
         }
     }

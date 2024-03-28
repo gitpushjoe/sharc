@@ -1,4 +1,4 @@
-import { PositionType } from "sharc/types/Common";
+import { BoundsType, PositionType } from "sharc/types/Common";
 import { Position } from "../Utils";
 import { TextProperties, HiddenTextProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
@@ -21,6 +21,11 @@ export default class TextSprite<DetailsType = any>
         this.maxWidth = props.maxWidth ?? null;
         this.bold = props.bold ?? false;
         this.italic = props.italic ?? false;
+        const bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+        this.x1 = bounds.x1;
+        this.y1 = bounds.y1;
+        this.x2 = bounds.x2;
+        this.y2 = bounds.y2;
     }
 
     // NORMAL PROPERTIES
@@ -46,35 +51,97 @@ export default class TextSprite<DetailsType = any>
         this.positionY = value.y;
     }
 
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
-        if ((this.root as TextSprite).stage?.rootStyle === "centered") {
-            this.scaleY *= -1;
-        }
+    // CALCULATED PROPERTIES
+    public get bounds() {
+        return this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+    }
+    public set bounds(_value: BoundsType) {
+        throw new Error("Polygon bounds cannot be set");
+    }
+
+    public get center() {
+        return Position((this.x1 + this.x2) / 2, (this.y1 + this.y2) / 2);
+    }
+    public set center(value: PositionType) {
+        const center = this.center;
+        const dx = value.x - center.x;
+        const dy = value.y - center.y;
+        this.position = Position(this.positionX + dx, this.positionY + dy);
+    }
+
+    public get corner1() {
+        return Position(this.x1, this.y1);
+    }
+    public set corner1(value: PositionType) {
+        const corner1 = this.corner1;
+        const dx = value.x - corner1.x;
+        const dy = value.y - corner1.y;
+        this.position = Position(this.positionX + dx, this.positionY + dy);
+    }
+
+    public get corner2() {
+        return Position(this.x2, this.y2);
+    }
+    public set corner2(value: PositionType) {
+        const corner2 = this.corner2;
+        const dx = value.x - corner2.x;
+        const dy = value.y - corner2.y;
+        this.position = Position(this.positionX + dx, this.positionY + dy);
+    }
+
+    public get width() {
+        return Math.abs(this.x2 - this.x1);
+    }
+    public set width(_value: number) {
+        throw new Error("Text width cannot be set");
+    }
+
+    public get height() {
+        return Math.abs(this.y2 - this.y1);
+    }
+    public set height(_value: number) {
+        throw new Error("Text height cannot be set");
+    }
+
+
+    private calculateBounds(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         ctx.font = `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize}px ${this.font}`;
-        ctx.textAlign = this.textAlign;
         ctx.textBaseline = this.textBaseline;
         ctx.direction = this.textDirection;
         const metrics = ctx.measureText(this.text);
         const width = metrics.width;
-        const ascent = metrics.actualBoundingBoxAscent;
         const height = this.fontSize;
-        if (this.positionIsCenter) {
-            this.x1 = this.positionX - width / 2;
-            this.y1 = this.positionY - height / 2 + (this.fontSize - ascent);
-            this.x2 = this.positionX + width / 2;
-            this.y2 = this.positionY + height / 2;
-        } else {
-            this.x1 = this.positionX;
-            this.y1 = this.positionY;
-            this.x2 = this.positionX + width;
-            this.y2 = this.positionY + height;
+        const xOffset = 
+            !this.positionIsCenter ?
+                (this.textAlign === "start" || this.textAlign === "left") ? 0 :
+                (this.textAlign === "end" || this.textAlign === "right") ? width :
+                this.textAlign === "center" ? width / 2 :
+                0 :
+            0;
+        const yOffset = this.positionIsCenter ? 0 : ((this.root as TextSprite).stage?.rootStyle === "centered" ? -height : 0);
+        return {
+            x1: this.positionX + (this.positionIsCenter ? -width / 2 : 0) - xOffset,
+            y1: this.positionY + (this.positionIsCenter ? -height / 2 : 0) + yOffset,
+            x2: this.positionX + (this.positionIsCenter ? width / 2 : width) - xOffset,
+            y2: this.positionY + (this.positionIsCenter ? height / 2 : height) + yOffset
+        };
+    }
+
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+        if ((this.root as TextSprite).stage?.rootStyle === "centered") {
+            this.scaleY *= -1;
         }
+        const bounds = this.calculateBounds(ctx);
+        this.x1 = bounds.x1;
+        this.y1 = bounds.y1;
+        this.x2 = bounds.x2;
+        this.y2 = bounds.y2;
         super.draw(ctx, {
             text: this.text,
             position: Position(this.positionX, this.positionY),
             font: this.font,
             fontSize: this.fontSize,
-            textAlign: this.textAlign,
+            textAlign: "start",
             textBaseline: this.textBaseline,
             textDirection: this.textDirection,
             maxWidth: this.maxWidth,
@@ -97,7 +164,6 @@ export default class TextSprite<DetailsType = any>
         const metrics = ctx.measureText(text ?? "");
         const textWidth = metrics.width;
         const height = properties.fontSize! * 0.725;
-        // const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
         ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
             StrokeableSprite.strokeRegion(ctx, properties.stroke);

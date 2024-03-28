@@ -432,6 +432,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     protected pointerId?: number = undefined;
+    private lastPointerPosition?: PositionType = undefined;
+    private lastTransformationMatrix?: DOMMatrix = undefined;
     protected hovered = false;
 
     private eventListeners: SpriteEventListeners<this, Properties & HiddenProperties> = {
@@ -565,18 +567,28 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             (child as Sprite).events = this.events;
             child.draw(ctx, undefined, false);
         });
-        if (!this.handlePointerEvents(ctx)) {
+        if (this.events!.stage && !this.handlePointerEvents(ctx, this.events!.stage)) {
             ctx.restore();
-        }
-        if (this.pointerId !== undefined) {
-            callAndPrune(this.eventListeners, "hold", [this]);
         }
         if (isRoot) {
             this.rootPointerEventCallback();
         }
+        if (this.events!.stage && this.pointerId !== undefined) {
+            ctx.save();
+            ctx.setTransform(
+                this.lastTransformationMatrix!.a,
+                this.lastTransformationMatrix!.b,
+                this.lastTransformationMatrix!.c,
+                this.lastTransformationMatrix!.d,
+                this.lastTransformationMatrix!.e,
+                this.lastTransformationMatrix!.f
+            );
+            callAndPrune(this.eventListeners, "hold", [this, this.lastPointerPosition!, this.events!.move?.event, this.events!.stage]);
+            ctx.restore();
+        }
     }
 
-    public handlePointerEvents(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
+    public handlePointerEvents(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, stage: Stage): boolean {
         let ctxRestored = false;
 
         if (this.events === undefined) return false;
@@ -607,6 +619,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             return false;
         }
 
+        if (this.pointerId !== undefined) {
+            this.lastTransformationMatrix = ctx.getTransform();
+        }
+
         const pointIsInPath = [this.events.down, this.events.up, this.events.move].every(
             event => event === undefined || this.pointIsInPath(ctx, event.translatedPoint.x, event.translatedPoint.y)
         );
@@ -617,7 +633,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 this.events.move?.translatedPoint ??
                     this.events.down?.translatedPoint ??
                     this.events.up!.translatedPoint,
-                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event
+                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event,
+                stage
             ]);
             this.hovered = true;
         } else if (!pointIsInPath && this.hovered) {
@@ -628,7 +645,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 callAndPrune(this.eventListeners, "hoverEnd", [
                     this,
                     unHoverEvent!.translatedPoint,
-                    unHoverEvent!.event
+                    unHoverEvent!.event,
+                    stage
                 ]);
             }
             this.hovered = false;
@@ -640,14 +658,14 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 this.eventListeners.keydown.length > 0 &&
                 this.events.stage!.keyTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "keydown", [this, this.events.keydown]);
+                callAndPrune(this.eventListeners, "keydown", [this, this.events.keydown, stage]);
             }
             if (
                 this.events?.keyup &&
                 this.eventListeners.keyup.length > 0 &&
                 this.events.stage!.keyTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "keyup", [this, this.events.keyup]);
+                callAndPrune(this.eventListeners, "keyup", [this, this.events.keyup, stage]);
             }
 
             if (
@@ -656,7 +674,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 pointIsInPath &&
                 this.events.stage!.scrollTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "scroll", [this, this.events.scroll]);
+                callAndPrune(this.eventListeners, "scroll", [this, this.events.scroll, stage]);
             }
         }
 
@@ -671,6 +689,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             const { event, translatedPoint } = positionedPointerEvent;
             const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
+            self.lastPointerPosition = transformedPos;
+            self.lastTransformationMatrix = transformationMatrix;
             const callback = function (pointerId?: number) {
                 ctx.save();
                 ctx.setTransform(
@@ -681,7 +701,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                callAndPrune(self.eventListeners, listener!, [self, transformedPos, event]);
+                callAndPrune(self.eventListeners, listener!, [self, transformedPos, event, stage]);
                 if (pointerId !== undefined) {
                     self.pointerId = pointerId;
                 }
@@ -703,6 +723,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 ctx.restore();
                 ctxRestored = true;
                 registerCallback(ctx, this.events.move, this.root, this, "drag", this.pointerId);
+            } else if (this.pointerId !== undefined) {
+                ctx.restore();
+                ctxRestored = true;
+                this.lastPointerPosition = ctx.getTransform().inverse().transformPoint(this.events.move.translatedPoint);
+                this.lastTransformationMatrix = ctx.getTransform();
             }
         }
         if (this.events.up) {
