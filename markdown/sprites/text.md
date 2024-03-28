@@ -11,7 +11,7 @@ Draws text. When a `TextSprite` is drawn to a canvas with a centered root node, 
 
 `bl:position?: PositionType` - the position of the text. See `positionIsCenter` below. Defaults to `{x: 0, y: 0}`. Aggregate Property for `positionX` and `positionY`.
 
-`bl:positionIsCenter?: boolean` - If `true`, position will be the center of the text. If `false`, position will be the bottom-left corner of the text. Defaults to `false`. Normal Property.
+`bl:positionIsCenter?: boolean` - If `true`, position will be the center of the text. If `false`, position will be the top-left, top-center, or top-right corner of the text (depending on `textAlign`). Defaults to `false`. Normal Property.
 
 `bl:font?: string` - the font family of the text. [Uses CSS](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font). Defaults to `"sans-serif"`. Normal Property.
 

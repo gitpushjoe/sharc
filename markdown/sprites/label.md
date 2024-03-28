@@ -1,6 +1,6 @@
 # Label 
 
-Draws text with a background. When a `LabelSprite` is drawn to a canvas with a centered root node, its scale is automatically flipped on the y-axis. Does **not** use bounds in its constructor, but properties such as `center`, `centerX` and `centerY` can still be accessed and modified. `bounds` can be accessed, but trying to set the `bounds` directly rather than modifying `path` will raise an error.
+Draws text with a background. When a `LabelSprite` is drawn to a canvas with a centered root node, its scale is automatically flipped on the y-axis. Does **not** use bounds in its constructor, but properties such as `center`, `centerX` and `centerY` can still be accessed and modified. `bounds` can be accessed, but trying to set the `bounds` directly rather than modifying `position` or `fontSize` will raise an error.
 
 [[[sprites/label]]]
 

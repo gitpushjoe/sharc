@@ -52,11 +52,17 @@ channel.popAnimation() -> AnimationType|undefined
 ~~~
 Removes the animation (NOT animation package) at the rear of the channel queue and returns it. If the current animation package becomes empty, it will be removed from the queue.
 
-[]
+[]9
 ~~~ts-header
 channel.stepForward() -> PrivateAnimationType|null
 ~~~
 Steps the channel forward by one frame. If the current animation package becomes empty, it will be removed from the queue. Returns the current animation as a `PrivateAnimationType`, containing the current frame of the animation, as well as the index from which it came. Automatically called by sprites on all channels when they are drawn to advance their animations.
+
+[]
+~~~ts-header
+channel.animations: AnimationPackage[]
+~~~
+Returns a copy of all of the current animations in the channel.
 
 []
 ~~~ts-header
