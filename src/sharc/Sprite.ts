@@ -565,7 +565,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             (child as Sprite).events = this.events;
             child.draw(ctx, undefined, false);
         });
-        if (!this.handlePointerEvents(ctx)) {
+        if (this.events!.stage && !this.handlePointerEvents(ctx, this.events!.stage)) {
             ctx.restore();
         }
         if (this.pointerId !== undefined) {
@@ -576,7 +576,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         }
     }
 
-    public handlePointerEvents(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
+    public handlePointerEvents(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, stage: Stage): boolean {
         let ctxRestored = false;
 
         if (this.events === undefined) return false;
@@ -617,7 +617,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 this.events.move?.translatedPoint ??
                     this.events.down?.translatedPoint ??
                     this.events.up!.translatedPoint,
-                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event
+                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event,
+                stage
             ]);
             this.hovered = true;
         } else if (!pointIsInPath && this.hovered) {
@@ -628,7 +629,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 callAndPrune(this.eventListeners, "hoverEnd", [
                     this,
                     unHoverEvent!.translatedPoint,
-                    unHoverEvent!.event
+                    unHoverEvent!.event,
+                    stage
                 ]);
             }
             this.hovered = false;
@@ -640,14 +642,14 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 this.eventListeners.keydown.length > 0 &&
                 this.events.stage!.keyTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "keydown", [this, this.events.keydown]);
+                callAndPrune(this.eventListeners, "keydown", [this, this.events.keydown, stage]);
             }
             if (
                 this.events?.keyup &&
                 this.eventListeners.keyup.length > 0 &&
                 this.events.stage!.keyTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "keyup", [this, this.events.keyup]);
+                callAndPrune(this.eventListeners, "keyup", [this, this.events.keyup, stage]);
             }
 
             if (
@@ -656,7 +658,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 pointIsInPath &&
                 this.events.stage!.scrollTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "scroll", [this, this.events.scroll]);
+                callAndPrune(this.eventListeners, "scroll", [this, this.events.scroll, stage]);
             }
         }
 
@@ -681,7 +683,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                callAndPrune(self.eventListeners, listener!, [self, transformedPos, event]);
+                callAndPrune(self.eventListeners, listener!, [self, transformedPos, event, stage]);
                 if (pointerId !== undefined) {
                     self.pointerId = pointerId;
                 }

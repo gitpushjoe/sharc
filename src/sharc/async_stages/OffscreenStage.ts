@@ -167,7 +167,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             AsyncMessage<MessageType>
         >
     >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
-        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this>);
+        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this, this>);
         return this;
     }
 
@@ -192,7 +192,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             return this;
         }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-            cb => cb !== (callback as unknown as PointerEventCallback<this>)
+            cb => cb !== (callback as unknown as PointerEventCallback<this, this>)
         );
         return this;
     }

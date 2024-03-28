@@ -1,4 +1,4 @@
-import { ColorType, PositionType } from "../types/Common";
+import { BoundsType, ColorType, PositionType } from "../types/Common";
 import { Corners, Position, Color } from "../Utils";
 import { OmitBaseProps, LabelProperties, HiddenLabelProperties, StrokeType, RadiusType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
@@ -27,6 +27,11 @@ export default class LabelSprite<DetailsType = any>
         this.backgroundRadius = props.backgroundRadius ?? [5];
         this.padding = props.padding ?? 10;
         this.textStroke = props.textStroke ?? null;
+        const bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+        this.x1 = bounds.x1;
+        this.y1 = bounds.y1;
+        this.x2 = bounds.x2;
+        this.y2 = bounds.y2;
     }
 
     // NORMAL PROPERTIES
@@ -59,6 +64,83 @@ export default class LabelSprite<DetailsType = any>
         this.positionY = value.y;
     }
 
+    // CALCULATED PROPERTIES
+    public get bounds() {
+        return this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+    }
+    public set bounds(_value: BoundsType) {
+        throw new Error("Polygon bounds cannot be set");
+    }
+
+    public get center() {
+        return Position((this.x1 + this.x2) / 2, (this.y1 + this.y2) / 2);
+    }
+    public set center(value: PositionType) {
+        const center = this.center;
+        const dx = value.x - center.x;
+        const dy = value.y - center.y;
+        this.position = Position(this.positionX + dx, this.positionY + dy);
+    }
+
+    public get corner1() {
+        return Position(this.x1, this.y1);
+    }
+    public set corner1(value: PositionType) {
+        const corner1 = this.corner1;
+        const dx = value.x - corner1.x;
+        const dy = value.y - corner1.y;
+        this.position = Position(this.positionX + dx, this.positionY + dy);
+    }
+
+    public get corner2() {
+        return Position(this.x2, this.y2);
+    }
+    public set corner2(value: PositionType) {
+        const corner2 = this.corner2;
+        const dx = value.x - corner2.x;
+        const dy = value.y - corner2.y;
+        this.position = Position(this.positionX + dx, this.positionY + dy);
+    }
+
+    public get width() {
+        return Math.abs(this.x2 - this.x1);
+    }
+    public set width(_value: number) {
+        throw new Error("Text width cannot be set");
+    }
+
+    public get height() {
+        return Math.abs(this.y2 - this.y1);
+    }
+    public set height(_value: number) {
+        throw new Error("Text height cannot be set");
+    }
+
+
+    private calculateBounds(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+        ctx.font = `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize}px ${this.font}`;
+        ctx.textBaseline = this.textBaseline;
+        ctx.direction = this.textDirection;
+        const metrics = ctx.measureText(this.text);
+        const width = metrics.width;
+        const height = this.fontSize;
+        const xOffset = 
+            !this.positionIsCenter ?
+                (this.textAlign === "start" || this.textAlign === "left") ? 0 :
+                (this.textAlign === "end" || this.textAlign === "right") ? width :
+                this.textAlign === "center" ? width / 2 :
+                0 :
+            0;
+        const yOffset = this.positionIsCenter ? 0 : ((this.root as LabelSprite).stage?.rootStyle === "centered" ? -height : 0);
+        return {
+            x1: this.positionX + (this.positionIsCenter ? -width / 2 : 0) - xOffset - this.padding,
+            y1: this.positionY + (this.positionIsCenter ? -height / 2 : 0) + yOffset - this.padding,
+            x2: this.positionX + (this.positionIsCenter ? width / 2 : width) - xOffset + this.padding,
+            y2: this.positionY + (this.positionIsCenter ? height / 2 : height) + yOffset + this.padding
+        };
+    }
+
+
     public get backgroundColor(): ColorType {
         return Color(this.backgroundRed, this.backgroundGreen, this.backgroundBlue, this.backgroundAlpha);
     }
@@ -73,25 +155,11 @@ export default class LabelSprite<DetailsType = any>
         if ((this.root as LabelSprite).stage?.rootStyle === "centered") {
             this.scaleY *= -1;
         }
-        ctx.font = `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize}px ${this.font}`;
-        ctx.textAlign = this.textAlign;
-        ctx.textBaseline = this.textBaseline;
-        ctx.direction = this.textDirection;
-        const metrics = ctx.measureText(this.text);
-        const width = metrics.width;
-        const ascent = metrics.fontBoundingBoxAscent;
-        const height = this.fontSize;
-        if (this.positionIsCenter) {
-            this.x1 = this.positionX - width / 2 - this.padding;
-            this.y1 = this.positionY - ascent / 2 - this.padding;
-            this.x2 = this.positionX + width / 2 + this.padding;
-            this.y2 = this.positionY + ascent / 2 + this.padding;
-        } else {
-            this.x1 = this.positionX - this.padding;
-            this.y1 = this.positionY - this.padding;
-            this.x2 = this.positionX + width + this.padding;
-            this.y2 = this.positionY + height + this.padding;
-        }
+        const bounds = this.calculateBounds(ctx);
+        this.x1 = bounds.x1;
+        this.y1 = bounds.y1;
+        this.x2 = bounds.x2;
+        this.y2 = bounds.y2;
         super.draw(ctx, {
             text: this.text,
             position: Position(this.positionX, this.positionY),

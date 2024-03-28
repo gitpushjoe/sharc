@@ -67,7 +67,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             AsyncMessage<MessageType>
         >
     >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
-        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this>);
+        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this, this>);
         return this;
     }
 
@@ -92,7 +92,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             return this;
         }
         this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-            cb => cb !== (callback as unknown as PointerEventCallback<this>)
+            cb => cb !== (callback as unknown as PointerEventCallback<this, this>)
         );
         return this;
     }
@@ -135,6 +135,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         const e = event.data;
         switch (e.type) {
             case "init":
+                this.canvas!.width = e.width;
                 this.canvas!.height = e.height;
                 this.canvas!.offsetLeft = 0;
                 this.canvas!.offsetTop = 0;
@@ -175,7 +176,8 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                             (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
                             (this.rootStyle === "centered" ? -1 : 1)
                     },
-                    down.event
+                    down.event,
+                    this
                 ],
                 this.sendErrorString.bind(this)
             );
@@ -191,7 +193,8 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                             (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
                             (this.rootStyle === "centered" ? -1 : 1)
                     },
-                    up.event
+                    up.event,
+                    this
                 ],
                 this.sendErrorString.bind(this)
             );
@@ -207,13 +210,14 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                             (move.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
                             (this.rootStyle === "centered" ? -1 : 1)
                     },
-                    move.event
+                    move.event,
+                    this
                 ],
                 this.sendErrorString.bind(this)
             );
-        keydown && callAndPrune(this.eventListeners, "keydown", [this, keydown], this.sendErrorString.bind(this));
-        keyup && callAndPrune(this.eventListeners, "keyup", [this, keyup], this.sendErrorString.bind(this));
-        scroll && callAndPrune(this.eventListeners, "scroll", [this, scroll], this.sendErrorString.bind(this));
+        keydown && callAndPrune(this.eventListeners, "keydown", [this, keydown, this], this.sendErrorString.bind(this));
+        keyup && callAndPrune(this.eventListeners, "keyup", [this, keyup, this], this.sendErrorString.bind(this));
+        scroll && callAndPrune(this.eventListeners, "scroll", [this, scroll, this], this.sendErrorString.bind(this));
         if (
             this.resetKeyTargetOnClick &&
             this.drawEvents.up &&
