@@ -1,11 +1,10 @@
-import { BoundsType, PositionType } from "../types/Common";
-import { Position } from "../Utils";
+import { Bounds, Position, invalidSetterFor } from "../Utils";
 import { OmitBaseProps, PolygonProperties } from "../types/Sprites";
 import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Polygon<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: PositionType }, object>
+    extends StrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: Position }, object>
     implements Required<OmitBaseProps<PolygonProperties>>
 {
     constructor(props: PolygonProperties<DetailsType>) {
@@ -49,17 +48,17 @@ export default class Polygon<DetailsType = any>
     }
 
     // AGGREGATE PROPERTIES
-    public get center(): PositionType {
+    public get center(): Position {
         return { x: this.centerX, y: this.centerY };
     }
-    public set center(value: PositionType) {
+    public set center(value: Position) {
         this._centerX = value.x;
         this._centerY = value.y;
     }
 
-    // Bounds cannot be set, only get
-    public set bounds(_bounds: BoundsType) {
-        throw new Error("Polygon bounds cannot be set");
+    @invalidSetterFor("Polygon")
+    public set bounds(_bounds: Bounds) {
+        return;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
@@ -71,7 +70,7 @@ export default class Polygon<DetailsType = any>
             sides: this.sides,
             radius: this.radius,
             fillRule: this.fillRule,
-            center: Position(this.centerX, this.centerY),
+            center: new Position(this.centerX, this.centerY),
             startRatio: this.startRatio,
             endRatio: this.endRatio
         });
@@ -88,7 +87,7 @@ export default class Polygon<DetailsType = any>
         }
         const path = Array.from({ length: parseInt(sides.toString()) }, (_, idx) => {
             const angle = (2 * Math.PI * idx) / parseInt(sides.toString());
-            return Position(radius * Math.cos(angle), radius * Math.sin(angle));
+            return new Position(radius * Math.cos(angle), radius * Math.sin(angle));
         });
         return Path.drawFunction(ctx, {
             path,

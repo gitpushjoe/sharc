@@ -1,5 +1,4 @@
-import { BoundsType, ColorType, PositionType } from "../types/Common";
-import { Corners, Position, Color } from "../Utils";
+import { Bounds, Position, Color, invalidSetterFor } from "../Utils";
 import { OmitBaseProps, LabelProperties, HiddenLabelProperties, StrokeType, RadiusType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 import TextSprite from "./Text";
@@ -23,7 +22,7 @@ export default class LabelSprite<DetailsType = any>
         this.maxWidth = props.maxWidth ?? null;
         this.bold = props.bold ?? false;
         this.italic = props.italic ?? false;
-        this.backgroundColor = props.backgroundColor ?? Color(0, 0, 0, 0);
+        this.backgroundColor = props.backgroundColor ?? new Color(0, 0, 0, 0);
         this.backgroundRadius = props.backgroundRadius ?? [5];
         this.padding = props.padding ?? 10;
         this.textStroke = props.textStroke ?? null;
@@ -56,10 +55,10 @@ export default class LabelSprite<DetailsType = any>
     public textStroke: StrokeType | null = null;
 
     // AGGREGATE PROPERTIES
-    public get position(): PositionType {
-        return Position(this.positionX, this.positionY);
+    public get position(): Position {
+        return new Position(this.positionX, this.positionY);
     }
-    public set position(value: PositionType) {
+    public set position(value: Position) {
         this.positionX = value.x;
         this.positionY = value.y;
     }
@@ -68,38 +67,39 @@ export default class LabelSprite<DetailsType = any>
     public get bounds() {
         return this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
     }
-    public set bounds(_value: BoundsType) {
-        throw new Error("Polygon bounds cannot be set");
+    @invalidSetterFor("Label")
+    public set bounds(_value: Bounds) {
+        return;
     }
 
     public get center() {
-        return Position((this.x1 + this.x2) / 2, (this.y1 + this.y2) / 2);
+        return new Position((this.x1 + this.x2) / 2, (this.y1 + this.y2) / 2);
     }
-    public set center(value: PositionType) {
+    public set center(value: Position) {
         const center = this.center;
         const dx = value.x - center.x;
         const dy = value.y - center.y;
-        this.position = Position(this.positionX + dx, this.positionY + dy);
+        this.position = new Position(this.positionX + dx, this.positionY + dy);
     }
 
     public get corner1() {
-        return Position(this.x1, this.y1);
+        return new Position(this.x1, this.y1);
     }
-    public set corner1(value: PositionType) {
+    public set corner1(value: Position) {
         const corner1 = this.corner1;
         const dx = value.x - corner1.x;
         const dy = value.y - corner1.y;
-        this.position = Position(this.positionX + dx, this.positionY + dy);
+        this.position = new Position(this.positionX + dx, this.positionY + dy);
     }
 
     public get corner2() {
-        return Position(this.x2, this.y2);
+        return new Position(this.x2, this.y2);
     }
-    public set corner2(value: PositionType) {
+    public set corner2(value: Position) {
         const corner2 = this.corner2;
         const dx = value.x - corner2.x;
         const dy = value.y - corner2.y;
-        this.position = Position(this.positionX + dx, this.positionY + dy);
+        this.position = new Position(this.positionX + dx, this.positionY + dy);
     }
 
     public get width() {
@@ -116,7 +116,6 @@ export default class LabelSprite<DetailsType = any>
         throw new Error("Text height cannot be set");
     }
 
-
     private calculateBounds(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         ctx.font = `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize}px ${this.font}`;
         ctx.textBaseline = this.textBaseline;
@@ -124,14 +123,20 @@ export default class LabelSprite<DetailsType = any>
         const metrics = ctx.measureText(this.text);
         const width = metrics.width;
         const height = this.fontSize;
-        const xOffset = 
-            !this.positionIsCenter ?
-                (this.textAlign === "start" || this.textAlign === "left") ? 0 :
-                (this.textAlign === "end" || this.textAlign === "right") ? width :
-                this.textAlign === "center" ? width / 2 :
-                0 :
-            0;
-        const yOffset = this.positionIsCenter ? 0 : ((this.root as LabelSprite).stage?.rootStyle === "centered" ? -height : 0);
+        const xOffset = !this.positionIsCenter
+            ? this.textAlign === "start" || this.textAlign === "left"
+                ? 0
+                : this.textAlign === "end" || this.textAlign === "right"
+                  ? width
+                  : this.textAlign === "center"
+                    ? width / 2
+                    : 0
+            : 0;
+        const yOffset = this.positionIsCenter
+            ? 0
+            : (this.root as LabelSprite).stage?.rootStyle === "centered"
+              ? -height
+              : 0;
         return {
             x1: this.positionX + (this.positionIsCenter ? -width / 2 : 0) - xOffset - this.padding,
             y1: this.positionY + (this.positionIsCenter ? -height / 2 : 0) + yOffset - this.padding,
@@ -140,11 +145,10 @@ export default class LabelSprite<DetailsType = any>
         };
     }
 
-
-    public get backgroundColor(): ColorType {
-        return Color(this.backgroundRed, this.backgroundGreen, this.backgroundBlue, this.backgroundAlpha);
+    public get backgroundColor(): Color {
+        return new Color(this.backgroundRed, this.backgroundGreen, this.backgroundBlue, this.backgroundAlpha);
     }
-    public set backgroundColor(backgroundColor: ColorType) {
+    public set backgroundColor(backgroundColor: Color) {
         this.backgroundRed = backgroundColor.red;
         this.backgroundGreen = backgroundColor.green;
         this.backgroundBlue = backgroundColor.blue;
@@ -162,7 +166,7 @@ export default class LabelSprite<DetailsType = any>
         this.y2 = bounds.y2;
         super.draw(ctx, {
             text: this.text,
-            position: Position(this.positionX, this.positionY),
+            position: new Position(this.positionX, this.positionY),
             font: this.font,
             fontSize: this.fontSize,
             textAlign: this.textAlign,
@@ -191,7 +195,7 @@ export default class LabelSprite<DetailsType = any>
             properties.backgroundColor!.blue
         }, ${properties.backgroundColor!.alpha})`;
         const path = Rect.drawFunction(ctx, {
-            bounds: Corners(this.x1, this.y1, this.x2, this.y2),
+            bounds: new Bounds(this.x1, this.y1, this.x2, this.y2),
             color: properties.backgroundColor,
             radius: properties.backgroundRadius,
             blur: properties.blur,

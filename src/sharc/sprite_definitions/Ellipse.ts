@@ -1,12 +1,11 @@
-import { getX1Y1WH, CircleBounds } from "../Utils";
-import { PositionType } from "../types/Common";
+import { Bounds } from "../Utils";
 import { EllipseProperties, HiddenEllipseProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Ellipse<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
-        OmitBaseProps<EllipseProperties> & { center?: PositionType },
+        OmitBaseProps<EllipseProperties> & { center?: { x: number; y: number } },
         HiddenEllipseProperties
     >
     implements Required<OmitBaseProps<EllipseProperties> & HiddenEllipseProperties>
@@ -18,7 +17,7 @@ export default class Ellipse<DetailsType = any>
         const radius = typeof props.radius === "number" ? [props.radius, props.radius] : props.radius ?? [5, 5];
         this.radiusX = radius[0];
         this.radiusY = radius[1];
-        const bounds = CircleBounds(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
+        const bounds = Bounds.fromCircle(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
         this.x2 = bounds.x2;
@@ -71,11 +70,17 @@ export default class Ellipse<DetailsType = any>
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         properties: EllipseProperties
     ): Path2D => {
+        const getX1Y1WH = (bounds: Bounds) => [
+            -Math.abs(bounds.x1 - bounds.x2) / 2,
+            -Math.abs(bounds.y1 - bounds.y2) / 2,
+            Math.abs(bounds.x1 - bounds.x2),
+            Math.abs(bounds.y1 - bounds.y2)
+        ];
         const [radiusX, radiusY] =
             typeof properties.radius === "number"
                 ? [properties.radius, properties.radius]
                 : properties.radius ?? [5, 5];
-        const bounds = CircleBounds(properties.center!.x, properties.center!.y, radiusX, radiusY);
+        const bounds = Bounds.fromCircle(properties.center!.x, properties.center!.y, radiusX, radiusY);
         const coords = getX1Y1WH(bounds);
         ctx.beginPath();
         const region = new Path2D();

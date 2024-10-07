@@ -47,4 +47,5 @@ tests.forEach(test => {
     });
 });
 
-localStorage.getItem("lastTest") && document.getElementById(localStorage.getItem("lastTest")!)?.parentElement?.setAttribute("open", "");
+localStorage.getItem("lastTest") &&
+    document.getElementById(localStorage.getItem("lastTest")!)?.parentElement?.setAttribute("open", "");

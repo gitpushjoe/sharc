@@ -2,37 +2,41 @@ export type EasingType = (x: number) => number;
 
 export type AnimationCallback<PropertyType> = (property: PropertyType) => PropertyType;
 
+export type IsNumeric<T> =
+    // 0 extends (1 & T) ? false :
+    number extends T ? true : T extends number[] ? true : T extends Record<string, number> ? true : false;
+
 export type PrivateAnimationType<Properties> = {
-    [K in keyof Properties]: {
-        property: K;
-        from: (Properties[K] & (number | Record<string, number>)) | null;
-        to:
-            | (Properties[K] & (number | Record<string, number>))
-            | AnimationCallback<Properties[K] & (number | Record<string, number>)>;
-        duration: number;
-        delay: number;
-        easing: EasingType;
-        frame?: number;
-        channel?: number;
-        name?: string;
-        _from?: Properties[K] & (number | Record<string, number>); // used by sprites to store the original value
-        _to?: Properties[K] & (number | Record<string, number>);
-    };
+    [K in keyof Properties]: true extends IsNumeric<Required<Properties>[K]>
+        ? {
+              property: K;
+              from: Properties[K] | null;
+              to: NonNullable<Properties[K]> | AnimationCallback<NonNullable<Properties[K]>>;
+              duration: number;
+              delay: number;
+              easing: EasingType;
+              frame?: number;
+              channel?: number;
+              name?: string;
+              _from?: Properties[K]; // used by sprites to store the original value
+              _to?: Properties[K];
+          }
+        : never;
 }[keyof Properties];
 
 export type AnimationType<Properties> = NonNullable<
     {
-        [K in keyof Properties]: {
-            property: K;
-            from: (Properties[K] & (number | Record<string, number>)) | null;
-            to:
-                | (Properties[K] & (number | Record<string, number>))
-                | AnimationCallback<Properties[K] & (number | Record<string, number>)>;
-            duration?: number;
-            delay?: number;
-            easing?: EasingType;
-            name?: string;
-        };
+        [K in keyof Properties]: true extends IsNumeric<Required<Properties>[K]>
+            ? {
+                  property: K;
+                  from: Properties[K] | null;
+                  to: NonNullable<Properties[K]> | AnimationCallback<NonNullable<Properties[K]>>;
+                  duration?: number;
+                  delay?: number;
+                  easing?: EasingType;
+                  name?: string;
+              }
+            : never;
     }[keyof Properties]
 >;
 

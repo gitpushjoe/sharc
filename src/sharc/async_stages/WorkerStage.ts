@@ -1,8 +1,7 @@
-import type { ColorType } from "../types/Common";
 import { AsyncStageEventListeners, EventCollection, PointerEventCallback } from "../types/Events";
 import { AsyncMessage, CanvasInterface, StageStateMessage } from "../types/Stage";
 import { Stage } from "../Stage";
-import { Colors, Position, callAndPrune } from "../Utils";
+import { Color, Colors, Position, callAndPrune } from "../Utils";
 
 const DEFAULT_CANVAS_INTERFACE: CanvasInterface = {
     width: 0,
@@ -54,7 +53,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
     constructor(
         private readonly _postMessage: (message: AsyncMessage<MessageType>) => void,
         public readonly rootStyle: "classic" | "centered" = "centered",
-        public bgColor: ColorType = Colors.White
+        public bgColor: Color = Colors.White
     ) {
         const offscreen = new OffscreenCanvas(1, 1);
         super(DEFAULT_CANVAS_INTERFACE, rootStyle, bgColor, offscreen.getContext("2d")!);
@@ -142,7 +141,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 this.offscreenCanvas.width = e.width;
                 this.offscreenCanvas.height = e.height;
                 this._root.position =
-                    this.rootStyle === "centered" ? Position(e.width / 2, e.height / 2) : Position(0, 0);
+                    this.rootStyle === "centered" ? new Position(e.width / 2, e.height / 2) : new Position(0, 0);
                 this.postMessage({ type: "ready" });
                 this.loop();
                 break;

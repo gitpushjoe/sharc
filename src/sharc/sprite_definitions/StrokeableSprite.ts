@@ -1,4 +1,4 @@
-import { ColorType } from "../types/Common";
+import { Color } from "sharc/Utils";
 import { Sprite } from "../Sprite";
 import { StrokeProperties, HiddenStrokeProperties, StrokeType, DEFAULT_PROPERTIES } from "../types/Sprites";
 
@@ -69,7 +69,7 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
         }
     }
 
-    public get strokeColor(): ColorType {
+    public get strokeColor(): Color {
         return {
             red: this.strokeRed,
             green: this.strokeGreen,
@@ -77,7 +77,7 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
             alpha: this.strokeAlpha
         };
     }
-    public set strokeColor(value: ColorType) {
+    public set strokeColor(value: Color) {
         this.strokeRed = value.red;
         this.strokeGreen = value.green;
         this.strokeBlue = value.blue;

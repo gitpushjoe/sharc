@@ -1,5 +1,4 @@
-import { translatePosition, Position, Corners } from "../Utils";
-import { PositionType, BoundsType } from "../types/Common";
+import { Position, Bounds, invalidSetterFor } from "../Utils";
 import { PathProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
@@ -22,18 +21,19 @@ export default class Path<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public path: PositionType[] = [];
+    public path: Position[] = [];
     public closePath = false;
     public fillRule: CanvasFillRule = "nonzero";
     public startRatio = 0;
     public endRatio = 1;
 
     // Bounds cannot be set, only get
-    public get bounds(): BoundsType {
+    public get bounds(): Bounds {
         return Path.getBoundsFromPath(this.path);
     }
-    public set bounds(_value: BoundsType) {
-        throw new Error("Bounds cannot be set on Path");
+    @invalidSetterFor("Path")
+    public set bounds(_value: Bounds) {
+        return;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
@@ -56,10 +56,9 @@ export default class Path<DetailsType = any>
         properties: PathProperties
     ): Path2D => {
         let path =
-            properties.path?.map(point => translatePosition(Path.getBoundsFromPath(properties.path ?? []), point)) ??
+            properties.path?.map(point => Position.wrtBounds(point, Path.getBoundsFromPath(properties.path ?? []))) ??
             [];
         path = Path.getPathSegment(path, properties.startRatio ?? 0, properties.endRatio ?? 1);
-        // console.log(path);
         if (path.length === 0) {
             return new Path2D();
         }
@@ -78,7 +77,7 @@ export default class Path<DetailsType = any>
 
     public readonly drawFunction = Path.drawFunction;
 
-    public static getPathSegment(path: PositionType[], start: number, end: number): PositionType[] {
+    public static getPathSegment(path: Position[], start: number, end: number): Position[] {
         if (start === 0 && end === 1) {
             return path;
         } else if (start === end) {
@@ -91,7 +90,7 @@ export default class Path<DetailsType = any>
         const distances = path.map((point, idx) => Path.calculateDistance(point, path[idx + 1] ?? path[0]));
         distances.pop();
         const totalDistance = distances.reduce((a, b) => a + b, 0);
-        const newPath = [] as PositionType[];
+        const newPath = [] as Position[];
         let currentIdx = 0;
         let ratio = 0;
         for (const distance of distances) {
@@ -122,16 +121,16 @@ export default class Path<DetailsType = any>
         return end === 1 ? newPath.concat(path[path.length - 1]) : newPath;
     }
 
-    public static interpolate(point1: PositionType, point2: PositionType, ratio: number): PositionType {
-        return Position(point1.x + ratio * (point2.x - point1.x), point1.y + ratio * (point2.y - point1.y));
+    public static interpolate(point1: Position, point2: Position, ratio: number): Position {
+        return new Position(point1.x + ratio * (point2.x - point1.x), point1.y + ratio * (point2.y - point1.y));
     }
 
-    public static calculateDistance(point1: PositionType, point2: PositionType): number {
+    public static calculateDistance(point1: Position, point2: Position): number {
         return Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2));
     }
 
-    public static getBoundsFromPath(path: PositionType[]): BoundsType {
-        return Corners(
+    public static getBoundsFromPath(path: Position[]): Bounds {
+        return new Bounds(
             Math.min(...path.map(point => point.x)),
             Math.min(...path.map(point => point.y)),
             Math.max(...path.map(point => point.x)),

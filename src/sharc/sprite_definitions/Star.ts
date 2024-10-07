@@ -1,11 +1,10 @@
-import { BoundsType, PositionType } from "../types/Common";
-import { Position } from "../Utils";
+import { Bounds, Position, invalidSetterFor } from "../Utils";
 import { OmitBaseProps, StarProperties } from "../types/Sprites";
 import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Star<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: PositionType }, object>
+    extends StrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: Position }, object>
     implements Required<OmitBaseProps<StarProperties>>
 {
     constructor(props: StarProperties<DetailsType>) {
@@ -50,17 +49,18 @@ export default class Star<DetailsType = any>
     }
 
     // AGGREGATE PROPERTIES
-    public get center(): PositionType {
+    public get center(): Position {
         return { x: this.centerX, y: this.centerY };
     }
-    public set center(value: PositionType) {
+    public set center(value: Position) {
         this._centerX = value.x;
         this._centerY = value.y;
     }
 
     // Bounds cannot be set, only get
-    public set bounds(_bounds: BoundsType) {
-        throw new Error("Polygon bounds cannot be set");
+    @invalidSetterFor("Star")
+    public set bounds(_bounds: Bounds) {
+        return;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
@@ -69,7 +69,7 @@ export default class Star<DetailsType = any>
         this.x2 = this.centerX + this.radius;
         this.y2 = this.centerY + this.radius;
         super.draw(ctx, {
-            center: Position(this.centerX, this.centerY),
+            center: new Position(this.centerX, this.centerY),
             radius: this.radius,
             innerRadius: this.innerRadius,
             startRatio: this.startRatio,
@@ -86,7 +86,7 @@ export default class Star<DetailsType = any>
         const innerRadius = properties.innerRadius ?? (radius * (3 - Math.sqrt(5))) / 2;
 
         const pointFromAngle = (angle: number, radius: number) => {
-            return Position(radius * Math.cos(Math.PI / 2 + angle), radius * Math.sin(Math.PI / 2 + angle));
+            return new Position(radius * Math.cos(Math.PI / 2 + angle), radius * Math.sin(Math.PI / 2 + angle));
         };
 
         const path = [

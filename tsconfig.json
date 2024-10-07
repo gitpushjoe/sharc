@@ -2,6 +2,8 @@
   "include": ["src/sharc/*.ts", "src/sharc/**/*.ts"],
   "compilerOptions": {
     "target": "ES2020",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "baseUrl": "./",
     "paths": {

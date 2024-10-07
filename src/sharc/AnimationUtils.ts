@@ -1,7 +1,6 @@
 import { Shape } from "./Sprite";
 import { Easing, Position } from "./Utils";
 import { AnimationCallback, AnimationType, EasingType } from "./types/Animation";
-import { PositionType } from "./types/Common";
 
 export function FadeIn(
     durationOrSprite = 30,
@@ -69,30 +68,26 @@ export function FadeOutSprite(
     return property;
 }
 
-const randomPosition = () => {
-    return { x: Math.random() * 100, y: Math.random() * 100 };
-};
-
 export function Translate(
-    to: PositionType | AnimationCallback<PositionType> = randomPosition,
+    to: Position | AnimationCallback<Position>,
     duration = 30,
     delay = 0,
     easing: EasingType = Easing.LINEAR,
-    from: PositionType | null = null,
+    from: Position | null = null,
     name = ""
-): AnimationType<{ center: PositionType }> {
+): AnimationType<{ center: { x: number; y: number } }> {
     return { property: "center", from, to, duration, delay, easing, name };
 }
 
 export function TranslateSprite(
     sprite: Shape,
-    to: PositionType | AnimationCallback<PositionType> = randomPosition,
+    to: Position | AnimationCallback<Position>,
     duration = 30,
     delay = 0,
     easing: EasingType = Easing.LINEAR,
-    from: PositionType | null = null,
+    from: Position | null = null,
     name = ""
-): AnimationType<{ center: PositionType }> {
+): AnimationType<{ center: { x: number; y: number } }> {
     const property = Translate(to, duration, delay, easing, from, name);
     sprite.distribute([[property]]);
     return property;
@@ -105,11 +100,11 @@ export function Grow(
     easing: EasingType = Easing.LINEAR,
     from: number | null = null,
     name = ""
-): AnimationType<{ scale: PositionType }> {
+): AnimationType<{ scale: { x: number; y: number } }> {
     return {
         property: "scale",
-        from: from ? Position(from, from) : null,
-        to: (pos: PositionType) => Position(pos.x * to, pos.y * to),
+        from: from ? new Position(from, from) : null,
+        to: (pos: Position) => new Position(pos.x * to, pos.y * to),
         duration,
         delay,
         name,
@@ -124,7 +119,7 @@ export function Shrink(
     easing: EasingType = Easing.LINEAR,
     from: number | null = null,
     name = ""
-): AnimationType<{ scale: PositionType }> {
+): AnimationType<{ scale: { x: number; y: number } }> {
     return Grow(1 / to, duration, delay, easing, from, name);
 }
 
@@ -136,7 +131,7 @@ export function GrowSprite(
     easing: EasingType = Easing.LINEAR,
     from: number | null = null,
     name = ""
-): AnimationType<{ scale: PositionType }> {
+): AnimationType<{ scale: { x: number; y: number } }> {
     const property = Grow(to, duration, delay, easing, from, name);
     sprite.distribute([[property]]);
     return property;
@@ -150,7 +145,7 @@ export function ShrinkSprite(
     easing: EasingType = Easing.LINEAR,
     from: number | null = null,
     name = ""
-): AnimationType<{ scale: PositionType }> {
+): AnimationType<{ scale: { x: number; y: number } }> {
     return GrowSprite(sprite, 1 / to, duration, delay, easing, from, name);
 }
 

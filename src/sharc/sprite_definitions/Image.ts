@@ -1,12 +1,11 @@
-import { Corners, Dimensions, Position } from "../Utils";
-import { BoundsType, PositionType } from "../types/Common";
+import { Position, Bounds } from "../Utils";
 import { ImageProperties, HiddenImageProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class ImageSprite<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
-        OmitBaseProps<ImageProperties> & { bounds?: BoundsType; image?: ImageBitmap | null },
+        OmitBaseProps<ImageProperties> & { bounds?: Bounds; image?: ImageBitmap | null },
         HiddenImageProperties
     >
     implements Required<OmitBaseProps<ImageProperties> & HiddenImageProperties>
@@ -41,28 +40,28 @@ export default class ImageSprite<DetailsType = any>
     public srcY2 = 0;
 
     // AGGREGATE PROPERTIES
-    public get srcBounds(): BoundsType {
-        return Corners(this.srcX1, this.srcY1, this.srcX2, this.srcY2);
+    public get srcBounds(): Bounds {
+        return new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2);
     }
-    public set srcBounds(value: BoundsType) {
+    public set srcBounds(value: Bounds) {
         this.srcX1 = value.x1;
         this.srcY1 = value.y1;
         this.srcX2 = value.x2;
         this.srcY2 = value.y2;
     }
 
-    public get srcCorner1(): PositionType {
-        return Position(this.srcX1, this.srcY1);
+    public get srcCorner1(): Position {
+        return new Position(this.srcX1, this.srcY1);
     }
-    public set srcCorner1(value: PositionType) {
+    public set srcCorner1(value: Position) {
         this.srcX1 = value.x;
         this.srcY1 = value.y;
     }
 
-    public get srcCorner2(): PositionType {
-        return Position(this.srcX2, this.srcY2);
+    public get srcCorner2(): Position {
+        return new Position(this.srcX2, this.srcY2);
     }
-    public set srcCorner2(value: PositionType) {
+    public set srcCorner2(value: Position) {
         this.srcX2 = value.x;
         this.srcY2 = value.y;
     }
@@ -120,7 +119,7 @@ export default class ImageSprite<DetailsType = any>
             src: "",
             image: this.image,
             bounds: this.bounds,
-            srcBounds: this.useSrcBounds ? Corners(this.srcX1, this.srcY1, this.srcX2, this.srcY2) : null
+            srcBounds: this.useSrcBounds ? new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2) : null
         });
     }
 
@@ -160,7 +159,7 @@ export default class ImageSprite<DetailsType = any>
         return region;
     };
 
-    public static Bounds(x1: number, y1: number, width: number, height: number): BoundsType {
-        return Dimensions(x1, y1, width, height);
+    public static Bounds(x1: number, y1: number, width: number, height: number): Bounds {
+        return Bounds.fromDimensions(x1, y1, width, height);
     }
 }

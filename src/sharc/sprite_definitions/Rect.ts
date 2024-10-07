@@ -1,10 +1,9 @@
-import { translateBounds, Dimensions, Corners } from "../Utils";
-import { BoundsType } from "../types/Common";
+import { Bounds } from "../Utils";
 import { RectProperties, RadiusType, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Rect<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<RectProperties> & { bounds?: BoundsType }, object>
+    extends StrokeableSprite<DetailsType, OmitBaseProps<RectProperties> & { bounds?: Bounds }, object>
     implements Required<OmitBaseProps<RectProperties>>
 {
     constructor(props: RectProperties<DetailsType>) {
@@ -27,7 +26,7 @@ export default class Rect<DetailsType = any>
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         properties: RectProperties
     ): Path2D => {
-        const coords = translateBounds(properties.bounds ?? Corners(0, 0, 0, 0));
+        const coords = Bounds.wrtSelf(properties.bounds ?? new Bounds(0, 0, 0, 0));
         if (properties.stroke === null || properties.stroke?.lineWidth === 0) {
             if (properties.radius && properties.radius[0] === 0 && properties.radius.length === 1) {
                 const region = new Path2D();
@@ -57,7 +56,7 @@ export default class Rect<DetailsType = any>
         }
     };
 
-    public static Bounds(x1: number, y1: number, width: number, height: number): BoundsType {
-        return Dimensions(x1, y1, width, height);
+    public static Bounds(x1: number, y1: number, width: number, height: number): Bounds {
+        return Bounds.fromDimensions(x1, y1, width, height);
     }
 }

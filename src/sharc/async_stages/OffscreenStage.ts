@@ -63,6 +63,7 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                 break;
             case "error":
                 this.onError(new Error(e.error), e.stack);
+                this.stop();
                 break;
         }
     }

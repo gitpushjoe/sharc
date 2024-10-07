@@ -1,14 +1,13 @@
 import { Sprite } from "../Sprite";
-import { Position, Corners } from "../Utils";
-import { PositionType } from "../types/Common";
-import { DEFAULT_PROPERTIES } from "../types/Sprites";
+import { Position, Bounds } from "../Utils";
+import { DEFAULT_PROPERTIES, HiddenNullSpriteProperties, NullSpriteProperties, OmitBaseProps } from "../types/Sprites";
 
 export default class NullSprite<DetailsType = any>
-    extends Sprite<DetailsType, { position: PositionType }, { positionX: number; positionY: number }>
-    implements Required<{ position: PositionType; positionX: number; positionY: number }>
+    extends Sprite<DetailsType, OmitBaseProps<NullSpriteProperties>, HiddenNullSpriteProperties>
+    implements Required<OmitBaseProps<NullSpriteProperties> & HiddenNullSpriteProperties>
 {
-    constructor(props: { position?: PositionType } & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">) {
-        (props as DEFAULT_PROPERTIES).bounds = Corners(
+    constructor(props: NullSpriteProperties<DetailsType> & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">) {
+        (props as DEFAULT_PROPERTIES).bounds = new Bounds(
             props.position?.x ?? 0,
             props.position?.y ?? 0,
             props.position?.x ?? 0,
@@ -20,15 +19,15 @@ export default class NullSprite<DetailsType = any>
             blue: 0,
             alpha: 0
         };
-        props.position ??= Position(0, 0);
+        props.position ??= new Position(0, 0);
         super(props as Required<typeof props>);
     }
 
     // AGGREGATE PROPERTIES
-    public get position(): PositionType {
-        return Position(this.positionX, this.positionY);
+    public get position(): Position {
+        return new Position(this.positionX, this.positionY);
     }
-    public set position(value: PositionType) {
+    public set position(value: Position) {
         this.positionX = value.x;
         this.positionY = value.y;
     }

@@ -1,7 +1,17 @@
-import { BezierCurve, Ellipse, ImageSprite, LabelSprite, Line, Rect, TextSprite } from "./sharc/Sprites";
+import {
+    BezierCurve,
+    Ellipse,
+    ImageSprite,
+    LabelSprite,
+    Line,
+    ManagerSprite,
+    NullSprite,
+    Rect,
+    TextSprite
+} from "./sharc/Sprites";
 import { Stage } from "./sharc/Stage";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
-import { Colors, Easing } from "./sharc/Utils";
+import { Bounds, Colors, Easing, Position } from "./sharc/Utils";
 
 export interface Test {
     name: string;
@@ -22,7 +32,6 @@ export const tests: Test[] = [
                 const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
                 ellipse.centerX = 20 + (i % 70) * 15;
                 ellipse.centerY = 65 + Math.floor(i / 70) * 25;
-
                 ellipse.channels[0].push(
                     {
                         property: "centerX",
@@ -45,14 +54,12 @@ export const tests: Test[] = [
                             blue: Math.random() * 180 + 55,
                             alpha: 1
                         },
-                        to: () => {
-                            return {
-                                red: Math.random() * 180 + 55,
-                                green: Math.random() * 180 + 55,
-                                blue: Math.random() * 180 + 55,
-                                alpha: 1
-                            };
-                        },
+                        to: () => ({
+                            red: Math.random() * 180 + 55,
+                            green: Math.random() * 180 + 55,
+                            blue: Math.random() * 180 + 55,
+                            alpha: 1
+                        }),
                         duration: 20,
                         easing: Easing.Bounce(Easing.EASE_IN_OUT)
                     },
@@ -100,10 +107,8 @@ export const tests: Test[] = [
                     fps.details![2].reduce((a, b) => a + (b - avg) ** 2, 0) / fps.details![2].length
                 );
                 fps.text = `FPS: ${fpsValue.toFixed(2)}  Skipped: ${skippedPerc}% (${skipped})   Avg: ${avg.toFixed(2)}  Stdev: ${stdev.toFixed(2)}`;
-                // fps.text = `FPS: ${fpsValue.toFixed(2)}  Skipped: ${(100 * skipped / stage.currentFrame).toFixed(2)}% (${skipped})   Avg: ${(fps.details![2].reduce((a, b) => a + b, 0) / fps.details![2].length).toFixed(2)}`;
-                // console.log(fps.details![2]);
-                // console.log(now - fps.details![0], fpsValue, frame);
                 fps.details = [now, skipped, fps.details![2]];
+                // console.log(1000 / stage.lastRenderMs);
             });
         }
     },
@@ -262,7 +267,7 @@ export const tests: Test[] = [
                         }
                         sprite.channels[0].push({
                             property: "scale",
-                            from: { x: 1, y: 1 },
+                            from: Position.new(1, 1),
                             to: { x: 1.5, y: 1.5 },
                             duration: 30,
                             easing: Easing.Bounce(Easing.EASE_IN_OUT)
@@ -303,7 +308,7 @@ export const tests: Test[] = [
                 new TextSprite<number>({
                     text: `Counting up to ${max}: 0`,
                     fontSize: 50,
-                    position: { x: 1175 , y: 725 },
+                    position: { x: 1175, y: 725 },
                     textAlign: "right",
                     details: 0
                 })
@@ -397,7 +402,7 @@ export const tests: Test[] = [
                 textAlign: "right",
                 backgroundColor: Colors.DarkGray,
                 backgroundRadius: [20],
-                padding: 10,
+                padding: 10
             });
             console.log(text.bounds);
             const outline = new Rect({
@@ -405,26 +410,95 @@ export const tests: Test[] = [
                 stroke: {
                     lineDash: 10,
                     lineDashGap: 5,
-                    color: Colors.Black,
+                    color: Colors.Black
                 }
             });
             text.on("beforeDraw", (sprite, frame) => {
-                const property = 
-                    frame % 120 === 1 ? "center" :
-                    frame % 120 === 41 ? "corner1" :
-                    frame % 120 === 81 ? "corner2" :
-                "";
+                const property =
+                    frame % 120 === 1 ? "center" : frame % 120 === 41 ? "corner1" : frame % 120 === 81 ? "corner2" : "";
                 if (!property) {
                     return;
                 }
                 sprite[property] = { x: 500, y: 100 };
                 outline.bounds = sprite.bounds;
             });
-            stage.root.addChildren(outline, text,
+            stage.root.addChildren(
+                outline,
+                text,
                 new Ellipse({
-                    center: { x: 500, y: 100 },
+                    center: { x: 500, y: 100 }
                 })
             );
+        }
+    },
+    {
+        name: "manager-test",
+        apply: (stage: Stage | WorkerStage<any, string>) => {
+            const origin = new NullSprite({
+                position: new Position(600, 400),
+                color: Colors.Black
+            });
+            const manager = new ManagerSprite({
+                anchor: "top-left",
+                align: "left",
+                padding: 0
+            });
+            const ellipse = new Ellipse({
+                color: Colors.Blue,
+                radius: [100, 50],
+                stroke: { lineWidth: 5 },
+                name: "ellipse"
+            });
+            const text = new TextSprite<string>({
+                position: { x: 200, y: -200 },
+                text: "Hello, world!",
+                fontSize: 75,
+                color: Colors.Black,
+                name: "text"
+            }).addChild(
+                new Rect({
+                    name: "text-bounds",
+                    color: { ...Colors.Khaki, alpha: 0.25 },
+                    radius: [8],
+                    stroke: { lineWidth: 5, lineDash: 10 }
+                }).addEventListener("beforeDraw", sprite => {
+                    sprite.bounds = Bounds.wrtSelf(sprite.parent!.bounds);
+                    return 1;
+                })
+            );
+            const rect = new Rect<number>({
+                color: Colors.Red,
+                bounds: Rect.Bounds(0, 0, 100, 100),
+                stroke: { lineWidth: 5 },
+                scale: new Position(-2, 1),
+                name: "rect"
+            });
+            const circle = new Ellipse({
+                center: manager.center,
+                radius: 10,
+                color: Colors.None,
+                stroke: {
+                    lineWidth: 3,
+                    lineDash: 5
+                }
+            });
+            stage.root.addChild(origin);
+            origin.addChildren(manager, circle);
+            manager.addChildren(rect, text, ellipse);
+            manager.on("beforeDraw", (sprite, frame) => {
+                if (frame % 80 === 1) {
+                    console.log("updating!");
+                    const start = Date.now();
+                    sprite.update(["padding", "align", "anchor"]);
+                    console.log(`update took ${Date.now() - start}ms`);
+                }
+                if (frame % 80 === 70) {
+                    ellipse.center = new Position(Math.random() * 300 + 150, Math.random() * 300 - 150);
+                    rect.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
+                    text.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
+                }
+            });
+            // stage.loop(1);
         }
     }
 ];

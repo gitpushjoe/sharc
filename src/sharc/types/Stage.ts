@@ -1,4 +1,4 @@
-import { ColorType } from "./Common";
+import { Color } from "./Common";
 import { EventCollection } from "./Events";
 
 export interface CanvasInterface {
@@ -28,7 +28,7 @@ export type InitializeWorkerMessage = {
     width: number;
     height: number;
     rootStyle: "centered" | "classic";
-    bgColor: ColorType;
+    bgColor: Color;
 };
 
 export type WorkerRenderMessage = {
