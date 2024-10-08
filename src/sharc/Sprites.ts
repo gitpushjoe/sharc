@@ -11,5 +11,6 @@ export { default as TextSprite } from "./sprite_definitions/Text";
 export { default as ImageSprite } from "./sprite_definitions/Image";
 export { default as LabelSprite } from "./sprite_definitions/Label";
 export { default as ManagerSprite } from "./sprite_definitions/Manager";
+export { default as FactorySprite } from "./sprite_definitions/Factory";
 
 export { Shape } from "./Sprite";

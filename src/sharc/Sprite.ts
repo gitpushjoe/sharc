@@ -72,6 +72,24 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this;
     }
 
+    public insertChild(child: Shape, index: number): this {
+        this._children.splice(index, 0, child.removeSelf());
+        child._parent = this;
+        return this;
+    }
+
+    public replaceChild(oldChild: Shape, newChild: Shape): this {
+        const idx = this._children.indexOf(oldChild);
+        if (idx !== -1) {
+            this._children[idx] = newChild.removeSelf();
+            newChild._parent = this;
+            oldChild._parent = undefined;
+            return this;
+        }
+        oldChild.removeSelf();
+        return this;
+    }
+
     public get children(): Shape[] {
         return [...this._children];
     }

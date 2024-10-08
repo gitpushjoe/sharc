@@ -1,3 +1,4 @@
+import { Shape } from "../Sprite";
 import { Position, Bounds, Color } from "./Common";
 
 export type DrawFunctionType<Property> = (
@@ -285,7 +286,7 @@ export type Alignment = "row-center" | "top" | "bottom" | "column-center" | "lef
 
 export type NullSpriteProperties<DetailsType = any> = {
     position?: Position;
-} & DEFAULT_PROPERTIES<DetailsType>;
+} & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">;
 
 export type HiddenNullSpriteProperties = {
     positionX: number;
@@ -293,12 +294,19 @@ export type HiddenNullSpriteProperties = {
 };
 
 export type ManagerProperties<DetailsType = any> = {
-    anchor: AnchorPosition | null;
-    align: Alignment | null;
-    padding: number | null;
-} & DEFAULT_PROPERTIES<DetailsType>;
+    anchor?: AnchorPosition | null;
+    align?: Alignment | null;
+    padding?: number | null;
+} & NullSpriteProperties<DetailsType>;
 
-export type HiddenManagerProperties = Record<never, never>;
+export type HiddenManagerProperties = HiddenNullSpriteProperties;
+
+export type FactoryProperties<ParametersType = number, DetailsType = any> = {
+    factory: (parameters: ParametersType) => Shape | undefined;
+    parameters: ParametersType extends number ? number : ParametersType[];
+} & ManagerProperties<DetailsType>;
+
+export type HiddenFactoryProperties = HiddenManagerProperties;
 
 export type MostlyRequired<Type extends { details?: any }> = Required<Omit<Type, "details">> & {
     details?: Type["details"];

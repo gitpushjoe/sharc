@@ -18,6 +18,8 @@ export interface Test {
     apply: (stage: Stage | WorkerStage<any, string>, isOffscreen: boolean) => void;
 }
 
+
+
 export const tests: Test[] = [
     {
         name: "basic",
@@ -434,10 +436,6 @@ export const tests: Test[] = [
     {
         name: "manager-test",
         apply: (stage: Stage | WorkerStage<any, string>) => {
-            const origin = new NullSprite({
-                position: new Position(600, 400),
-                color: Colors.Black
-            });
             const manager = new ManagerSprite({
                 anchor: "top-left",
                 align: "left",
@@ -449,7 +447,7 @@ export const tests: Test[] = [
                 stroke: { lineWidth: 5 },
                 name: "ellipse"
             });
-            const text = new TextSprite<string>({
+            const text = new TextSprite({
                 position: { x: 200, y: -200 },
                 text: "Hello, world!",
                 fontSize: 75,
@@ -466,15 +464,15 @@ export const tests: Test[] = [
                     return 1;
                 })
             );
-            const rect = new Rect<number>({
+            const rect = new Rect({
                 color: Colors.Red,
                 bounds: Rect.Bounds(0, 0, 100, 100),
                 stroke: { lineWidth: 5 },
                 scale: new Position(-2, 1),
                 name: "rect"
             });
-            const circle = new Ellipse({
-                center: manager.center,
+            const origin = new Ellipse({
+                center: new Position(600, 400),
                 radius: 10,
                 color: Colors.None,
                 stroke: {
@@ -483,7 +481,7 @@ export const tests: Test[] = [
                 }
             });
             stage.root.addChild(origin);
-            origin.addChildren(manager, circle);
+            origin.addChildren(manager);
             manager.addChildren(rect, text, ellipse);
             manager.on("beforeDraw", (sprite, frame) => {
                 if (frame % 80 === 1) {

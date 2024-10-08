@@ -13,12 +13,6 @@ export default class NullSprite<DetailsType = any>
             props.position?.x ?? 0,
             props.position?.y ?? 0
         );
-        (props as DEFAULT_PROPERTIES).color = {
-            red: 0,
-            green: 0,
-            blue: 0,
-            alpha: 0
-        };
         props.position ??= new Position(0, 0);
         super(props as Required<typeof props>);
     }
