@@ -1,11 +1,21 @@
 import { Bounds, Position, Color, invalidSetterFor } from "../Utils";
-import { OmitBaseProps, LabelProperties, HiddenLabelProperties, StrokeType, RadiusType } from "../types/Sprites";
+import {
+    OmitBaseProps,
+    LabelProperties,
+    HiddenLabelProperties,
+    StrokeType,
+    RadiusType
+} from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 import TextSprite from "./Text";
 import Rect from "./Rect";
 
 export default class LabelSprite<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<LabelProperties>, HiddenLabelProperties>
+    extends StrokeableSprite<
+        DetailsType,
+        OmitBaseProps<LabelProperties>,
+        HiddenLabelProperties
+    >
     implements Required<OmitBaseProps<LabelProperties> & HiddenLabelProperties>
 {
     constructor(props: LabelProperties<DetailsType>) {
@@ -26,7 +36,9 @@ export default class LabelSprite<DetailsType = any>
         this.backgroundRadius = props.backgroundRadius ?? [5];
         this.padding = props.padding ?? 10;
         this.textStroke = props.textStroke ?? null;
-        const bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+        const bounds = this.calculateBounds(
+            new OffscreenCanvas(0, 0).getContext("2d")!
+        );
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
         this.x2 = bounds.x2;
@@ -65,7 +77,9 @@ export default class LabelSprite<DetailsType = any>
 
     // CALCULATED PROPERTIES
     public get bounds() {
-        return this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+        return this.calculateBounds(
+            new OffscreenCanvas(0, 0).getContext("2d")!
+        );
     }
     @invalidSetterFor("Label")
     public set bounds(_value: Bounds) {
@@ -116,7 +130,9 @@ export default class LabelSprite<DetailsType = any>
         throw new Error("Text height cannot be set");
     }
 
-    private calculateBounds(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+    private calculateBounds(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+    ) {
         ctx.font = `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize}px ${this.font}`;
         ctx.textBaseline = this.textBaseline;
         ctx.direction = this.textDirection;
@@ -138,15 +154,36 @@ export default class LabelSprite<DetailsType = any>
               ? -height
               : 0;
         return {
-            x1: this.positionX + (this.positionIsCenter ? -width / 2 : 0) - xOffset - this.padding,
-            y1: this.positionY + (this.positionIsCenter ? -height / 2 : 0) + yOffset - this.padding,
-            x2: this.positionX + (this.positionIsCenter ? width / 2 : width) - xOffset + this.padding,
-            y2: this.positionY + (this.positionIsCenter ? height / 2 : height) + yOffset + this.padding
+            x1:
+                this.positionX +
+                (this.positionIsCenter ? -width / 2 : 0) -
+                xOffset -
+                this.padding,
+            y1:
+                this.positionY +
+                (this.positionIsCenter ? -height / 2 : 0) +
+                yOffset -
+                this.padding,
+            x2:
+                this.positionX +
+                (this.positionIsCenter ? width / 2 : width) -
+                xOffset +
+                this.padding,
+            y2:
+                this.positionY +
+                (this.positionIsCenter ? height / 2 : height) +
+                yOffset +
+                this.padding
         };
     }
 
     public get backgroundColor(): Color {
-        return new Color(this.backgroundRed, this.backgroundGreen, this.backgroundBlue, this.backgroundAlpha);
+        return new Color(
+            this.backgroundRed,
+            this.backgroundGreen,
+            this.backgroundBlue,
+            this.backgroundAlpha
+        );
     }
     public set backgroundColor(backgroundColor: Color) {
         this.backgroundRed = backgroundColor.red;
@@ -155,7 +192,9 @@ export default class LabelSprite<DetailsType = any>
         this.backgroundAlpha = backgroundColor.alpha;
     }
 
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+    ) {
         if ((this.root as LabelSprite).stage?.rootStyle === "centered") {
             this.scaleY *= -1;
         }

@@ -1,6 +1,10 @@
 import { Shape } from "./Sprite";
 import { Easing, Position } from "./Utils";
-import { AnimationCallback, AnimationType, EasingType } from "./types/Animation";
+import {
+    AnimationCallback,
+    AnimationType,
+    EasingType
+} from "./types/Animation";
 
 export function FadeIn(
     durationOrSprite = 30,

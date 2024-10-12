@@ -1,13 +1,23 @@
-import { AsyncStageEventListeners, PositionedPointerEvent, PointerEventCallback } from "../types/Events";
+import {
+    AsyncStageEventListeners,
+    PositionedPointerEvent,
+    PointerEventCallback
+} from "../types/Events";
 import { StageStateMessage, AsyncMessage } from "../types/Stage";
 import { Stage } from "../Stage";
 import { Colors, callAndPrune } from "../Utils";
 import { NullSprite } from "../Sprites";
 
-export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<DetailsType> {
+export class OffscreenStage<
+    DetailsType = any,
+    MessageType = any
+> extends Stage<DetailsType> {
     private workerReady = false;
     private lastEmittedStageState?: Omit<StageStateMessage, "type">;
-    protected eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
+    protected eventListeners: AsyncStageEventListeners<
+        this,
+        AsyncMessage<MessageType>
+    > = {
         beforeDraw: [],
         click: [],
         release: [],
@@ -38,8 +48,10 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             rootStyle,
             bgColor: Colors.None
         });
-        worker.onmessage = (e: MessageEvent<AsyncMessage<MessageType>>) => this.onmessage(e.data);
-        worker.onmessageerror = (e: MessageEvent<AsyncMessage<MessageType>>) => console.error(e);
+        worker.onmessage = (e: MessageEvent<AsyncMessage<MessageType>>) =>
+            this.onmessage(e.data);
+        worker.onmessageerror = (e: MessageEvent<AsyncMessage<MessageType>>) =>
+            console.error(e);
     }
 
     private onmessage(e: AsyncMessage<MessageType>) {
@@ -49,8 +61,14 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
             case "render":
                 if (this.active) {
                     this.currentFrame = e.currentFrame;
-                    callAndPrune(this.eventListeners, "beforeDraw", [this, e.currentFrame, this]);
-                    (this.canvas as HTMLCanvasElement)!.getContext("bitmaprenderer")!.transferFromImageBitmap(e.img);
+                    callAndPrune(this.eventListeners, "beforeDraw", [
+                        this,
+                        e.currentFrame,
+                        this
+                    ]);
+                    (this.canvas as HTMLCanvasElement)!
+                        .getContext("bitmaprenderer")!
+                        .transferFromImageBitmap(e.img);
                 }
                 break;
             case "ready":
@@ -85,12 +103,17 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
         this.draw();
         this.lastRenderMs = performance.now() - start;
         this.nextRenderTime = start + 900 / (this.frameRate * 3);
-        setTimeout(this.drawLoop.bind(this), Math.min(100, this.nextRenderTime - start));
+        setTimeout(
+            this.drawLoop.bind(this),
+            Math.min(100, this.nextRenderTime - start)
+        );
         return;
     }
 
     private getStageState(): Omit<StageStateMessage, "type"> {
-        const makePointerEventCloneable = (e?: PositionedPointerEvent): PositionedPointerEvent | undefined => {
+        const makePointerEventCloneable = (
+            e?: PositionedPointerEvent
+        ): PositionedPointerEvent | undefined => {
             return e === undefined
                 ? undefined
                 : {
@@ -112,7 +135,9 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                       translatedPoint: { ...e.translatedPoint }
                   };
         };
-        const makeKeyboardEventCloneable = (e?: KeyboardEvent): KeyboardEvent | undefined => {
+        const makeKeyboardEventCloneable = (
+            e?: KeyboardEvent
+        ): KeyboardEvent | undefined => {
             return e === undefined
                 ? undefined
                 : ({
@@ -127,7 +152,9 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
                       location: e.location
                   } as unknown as KeyboardEvent);
         };
-        const makeWheelEventCloneable = (e?: WheelEvent): WheelEvent | undefined => {
+        const makeWheelEventCloneable = (
+            e?: WheelEvent
+        ): WheelEvent | undefined => {
             return e === undefined
                 ? undefined
                 : ({
@@ -163,47 +190,76 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
     }
 
     public addEventListener<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
-        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this, this>);
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
+        this.eventListeners[event as "click"].push(
+            callback as unknown as PointerEventCallback<this, this>
+        );
         return this;
     }
 
     public on<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
         this.addEventListener(event, callback);
         return this;
     }
 
     public removeEventListener<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback?: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback?: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
         if (!callback) {
             this.eventListeners[event as "click"] = [];
             return this;
         }
-        this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-            cb => cb !== (callback as unknown as PointerEventCallback<this, this>)
+        this.eventListeners[event as "click"] = this.eventListeners[
+            event as "click"
+        ].filter(
+            cb =>
+                cb !== (callback as unknown as PointerEventCallback<this, this>)
         );
         return this;
     }
 
     public includeEventListener<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
         this.removeEventListener(event, callback);
         this.addEventListener(event, callback);
         return this;
@@ -211,9 +267,15 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
 
     public draw(): boolean {
         this.drawEvents.stage = undefined;
-        const stageState: Omit<StageStateMessage, "type"> = this.getStageState();
-        if (JSON.stringify(stageState) != JSON.stringify(this.lastEmittedStageState)) {
-            this.lastEmittedStageState = JSON.parse(JSON.stringify(stageState)) as Omit<StageStateMessage, "type">;
+        const stageState: Omit<StageStateMessage, "type"> =
+            this.getStageState();
+        if (
+            JSON.stringify(stageState) !=
+            JSON.stringify(this.lastEmittedStageState)
+        ) {
+            this.lastEmittedStageState = JSON.parse(
+                JSON.stringify(stageState)
+            ) as Omit<StageStateMessage, "type">;
             void this.postMessage({
                 type: "stageState",
                 ...stageState
@@ -223,14 +285,18 @@ export class OffscreenStage<DetailsType = any, MessageType = any> extends Stage<
         return true;
     }
 
-    public async postCustomMessage(message: MessageType): Promise<AsyncMessage<MessageType>> {
+    public async postCustomMessage(
+        message: MessageType
+    ): Promise<AsyncMessage<MessageType>> {
         return this.postMessage({
             type: "custom",
             message
         });
     }
 
-    private async postMessage(message: AsyncMessage<MessageType>): Promise<AsyncMessage<MessageType>> {
+    private async postMessage(
+        message: AsyncMessage<MessageType>
+    ): Promise<AsyncMessage<MessageType>> {
         if (!this.workerReady && !(message.type == "init")) {
             console.warn("Worker not ready");
         }

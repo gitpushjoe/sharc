@@ -1,6 +1,12 @@
 import { Sprite } from "../Sprite";
 import { Color, Bounds, Position } from "../Utils";
-import { ArrowType, HiddenLineProperties, LineProperties, OmitBaseProps, StrokeType } from "../types/Sprites";
+import {
+    ArrowType,
+    HiddenLineProperties,
+    LineProperties,
+    OmitBaseProps,
+    StrokeType
+} from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Line<DetailsType = any>
@@ -52,7 +58,12 @@ export default class Line<DetailsType = any>
     // AGGREGATE PROPERTIES
     public get arrowStroke(): StrokeType {
         return {
-            color: new Color(this.arrowStrokeRed, this.arrowStrokeGreen, this.arrowStrokeBlue, this.arrowStrokeAlpha),
+            color: new Color(
+                this.arrowStrokeRed,
+                this.arrowStrokeGreen,
+                this.arrowStrokeBlue,
+                this.arrowStrokeAlpha
+            ),
             lineWidth: this.arrowStrokeWidth,
             lineJoin: this.arrowStrokeJoin,
             lineCap: this.arrowStrokeCap,
@@ -75,7 +86,12 @@ export default class Line<DetailsType = any>
     }
 
     public get arrowStrokeColor(): Color {
-        return new Color(this.arrowStrokeRed, this.arrowStrokeGreen, this.arrowStrokeBlue, this.arrowStrokeAlpha);
+        return new Color(
+            this.arrowStrokeRed,
+            this.arrowStrokeGreen,
+            this.arrowStrokeBlue,
+            this.arrowStrokeAlpha
+        );
     }
     public set arrowStrokeColor(value: Color) {
         this.arrowStrokeRed = value.red;
@@ -85,7 +101,12 @@ export default class Line<DetailsType = any>
     }
 
     public get arrowColor(): Color {
-        return new Color(this.arrowRed, this.arrowGreen, this.arrowBlue, this.arrowAlpha);
+        return new Color(
+            this.arrowRed,
+            this.arrowGreen,
+            this.arrowBlue,
+            this.arrowAlpha
+        );
     }
     public set arrowColor(value: Color) {
         this.arrowRed = value.red;
@@ -121,7 +142,10 @@ export default class Line<DetailsType = any>
         this.arrowColor = value.color ?? new Color(0, 0, 0, 0);
     }
 
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: LineProperties) {
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties?: LineProperties
+    ) {
         super.draw(ctx, {
             ...properties!,
             bounds: this.bounds,
@@ -142,7 +166,10 @@ export default class Line<DetailsType = any>
         arrowLength: number
     ): [Position, Position, Position] {
         arrowAngle = (arrowAngle * Math.PI) / 360;
-        const [x, y] = [arrowLength * Math.sin(arrowAngle), arrowLength * Math.cos(arrowAngle)];
+        const [x, y] = [
+            arrowLength * Math.sin(arrowAngle),
+            arrowLength * Math.cos(arrowAngle)
+        ];
         lineLength /= 2;
         const pos1 = {
             x: (lineLength - y) * Math.cos(lineAngle) - x * Math.sin(lineAngle),
@@ -186,7 +213,9 @@ export default class Line<DetailsType = any>
             if (arrow.closed) {
                 region.closePath();
             }
-            ctx.fillStyle = Color.toString(arrow.color ?? new Color(0, 0, 0, 0));
+            ctx.fillStyle = Color.toString(
+                arrow.color ?? new Color(0, 0, 0, 0)
+            );
             ctx.fill(region, arrow.closed ? "evenodd" : "nonzero");
             StrokeableSprite.strokeRegion(ctx, stroke, region);
             res.addPath(region);
@@ -205,7 +234,9 @@ export default class Line<DetailsType = any>
             if (arrow.closed) {
                 region.closePath();
             }
-            ctx.fillStyle = Color.toString(arrow.color ?? new Color(0, 0, 0, 0));
+            ctx.fillStyle = Color.toString(
+                arrow.color ?? new Color(0, 0, 0, 0)
+            );
             ctx.fill(region, arrow.closed ? "evenodd" : "nonzero");
             StrokeableSprite.strokeRegion(ctx, stroke, region);
             res.addPath(region);
@@ -217,11 +248,18 @@ export default class Line<DetailsType = any>
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         properties: LineProperties
     ): Path2D => {
-        const bounds = Bounds.wrtSelf(properties.bounds ?? new Bounds(0, 0, 0, 0));
+        const bounds = Bounds.wrtSelf(
+            properties.bounds ?? new Bounds(0, 0, 0, 0)
+        );
         ctx.lineWidth = properties.lineWidth ?? 1;
         ctx.lineCap = properties.lineCap ?? "butt";
-        ctx.strokeStyle = Color.toString(properties.color ?? new Color(0, 0, 0));
-        ctx.setLineDash([properties.lineDash ?? 0, properties.lineDashGap ?? 0]);
+        ctx.strokeStyle = Color.toString(
+            properties.color ?? new Color(0, 0, 0)
+        );
+        ctx.setLineDash([
+            properties.lineDash ?? 0,
+            properties.lineDashGap ?? 0
+        ]);
         ctx.lineDashOffset = properties.lineDashOffset ?? 0;
         ctx.beginPath();
         ctx.moveTo(bounds.x1, bounds.y1);
@@ -231,11 +269,23 @@ export default class Line<DetailsType = any>
         const region = new Path2D();
         region.moveTo(bounds.x1, bounds.y1);
         region.lineTo(bounds.x2, bounds.y2);
-        region.addPath(Line.drawArrow(ctx, bounds, properties.arrow ?? {}, properties.arrow?.stroke ?? {}));
+        region.addPath(
+            Line.drawArrow(
+                ctx,
+                bounds,
+                properties.arrow ?? {},
+                properties.arrow?.stroke ?? {}
+            )
+        );
         return region;
     };
 
-    public static Bounds(x1: number, y1: number, x2: number, y2: number): Bounds {
+    public static Bounds(
+        x1: number,
+        y1: number,
+        x2: number,
+        y2: number
+    ): Bounds {
         return new Bounds(x1, y1, x2, y2);
     }
 }

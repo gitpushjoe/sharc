@@ -19,15 +19,20 @@ export class Transformation {
         return Transformation.new(translation, scale);
     }
 
-    public static new(translation: Position, scale: Position): { translation: Position; scale: Position } {
+    public static new(
+        translation: Position,
+        scale: Position
+    ): { translation: Position; scale: Position } {
         return { translation, scale };
     }
 
     public static equals(...transformations: Transformation[]): boolean {
         for (let i = 1; i < transformations.length; i++) {
             if (
-                transformations[i].translation.x !== transformations[i - 1].translation.x ||
-                transformations[i].translation.y !== transformations[i - 1].translation.y ||
+                transformations[i].translation.x !==
+                    transformations[i - 1].translation.x ||
+                transformations[i].translation.y !==
+                    transformations[i - 1].translation.y ||
                 transformations[i].scale.x !== transformations[i - 1].scale.x ||
                 transformations[i].scale.y !== transformations[i - 1].scale.y
             ) {
@@ -41,20 +46,35 @@ export class Transformation {
         return new Transformation(new Position(0, 0), new Position(1, 1));
     }
 
-    public static applyInverse(transformation: Transformation, position: Position): Position {
+    public static applyInverse(
+        transformation: Transformation,
+        position: Position
+    ): Position {
         return new Position(
             position.x * transformation.scale.x + transformation.translation.x,
             position.y * transformation.scale.y + transformation.translation.y
         );
     }
 
-    public static applyInverseToBounds(transformation: Transformation, bounds: Bounds): Bounds {
-        const p1 = Transformation.applyInverse(transformation, new Position(bounds.x1, bounds.y1));
-        const p2 = Transformation.applyInverse(transformation, new Position(bounds.x2, bounds.y2));
+    public static applyInverseToBounds(
+        transformation: Transformation,
+        bounds: Bounds
+    ): Bounds {
+        const p1 = Transformation.applyInverse(
+            transformation,
+            new Position(bounds.x1, bounds.y1)
+        );
+        const p2 = Transformation.applyInverse(
+            transformation,
+            new Position(bounds.x2, bounds.y2)
+        );
         return new Bounds(p1.x, p1.y, p2.x, p2.y);
     }
 
-    public static combine(a: Transformation, b: Transformation): Transformation {
+    public static combine(
+        a: Transformation,
+        b: Transformation
+    ): Transformation {
         if (Transformation.equals(a, Transformation.Identity)) {
             return b;
         }
@@ -62,15 +82,27 @@ export class Transformation {
             return a;
         }
         return {
-            translation: Position.sum(a.translation, Position.scale(b.translation, a.scale)),
+            translation: Position.sum(
+                a.translation,
+                Position.scale(b.translation, a.scale)
+            ),
             scale: Position.scale(a.scale, b.scale)
         };
     }
 }
 
-function getTotalBounds(shape: Shape, transformation: Transformation = Transformation.Identity): Bounds {
-    transformation = Transformation.combine(transformation, new Transformation(shape.center, shape.scale));
-    const selfBounds = Transformation.applyInverseToBounds(transformation, Bounds.wrtSelf(shape.bounds));
+function getTotalBounds(
+    shape: Shape,
+    transformation: Transformation = Transformation.Identity
+): Bounds {
+    transformation = Transformation.combine(
+        transformation,
+        new Transformation(shape.center, shape.scale)
+    );
+    const selfBounds = Transformation.applyInverseToBounds(
+        transformation,
+        Bounds.wrtSelf(shape.bounds)
+    );
     const bounds =
         shape.constructor.name === "NullSprite"
             ? new Bounds( // TODO(gitpushjoe): might be a problem?
@@ -97,10 +129,14 @@ function getTotalBounds(shape: Shape, transformation: Transformation = Transform
 
 export function managerUpdate(
     root: Shape,
-    properties: Required<Pick<ManagerProperties, "align" | "anchor" | "padding">>,
+    properties: Required<
+        Pick<ManagerProperties, "align" | "anchor" | "padding">
+    >,
     updates: ("align" | "anchor" | "padding")[]
 ) {
-    updates = updates.filter(value => ["align", "anchor", "padding"].includes(value));
+    updates = updates.filter(value =>
+        ["align", "anchor", "padding"].includes(value)
+    );
     if (updates.length === 0 || root.children.length === 0) {
         return;
     }
@@ -130,7 +166,8 @@ export function managerUpdate(
         if (["row-center", "top", "bottom"].includes(properties.align!)) {
             let x2 = childrenTotalBounds[0].x2;
             for (let i = 1; i < root.children.length; i++) {
-                const targetValue = childrenTotalBounds[i - 1].x2 + properties.padding;
+                const targetValue =
+                    childrenTotalBounds[i - 1].x2 + properties.padding;
                 const offset = targetValue - childrenTotalBounds[i].x1;
                 root.children[i].centerX += offset;
                 childrenTotalBounds[i].x1 += offset;
@@ -139,10 +176,13 @@ export function managerUpdate(
             }
             totalBounds.x1 = Math.min(childrenTotalBounds[0].x1, x2);
             totalBounds.x2 = Math.max(childrenTotalBounds[0].x1, x2);
-        } else if (["column-center", "left", "right"].includes(properties.align!)) {
+        } else if (
+            ["column-center", "left", "right"].includes(properties.align!)
+        ) {
             let y2 = childrenTotalBounds[0].y2;
             for (let i = 1; i < root.children.length; i++) {
-                const targetValue = childrenTotalBounds[i - 1].y2 + properties.padding;
+                const targetValue =
+                    childrenTotalBounds[i - 1].y2 + properties.padding;
                 const offset = targetValue - childrenTotalBounds[i].y1;
                 root.children[i].centerY += offset;
                 childrenTotalBounds[i].y1 += offset;
@@ -155,7 +195,11 @@ export function managerUpdate(
     }
     updates = updates.filter(value => value !== "padding");
     if (updates.includes("align") && properties.align !== null) {
-        const [prop1, prop2, propCenter] = ["row-center", "top", "bottom"].includes(properties.align)
+        const [prop1, prop2, propCenter] = [
+            "row-center",
+            "top",
+            "bottom"
+        ].includes(properties.align)
             ? (["y1", "y2", "centerY"] as const)
             : (["x1", "x2", "centerX"] as const);
         const compareProp =
@@ -182,14 +226,24 @@ export function managerUpdate(
         for (let i = 0; i < root.children.length; i++) {
             const child = root.children[i];
             const childValue = compareProp.startsWith("center")
-                ? (childrenTotalBounds[i][prop1] + childrenTotalBounds[i][prop2]) / 2
-                : childrenTotalBounds[i][compareProp as "x1" | "x2" | "y1" | "y2"];
+                ? (childrenTotalBounds[i][prop1] +
+                      childrenTotalBounds[i][prop2]) /
+                  2
+                : childrenTotalBounds[i][
+                      compareProp as "x1" | "x2" | "y1" | "y2"
+                  ];
             const offset = targetValue - childValue;
             child[propCenter] += offset;
             childrenTotalBounds[i][prop1] += offset;
             childrenTotalBounds[i][prop2] += offset;
-            totalBounds[prop1] = Math.min(totalBounds[prop1], childrenTotalBounds[i][prop1]);
-            totalBounds[prop2] = Math.max(totalBounds[prop2], childrenTotalBounds[i][prop2]);
+            totalBounds[prop1] = Math.min(
+                totalBounds[prop1],
+                childrenTotalBounds[i][prop1]
+            );
+            totalBounds[prop2] = Math.max(
+                totalBounds[prop2],
+                childrenTotalBounds[i][prop2]
+            );
         }
     }
     updates = updates.filter(value => value !== "align");
@@ -198,19 +252,34 @@ export function managerUpdate(
             properties.anchor === "top-left"
                 ? new Position(totalBounds.x1, totalBounds.y1)
                 : properties.anchor === "top-center"
-                  ? new Position((totalBounds.x1 + totalBounds.x2) / 2, totalBounds.y1)
+                  ? new Position(
+                        (totalBounds.x1 + totalBounds.x2) / 2,
+                        totalBounds.y1
+                    )
                   : properties.anchor === "top-right"
                     ? new Position(totalBounds.x2, totalBounds.y1)
                     : properties.anchor === "center-left"
-                      ? new Position(totalBounds.x1, (totalBounds.y1 + totalBounds.y2) / 2)
+                      ? new Position(
+                            totalBounds.x1,
+                            (totalBounds.y1 + totalBounds.y2) / 2
+                        )
                       : properties.anchor === "center"
-                        ? new Position((totalBounds.x1 + totalBounds.x2) / 2, (totalBounds.y1 + totalBounds.y2) / 2)
+                        ? new Position(
+                              (totalBounds.x1 + totalBounds.x2) / 2,
+                              (totalBounds.y1 + totalBounds.y2) / 2
+                          )
                         : properties.anchor === "center-right"
-                          ? new Position(totalBounds.x2, (totalBounds.y1 + totalBounds.y2) / 2)
+                          ? new Position(
+                                totalBounds.x2,
+                                (totalBounds.y1 + totalBounds.y2) / 2
+                            )
                           : properties.anchor === "bottom-left"
                             ? new Position(totalBounds.x1, totalBounds.y2)
                             : properties.anchor === "bottom-center"
-                              ? new Position((totalBounds.x1 + totalBounds.x2) / 2, totalBounds.y2)
+                              ? new Position(
+                                    (totalBounds.x1 + totalBounds.x2) / 2,
+                                    totalBounds.y2
+                                )
                               : properties.anchor === "bottom-right"
                                 ? new Position(totalBounds.x2, totalBounds.y2)
                                 : (() => {
@@ -224,8 +293,13 @@ export function managerUpdate(
 }
 
 export default class Manager<DetailsType = any>
-    extends Sprite<DetailsType, OmitBaseProps<ManagerProperties>, HiddenManagerProperties>
-    implements Required<OmitBaseProps<ManagerProperties & HiddenManagerProperties>>
+    extends Sprite<
+        DetailsType,
+        OmitBaseProps<ManagerProperties>,
+        HiddenManagerProperties
+    >
+    implements
+        Required<OmitBaseProps<ManagerProperties & HiddenManagerProperties>>
 {
     constructor(props: ManagerProperties<DetailsType>) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
@@ -279,7 +353,9 @@ export default class Manager<DetailsType = any>
         return false;
     }
 
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+    ) {
         super.draw(ctx, {
             position: this.position,
             anchor: this.anchor,

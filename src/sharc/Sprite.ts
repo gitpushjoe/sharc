@@ -1,6 +1,15 @@
 import { Position, Bounds, Color, callAndPrune } from "./Utils";
-import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
-import { EventCollection, PositionedPointerEvent, StageEventCallback } from "./types/Events";
+import {
+    PrivateAnimationType,
+    AnimationParams,
+    AnimationType,
+    AnimationCallback
+} from "./types/Animation";
+import {
+    EventCollection,
+    PositionedPointerEvent,
+    StageEventCallback
+} from "./types/Events";
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
@@ -12,8 +21,11 @@ import { SpriteEventListeners, PointerEventCallback } from "./types/Events";
 import { Channel } from "./Channels";
 import { Stage } from "./Stage";
 
-export abstract class Shape<Properties = any, HiddenProperties = any, DetailsType = any>
-    implements MostlyRequired<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
+export abstract class Shape<
+    Properties = any,
+    HiddenProperties = any,
+    DetailsType = any
+> implements MostlyRequired<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
 {
     protected _children: Shape[] = [];
     protected _parent?: Shape = undefined;
@@ -95,7 +107,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     }
 
     public get descendants(): Shape[] {
-        return this._children.reduce<Shape[]>((acc, child) => acc.concat(child, child.descendants), []);
+        return this._children.reduce<Shape[]>(
+            (acc, child) => acc.concat(child, child.descendants),
+            []
+        );
     }
 
     public get parent(): Shape | undefined {
@@ -106,6 +121,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this._parent ? this._parent.root : this;
     }
 
+    public get child(): Shape | undefined {
+        return this._children[0];
+    }
+
     public findChild(name: string): Shape | undefined {
         return this._children.find(child => child.name === name);
     }
@@ -113,7 +132,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public findDescendant(name: string): Shape | undefined {
         return (
             this._children.find(child => child.name === name) ??
-            this._children.reduce<Shape | undefined>((acc, child) => acc ?? child.findDescendant(name), undefined)
+            this._children.reduce<Shape | undefined>(
+                (acc, child) => acc ?? child.findDescendant(name),
+                undefined
+            )
         );
     }
 
@@ -130,11 +152,15 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         }, []);
     }
 
-    public findChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    public findChildWhere(
+        filter: (child: Shape) => boolean
+    ): Shape | undefined {
         return this._children.find(filter);
     }
 
-    public findDescendantWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    public findDescendantWhere(
+        filter: (child: Shape) => boolean
+    ): Shape | undefined {
         return (
             this._children.find(filter) ??
             this._children.reduce<Shape | undefined>(
@@ -157,11 +183,15 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         }, []);
     }
 
-    public removeChildWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    public removeChildWhere(
+        filter: (child: Shape) => boolean
+    ): Shape | undefined {
         return this._children.find(filter)?.removeSelf();
     }
 
-    public removeDescendantWhere(filter: (child: Shape) => boolean): Shape | undefined {
+    public removeDescendantWhere(
+        filter: (child: Shape) => boolean
+    ): Shape | undefined {
         const child = this._children.find(filter);
         if (child) {
             this.removeChild(child);
@@ -236,7 +266,10 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         return this;
     }
 
-    public abstract schedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener;
+    public abstract schedule<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener;
     public abstract selfSchedule<Listener extends StageEventCallback<this>>(
         frame: number,
         callback: Listener
@@ -245,12 +278,17 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
         frame: number,
         callback: Listener
     ): Listener;
-    public abstract selfScheduleExactly<Listener extends StageEventCallback<this>>(
-        frame: number,
+    public abstract selfScheduleExactly<
+        Listener extends StageEventCallback<this>
+    >(frame: number, callback: Listener): Listener;
+    public abstract delay<Listener extends StageEventCallback<this>>(
+        delay: number,
         callback: Listener
     ): Listener;
-    public abstract delay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
-    public abstract selfDelay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener;
+    public abstract selfDelay<Listener extends StageEventCallback<this>>(
+        delay: number,
+        callback: Listener
+    ): Listener;
 
     public abstract when<Listener extends StageEventCallback<this>>(
         condition: (sprite: this) => boolean,
@@ -296,31 +334,81 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract logHierarchy(indent?: number): void;
     public channelCount = 1;
     // TODO(gitpushjoe): maybe rework this so that keys of HIDDEN_SHAPE_PROPERTIES are excluded first
-    public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[] = [];
+    public channels: Channel<
+        Properties &
+            HiddenProperties &
+            HIDDEN_SHAPE_PROPERTIES &
+            DEFAULT_PROPERTIES
+    >[] = [];
     public abstract distribute(
-        animations: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[][],
+        animations: AnimationType<
+            Properties &
+                HiddenProperties &
+                HIDDEN_SHAPE_PROPERTIES &
+                DEFAULT_PROPERTIES
+        >[][],
         params?: AnimationParams
     ): this;
 
     public abstract addEventListener<
-        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
-    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
+        event: E,
+        callback: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
+    ): this;
     public abstract on<
-        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
-    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
+        event: E,
+        callback: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
+    ): this;
     public abstract removeEventListener<
-        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
-    >(event: E, callback?: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
+        event: E,
+        callback?: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
+    ): this;
     public abstract includeEventListener<
-        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
-    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this;
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
+        event: E,
+        callback: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
+    ): this;
 
     public abstract hasEventListeners(): boolean;
     public abstract spriteOrChildrenHaveEventListeners(): boolean;
     public abstract copy(): this;
 }
 
-export abstract class Sprite<DetailsType = any, Properties = object, HiddenProperties = object>
+export abstract class Sprite<
+        DetailsType = any,
+        Properties = object,
+        HiddenProperties = object
+    >
     extends Shape<Properties, HiddenProperties, DetailsType>
     implements MostlyRequired<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
 {
@@ -331,7 +419,12 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return;
     };
     protected _region: Path2D = new Path2D();
-    public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[]; // to-do: ensure that details can never be animated
+    public channels: Channel<
+        Properties &
+            HiddenProperties &
+            HIDDEN_SHAPE_PROPERTIES &
+            DEFAULT_PROPERTIES
+    >[]; // to-do: ensure that details can never be animated
     protected stage?: Stage;
     public currentFrame = 0;
     // future update:
@@ -454,7 +547,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     private lastTransformationMatrix?: DOMMatrix = undefined;
     protected hovered = false;
 
-    private eventListeners: SpriteEventListeners<this, Properties & HiddenProperties> = {
+    private eventListeners: SpriteEventListeners<
+        this,
+        Properties & HiddenProperties
+    > = {
         click: [],
         drag: [],
         hover: [],
@@ -469,35 +565,74 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     };
 
     public addEventListener<
-        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
-    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this {
-        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this>);
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
+        event: E,
+        callback: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
+    ): this {
+        this.eventListeners[event as "click"].push(
+            callback as unknown as PointerEventCallback<this>
+        );
         return this;
     }
 
-    public on<E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners>(
+    public on<
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
         event: E,
-        callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]
+        callback: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
     ): this {
         return this.addEventListener(event, callback);
     }
 
     public removeEventListener<
-        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
-    >(event: E, callback?: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this {
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
+        event: E,
+        callback?: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
+    ): this {
         if (!callback) {
             this.eventListeners[event as "click"] = [];
             return this;
         }
-        this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
+        this.eventListeners[event as "click"] = this.eventListeners[
+            event as "click"
+        ].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<this>)
         );
         return this;
     }
 
     public includeEventListener<
-        E extends keyof SpriteEventListeners<this, Properties & HiddenProperties> = keyof SpriteEventListeners
-    >(event: E, callback: SpriteEventListeners<this, Properties & HiddenProperties>[E][0]): this {
+        E extends keyof SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        > = keyof SpriteEventListeners
+    >(
+        event: E,
+        callback: SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >[E][0]
+    ): this {
         this.removeEventListener(event, callback);
         this.addEventListener(event, callback);
         return this;
@@ -532,7 +667,13 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
         this.channels = Array.from(
             { length: this.channelCount },
-            () => new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>()
+            () =>
+                new Channel<
+                    Properties &
+                        HiddenProperties &
+                        HIDDEN_SHAPE_PROPERTIES &
+                        DEFAULT_PROPERTIES
+                >()
         );
     }
 
@@ -555,7 +696,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         ctx.save();
         this.effects(ctx);
         ctx.globalAlpha = this.alpha;
-        ctx.translate(Math.min(this.x1, this.x2) + this.width / 2, Math.min(this.y1, this.y2) + this.height / 2);
+        ctx.translate(
+            Math.min(this.x1, this.x2) + this.width / 2,
+            Math.min(this.y1, this.y2) + this.height / 2
+        );
         ctx.fillStyle = this.gradient
             ? this.gradient
             : Color.toString({
@@ -575,7 +719,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         }
         if (this.events!.stage) {
             const event = this.events!.stage;
-            callAndPrune(this.eventListeners, "beforeDraw", [this, event.currentFrame, this.events!.stage]);
+            callAndPrune(this.eventListeners, "beforeDraw", [
+                this,
+                event.currentFrame,
+                this.events!.stage
+            ]);
         }
         const region = this.drawFunction(ctx, properties!);
         if (region !== undefined) {
@@ -585,7 +733,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             (child as Sprite).events = this.events;
             child.draw(ctx, undefined, false);
         });
-        if (this.events!.stage && !this.handlePointerEvents(ctx, this.events!.stage)) {
+        if (
+            this.events!.stage &&
+            !this.handlePointerEvents(ctx, this.events!.stage)
+        ) {
             ctx.restore();
         }
         if (isRoot) {
@@ -649,24 +800,51 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             this.lastTransformationMatrix = ctx.getTransform();
         }
 
-        const pointIsInPath = [this.events.down, this.events.up, this.events.move].every(
-            event => event === undefined || this.pointIsInPath(ctx, event.translatedPoint.x, event.translatedPoint.y)
+        const pointIsInPath = [
+            this.events.down,
+            this.events.up,
+            this.events.move
+        ].every(
+            event =>
+                event === undefined ||
+                this.pointIsInPath(
+                    ctx,
+                    event.translatedPoint.x,
+                    event.translatedPoint.y
+                )
         );
 
-        if (this.eventListeners.hover.length > 0 && !this.hovered && pointIsInPath) {
+        if (
+            this.eventListeners.hover.length > 0 &&
+            !this.hovered &&
+            pointIsInPath
+        ) {
             callAndPrune(this.eventListeners, "hover", [
                 this,
                 this.events.move?.translatedPoint ??
                     this.events.down?.translatedPoint ??
                     this.events.up!.translatedPoint,
-                this.events.move?.event ?? this.events.down?.event ?? this.events.up!.event,
+                this.events.move?.event ??
+                    this.events.down?.event ??
+                    this.events.up!.event,
                 stage
             ]);
             this.hovered = true;
         } else if (!pointIsInPath && this.hovered) {
             if (this.eventListeners.hoverEnd.length > 0) {
-                const unHoverEvent = [this.events.down, this.events.up, this.events.move].find(e => {
-                    return e !== undefined && !this.pointIsInPath(ctx, e.translatedPoint.x, e.translatedPoint.y);
+                const unHoverEvent = [
+                    this.events.down,
+                    this.events.up,
+                    this.events.move
+                ].find(e => {
+                    return (
+                        e !== undefined &&
+                        !this.pointIsInPath(
+                            ctx,
+                            e.translatedPoint.x,
+                            e.translatedPoint.y
+                        )
+                    );
                 });
                 callAndPrune(this.eventListeners, "hoverEnd", [
                     this,
@@ -684,14 +862,22 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 this.eventListeners.keydown.length > 0 &&
                 this.events.stage!.keyTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "keydown", [this, this.events.keydown, stage]);
+                callAndPrune(this.eventListeners, "keydown", [
+                    this,
+                    this.events.keydown,
+                    stage
+                ]);
             }
             if (
                 this.events?.keyup &&
                 this.eventListeners.keyup.length > 0 &&
                 this.events.stage!.keyTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "keyup", [this, this.events.keyup, stage]);
+                callAndPrune(this.eventListeners, "keyup", [
+                    this,
+                    this.events.keyup,
+                    stage
+                ]);
             }
 
             if (
@@ -700,7 +886,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 pointIsInPath &&
                 this.events.stage!.scrollTarget === this.name
             ) {
-                callAndPrune(this.eventListeners, "scroll", [this, this.events.scroll, stage]);
+                callAndPrune(this.eventListeners, "scroll", [
+                    this,
+                    this.events.scroll,
+                    stage
+                ]);
             }
         }
 
@@ -713,7 +903,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             pointerId?: number
         ) => {
             const { event, translatedPoint } = positionedPointerEvent;
-            const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as Position;
+            const transformedPos = ctx
+                .getTransform()
+                .inverse()
+                .transformPoint(translatedPoint) as Position;
             const transformationMatrix = ctx.getTransform();
             self.lastPointerPosition = transformedPos;
             self.lastTransformationMatrix = transformationMatrix;
@@ -727,28 +920,48 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                     transformationMatrix.e,
                     transformationMatrix.f
                 );
-                callAndPrune(self.eventListeners, listener!, [self, transformedPos, event, stage]);
+                callAndPrune(self.eventListeners, listener!, [
+                    self,
+                    transformedPos,
+                    event,
+                    stage
+                ]);
                 if (pointerId !== undefined) {
                     self.pointerId = pointerId;
                 }
                 ctx.restore();
             };
             if (listener === undefined) {
-                (root as Sprite).rootPointerEventCallback = function (pointerId?: number) {
+                (root as Sprite).rootPointerEventCallback = function (
+                    pointerId?: number
+                ) {
                     if (pointerId !== undefined) {
                         self.pointerId = pointerId;
                     }
                 }.bind(this, pointerId);
             } else {
-                (root as Sprite).rootPointerEventCallback = callback.bind(this, pointerId);
+                (root as Sprite).rootPointerEventCallback = callback.bind(
+                    this,
+                    pointerId
+                );
             }
         };
 
         if (this.events.move && !this.events.up && !this.events.down) {
-            if (this.pointerId !== undefined && this.eventListeners.drag.length > 0) {
+            if (
+                this.pointerId !== undefined &&
+                this.eventListeners.drag.length > 0
+            ) {
                 ctx.restore();
                 ctxRestored = true;
-                registerCallback(ctx, this.events.move, this.root, this, "drag", this.pointerId);
+                registerCallback(
+                    ctx,
+                    this.events.move,
+                    this.root,
+                    this,
+                    "drag",
+                    this.pointerId
+                );
             } else if (this.pointerId !== undefined) {
                 ctx.restore();
                 ctxRestored = true;
@@ -762,7 +975,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         if (this.events.up) {
             ctx.restore();
             ctxRestored = true;
-            if (this.eventListeners.release.length > 0 && this.pointerId !== undefined) {
+            if (
+                this.eventListeners.release.length > 0 &&
+                this.pointerId !== undefined
+            ) {
                 const event = this.events.up;
                 registerCallback(ctx, event, this.root, this, "release");
             }
@@ -772,9 +988,23 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             ctxRestored = true;
             const event = this.events.down;
             if (this.eventListeners.click.length > 0) {
-                registerCallback(ctx, event, this.root, this, "click", event.event.pointerId);
+                registerCallback(
+                    ctx,
+                    event,
+                    this.root,
+                    this,
+                    "click",
+                    event.event.pointerId
+                );
             } else {
-                registerCallback(ctx, event, this.root, this, undefined, event.event.pointerId);
+                registerCallback(
+                    ctx,
+                    event,
+                    this.root,
+                    this,
+                    undefined,
+                    event.event.pointerId
+                );
             }
         }
 
@@ -815,9 +1045,19 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
     public logHierarchy(indent = 0) {
         const name = this.name === "" ? this.constructor.name : this.name;
-        const red = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.red;
-        const green = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.green;
-        const blue = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.blue;
+        const red = [this.red, this.green, this.blue].every(color => color < 25)
+            ? 125
+            : this.red;
+        const green = [this.red, this.green, this.blue].every(
+            color => color < 25
+        )
+            ? 125
+            : this.green;
+        const blue = [this.red, this.green, this.blue].every(
+            color => color < 25
+        )
+            ? 125
+            : this.blue;
         console.log(
             `%c${"\t".repeat(indent)} ⌞${name} \t{ ${this.constructor.name} @ (${this.x1}, ${this.y1}) (${this.x2}, ${
                 this.y2
@@ -828,11 +1068,18 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     public distribute(
-        animations: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[][],
+        animations: AnimationType<
+            Properties &
+                HiddenProperties &
+                HIDDEN_SHAPE_PROPERTIES &
+                DEFAULT_PROPERTIES
+        >[][],
         params: AnimationParams = { loop: false, iterations: 1, delay: 0 }
     ) {
         if (animations.length > this.channels.length) {
-            throw new Error(`Cannot distribute ${animations.length} animations to ${this.channels.length} channels`);
+            throw new Error(
+                `Cannot distribute ${animations.length} animations to ${this.channels.length} channels`
+            );
         }
         for (let idx = 0; idx < animations.length; idx++) {
             const animation = animations[idx];
@@ -863,7 +1110,9 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     private animate() {
-        const animations = this.channels.map(channel => channel.stepForward()).filter(animation => animation !== null);
+        const animations = this.channels
+            .map(channel => channel.stepForward())
+            .filter(animation => animation !== null);
         for (const animation of animations.reverse()) {
             this.animateProperty(animation!);
         }
@@ -871,19 +1120,30 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     private animateProperty(
-        animation: PrivateAnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>
+        animation: PrivateAnimationType<
+            Properties &
+                HiddenProperties &
+                HIDDEN_SHAPE_PROPERTIES &
+                DEFAULT_PROPERTIES
+        >
     ): void {
         if (animation._from === undefined || animation.frame === 0) {
             if (animation.from === null) {
-                animation._from = (this as Record<any, any>)[animation.property as keyof Properties]!;
+                animation._from = (this as Record<any, any>)[
+                    animation.property as keyof Properties
+                ]!;
             } else {
                 animation._from = animation.from;
             }
         }
         if (animation._to === undefined || animation.frame === 0) {
             if (typeof animation.to === "function") {
-                const callback = animation.to as AnimationCallback<number | Record<string, number>>;
-                animation._to = callback(animation._from as number | Record<string, number>);
+                const callback = animation.to as AnimationCallback<
+                    number | Record<string, number>
+                >;
+                animation._to = callback(
+                    animation._from as number | Record<string, number>
+                );
             } else {
                 animation._to = animation.to;
             }
@@ -896,14 +1156,27 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             animation.easing
         ];
         if (
-            typeof (this as Record<any, any>)[animation.property as keyof Properties] === "number" &&
+            typeof (this as Record<any, any>)[
+                animation.property as keyof Properties
+            ] === "number" &&
             typeof from === "number" &&
             typeof to === "number"
         ) {
-            this.set(animation.property as any, from + easing(frame / duration) * (to - from));
-        } else if (typeof (this as Record<any, any>)[animation.property as keyof Properties] === "object") {
+            this.set(
+                animation.property as any,
+                from + easing(frame / duration) * (to - from)
+            );
+        } else if (
+            typeof (this as Record<any, any>)[
+                animation.property as keyof Properties
+            ] === "object"
+        ) {
             if (typeof from !== "object" || typeof to !== "object") {
-                this.raiseAnimationError(from, to, animation.property as string);
+                this.raiseAnimationError(
+                    from,
+                    to,
+                    animation.property as string
+                );
             }
             const current = { ...(to as object) } as Record<string, number>;
             for (const key of Object.keys(to as object)) {
@@ -912,14 +1185,20 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 if (p_from === undefined || p_to === undefined) {
                     this.raiseAnimationError(from, to, key);
                 }
-                current[key] = p_from + easing(frame / duration) * (p_to - p_from);
+                current[key] =
+                    p_from + easing(frame / duration) * (p_to - p_from);
             }
             this.set(animation.property as any, current);
         } else {
-            throw new Error(`Property ${animation.property as string} is not a valid property`);
+            throw new Error(
+                `Property ${animation.property as string} is not a valid property`
+            );
         }
         if (animation.frame === animation.duration) {
-            callAndPrune(this.eventListeners, "animationFinish", [this, animation as never]);
+            callAndPrune(this.eventListeners, "animationFinish", [
+                this,
+                animation as never
+            ]);
         }
     }
 
@@ -928,7 +1207,9 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         to: number | Record<string, number>,
         property: string
     ) {
-        throw new Error(`${from as number} -> ${to as number} is not a valid animation for property ${property}`);
+        throw new Error(
+            `${from as number} -> ${to as number} is not a valid animation for property ${property}`
+        );
     }
 
     public setPointerEvents(collection: EventCollection) {
@@ -938,7 +1219,9 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
 
     private r_setPointerEvents(collection: EventCollection) {
         this.setPointerEvents(collection);
-        this._children.forEach(child => (child as Sprite).r_setPointerEvents(collection));
+        this._children.forEach(child =>
+            (child as Sprite).r_setPointerEvents(collection)
+        );
         return this;
     }
 
@@ -946,14 +1229,27 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         this.channels.push(
             ...Array.from(
                 { length: num },
-                () => new Channel<Properties & HiddenProperties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>()
+                () =>
+                    new Channel<
+                        Properties &
+                            HiddenProperties &
+                            DEFAULT_PROPERTIES &
+                            HIDDEN_SHAPE_PROPERTIES
+                    >()
             )
         );
         return this;
     }
 
-    public schedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+    public schedule<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (currentFrame >= frame) {
                 callback(sprite, currentFrame, stage);
                 return 1;
@@ -963,8 +1259,15 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return listener as Listener;
     }
 
-    public selfSchedule<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+    public selfSchedule<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (sprite.currentFrame >= frame) {
                 callback(sprite, currentFrame, stage);
                 return 1;
@@ -974,8 +1277,15 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return listener as Listener;
     }
 
-    public scheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+    public scheduleExactly<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (currentFrame === frame) {
                 callback(sprite, currentFrame, stage);
                 return 1;
@@ -985,8 +1295,15 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return listener as Listener;
     }
 
-    public selfScheduleExactly<Listener extends StageEventCallback<this>>(frame: number, callback: Listener): Listener {
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+    public selfScheduleExactly<Listener extends StageEventCallback<this>>(
+        frame: number,
+        callback: Listener
+    ): Listener {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (sprite.currentFrame === frame) {
                 callback(sprite, currentFrame, stage);
                 return 1;
@@ -996,12 +1313,19 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return listener as Listener;
     }
 
-    public delay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener {
+    public delay<Listener extends StageEventCallback<this>>(
+        delay: number,
+        callback: Listener
+    ): Listener {
         const start = (this.root as Sprite).stage?.currentFrame;
         if (start === undefined) {
             throw new Error("Sprite must be attached to a stage to use delay");
         }
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (currentFrame >= start + delay) {
                 callback(sprite, currentFrame, stage);
                 return 1;
@@ -1011,9 +1335,16 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return listener as Listener;
     }
 
-    public selfDelay<Listener extends StageEventCallback<this>>(delay: number, callback: Listener): Listener {
+    public selfDelay<Listener extends StageEventCallback<this>>(
+        delay: number,
+        callback: Listener
+    ): Listener {
         const start = this.currentFrame;
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (sprite.currentFrame >= start + delay) {
                 callback(sprite, currentFrame, stage);
                 return 1;
@@ -1027,7 +1358,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         condition: (sprite: this) => boolean,
         callback: Listener
     ): Listener {
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (condition(sprite)) {
                 return callback(sprite, currentFrame, stage);
             }
@@ -1040,7 +1375,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         condition: (stage: Stage) => boolean,
         callback: Listener
     ): Listener {
-        const listener: StageEventCallback<this> = (sprite: this, currentFrame: number, stage: Stage) => {
+        const listener: StageEventCallback<this> = (
+            sprite: this,
+            currentFrame: number,
+            stage: Stage
+        ) => {
             if (condition(stage)) {
                 return callback(sprite, currentFrame, stage);
             }
@@ -1050,14 +1389,18 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     public hasEventListeners() {
-        return Object.values(this.eventListeners).some(listeners => listeners.length > 0);
+        return Object.values(this.eventListeners).some(
+            listeners => listeners.length > 0
+        );
     }
 
     public spriteOrChildrenHaveEventListeners() {
         if (this.hasEventListeners()) {
             return true;
         }
-        return this._children.some(child => child.spriteOrChildrenHaveEventListeners());
+        return this._children.some(child =>
+            child.spriteOrChildrenHaveEventListeners()
+        );
     }
 
     public copy(): this {
@@ -1077,13 +1420,28 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             Object.getPrototypeOf(this) as object,
             Object.getOwnPropertyDescriptors(clone)
         ) as this;
-        copy.eventListeners = {} as SpriteEventListeners<this, Properties & HiddenProperties>;
+        copy.eventListeners = {} as SpriteEventListeners<
+            this,
+            Properties & HiddenProperties
+        >;
         for (const [event, listeners] of Object.entries(this.eventListeners)) {
-            copy.eventListeners[event as keyof SpriteEventListeners<this, Properties & HiddenProperties>] =
-                listeners.map((listener: (...args: any) => any) => listener.bind(copy) as (...args: any) => any);
+            copy.eventListeners[
+                event as keyof SpriteEventListeners<
+                    this,
+                    Properties & HiddenProperties
+                >
+            ] = listeners.map(
+                (listener: (...args: any) => any) =>
+                    listener.bind(copy) as (...args: any) => any
+            );
         }
         copy.channels = this.channels.map(function () {
-            return new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>();
+            return new Channel<
+                Properties &
+                    HiddenProperties &
+                    HIDDEN_SHAPE_PROPERTIES &
+                    DEFAULT_PROPERTIES
+            >();
         });
         copy._children = this._children.map(child => child.copy());
         copy._parent = undefined;

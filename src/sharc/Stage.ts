@@ -1,13 +1,20 @@
 import { NullSprite } from "./Sprites";
 import { Color, Colors, Position, callAndPrune } from "./Utils";
-import { PointerEventCallback, EventCollection, StageEventListeners } from "./types/Events";
+import {
+    PointerEventCallback,
+    EventCollection,
+    StageEventListeners
+} from "./types/Events";
 import { DEFAULT_PROPERTIES } from "./types/Sprites";
 import { CanvasInterface } from "./types/Stage";
 
 export class StageRoot<DetailsType = any> extends NullSprite {
     constructor(
         stage: Stage,
-        props: { position?: Position } & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">
+        props: { position?: Position } & Omit<
+            DEFAULT_PROPERTIES<DetailsType>,
+            "bounds" | "color"
+        >
     ) {
         super(props);
         this.stage = stage;
@@ -16,7 +23,9 @@ export class StageRoot<DetailsType = any> extends NullSprite {
 
 export class Stage<RootDetailsType = any> {
     protected _root: NullSprite;
-    protected ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+    protected ctx?:
+        | CanvasRenderingContext2D
+        | OffscreenCanvasRenderingContext2D;
     protected active = false;
     protected nextRenderTime?: number = undefined;
     protected frameRate = 60;
@@ -67,40 +76,44 @@ export class Stage<RootDetailsType = any> {
         return this._root;
     }
 
-    public addEventListener<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
-        event: E,
-        callback: StageEventListeners<this>[E][0]
-    ): this {
-        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<Stage>);
+    public addEventListener<
+        E extends
+            keyof StageEventListeners<this> = keyof StageEventListeners<this>
+    >(event: E, callback: StageEventListeners<this>[E][0]): this {
+        this.eventListeners[event as "click"].push(
+            callback as unknown as PointerEventCallback<Stage>
+        );
         return this;
     }
 
-    public on<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
-        event: E,
-        callback: StageEventListeners<this>[E][0]
-    ): this {
+    public on<
+        E extends
+            keyof StageEventListeners<this> = keyof StageEventListeners<this>
+    >(event: E, callback: StageEventListeners<this>[E][0]): this {
         this.addEventListener(event, callback);
         return this;
     }
 
-    public removeEventListener<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
-        event: E,
-        callback?: StageEventListeners<this>[E][0]
-    ): this {
+    public removeEventListener<
+        E extends
+            keyof StageEventListeners<this> = keyof StageEventListeners<this>
+    >(event: E, callback?: StageEventListeners<this>[E][0]): this {
         if (!callback) {
             this.eventListeners[event as "click"] = [];
             return this;
         }
-        this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
+        this.eventListeners[event as "click"] = this.eventListeners[
+            event as "click"
+        ].filter(
             cb => cb !== (callback as unknown as PointerEventCallback<Stage>)
         );
         return this;
     }
 
-    public includeEventListener<E extends keyof StageEventListeners<this> = keyof StageEventListeners<this>>(
-        event: E,
-        callback: StageEventListeners<this>[E][0]
-    ): this {
+    public includeEventListener<
+        E extends
+            keyof StageEventListeners<this> = keyof StageEventListeners<this>
+    >(event: E, callback: StageEventListeners<this>[E][0]): this {
         this.removeEventListener(event, callback);
         this.addEventListener(event, callback);
         return this;
@@ -119,7 +132,10 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? -1 : 1)
         );
         callAndPrune(this.eventListeners, "click", [this, position, e, this]);
-        this.drawEvents.down = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
+        this.drawEvents.down = {
+            event: e,
+            translatedPoint: this.positionOnCanvas(this.canvas!, e)
+        };
         this.canvas?.focus && this.canvas.focus();
     }
 
@@ -136,7 +152,10 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? -1 : 1)
         );
         callAndPrune(this.eventListeners, "release", [this, position, e, this]);
-        this.drawEvents.up = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
+        this.drawEvents.up = {
+            event: e,
+            translatedPoint: this.positionOnCanvas(this.canvas!, e)
+        };
     }
 
     protected pointerMoveHandler(e: PointerEvent) {
@@ -152,7 +171,10 @@ export class Stage<RootDetailsType = any> {
                 (this.rootStyle === "centered" ? -1 : 1)
         );
         callAndPrune(this.eventListeners, "move", [this, position, e, this]);
-        this.drawEvents.move = { event: e, translatedPoint: this.positionOnCanvas(this.canvas!, e) };
+        this.drawEvents.move = {
+            event: e,
+            translatedPoint: this.positionOnCanvas(this.canvas!, e)
+        };
     }
 
     protected keydownHandler(e: KeyboardEvent) {
@@ -182,20 +204,39 @@ export class Stage<RootDetailsType = any> {
         e.preventDefault();
     }
 
-    public positionOnCanvas(canvas: CanvasInterface, e: PointerEvent): Position {
+    public positionOnCanvas(
+        canvas: CanvasInterface,
+        e: PointerEvent
+    ): Position {
         return new Position(
-            ((e.offsetX || e.clientX - canvas.getBoundingClientRect().left) * canvas.width) / canvas.clientWidth, // (Google Chrome) || (Firefox)
-            ((e.offsetY || e.clientY - canvas.getBoundingClientRect().top) * canvas.height) / canvas.clientHeight // (Google Chrome) || (Firefox)
+            ((e.offsetX || e.clientX - canvas.getBoundingClientRect().left) *
+                canvas.width) /
+                canvas.clientWidth, // (Google Chrome) || (Firefox)
+            ((e.offsetY || e.clientY - canvas.getBoundingClientRect().top) *
+                canvas.height) /
+                canvas.clientHeight // (Google Chrome) || (Firefox)
         );
     }
 
     public loop(frameRate = 60): this {
         this.stop();
-        this.canvas!.addEventListener("pointerdown", this.pointerDownHandler.bind(this));
-        this.canvas!.addEventListener("pointerup", this.pointerUpHandler.bind(this));
-        this.canvas!.addEventListener("pointermove", this.pointerMoveHandler.bind(this));
+        this.canvas!.addEventListener(
+            "pointerdown",
+            this.pointerDownHandler.bind(this)
+        );
+        this.canvas!.addEventListener(
+            "pointerup",
+            this.pointerUpHandler.bind(this)
+        );
+        this.canvas!.addEventListener(
+            "pointermove",
+            this.pointerMoveHandler.bind(this)
+        );
         this.canvas!.addEventListener("wheel", this.wheelHandler.bind(this));
-        this.canvas!.addEventListener("keydown", this.keydownHandler.bind(this));
+        this.canvas!.addEventListener(
+            "keydown",
+            this.keydownHandler.bind(this)
+        );
         this.canvas!.addEventListener("keyup", this.keyupHandler.bind(this));
         this.active = true;
         this.frameRate = frameRate;
@@ -221,13 +262,17 @@ export class Stage<RootDetailsType = any> {
         return;
     }
 
-    public draw(ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): boolean {
+    public draw(
+        ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+    ): boolean {
         ctx ??= this.ctx;
         if (
             this.resetKeyTargetOnClick &&
             this.drawEvents.up &&
             this.keyTarget !== "" &&
-            this.root.findDescendants(this.keyTarget).some(x => (x as Record<string, any>).pointerId === undefined)
+            this.root
+                .findDescendants(this.keyTarget)
+                .some(x => (x as Record<string, any>).pointerId === undefined)
         ) {
             this.keyTarget = "";
         }
@@ -235,11 +280,17 @@ export class Stage<RootDetailsType = any> {
             this.resetScrollTargetOnClick &&
             this.drawEvents.down &&
             this.scrollTarget !== "" &&
-            this.root.findDescendants(this.scrollTarget).some(x => (x as Record<string, any>).pointerId === undefined)
+            this.root
+                .findDescendants(this.scrollTarget)
+                .some(x => (x as Record<string, any>).pointerId === undefined)
         ) {
             this.scrollTarget = "";
         }
-        callAndPrune(this.eventListeners, "beforeDraw", [this, this.currentFrame, this]);
+        callAndPrune(this.eventListeners, "beforeDraw", [
+            this,
+            this.currentFrame,
+            this
+        ]);
         this.root.setPointerEvents(this.drawEvents);
         ctx!.fillStyle = Color.toString(this.bgColor);
         ctx!.fillRect(0, 0, this.width ?? 0, this.height ?? 0);
@@ -257,11 +308,23 @@ export class Stage<RootDetailsType = any> {
     }
 
     public stop(): this {
-        this.canvas!.removeEventListener("pointerdown", this.pointerDownHandler.bind(this));
-        this.canvas!.removeEventListener("pointerup", this.pointerUpHandler.bind(this));
-        this.canvas!.removeEventListener("pointermove", this.pointerMoveHandler.bind(this));
+        this.canvas!.removeEventListener(
+            "pointerdown",
+            this.pointerDownHandler.bind(this)
+        );
+        this.canvas!.removeEventListener(
+            "pointerup",
+            this.pointerUpHandler.bind(this)
+        );
+        this.canvas!.removeEventListener(
+            "pointermove",
+            this.pointerMoveHandler.bind(this)
+        );
         this.canvas!.removeEventListener("wheel", this.wheelHandler.bind(this));
-        this.canvas!.removeEventListener("keydown", this.keydownHandler.bind(this));
+        this.canvas!.removeEventListener(
+            "keydown",
+            this.keydownHandler.bind(this)
+        );
         this.canvas!.removeEventListener("keyup", this.keyupHandler.bind(this));
         this.active = false;
         return this;

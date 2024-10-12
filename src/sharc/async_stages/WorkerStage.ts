@@ -1,5 +1,13 @@
-import { AsyncStageEventListeners, EventCollection, PointerEventCallback } from "../types/Events";
-import { AsyncMessage, CanvasInterface, StageStateMessage } from "../types/Stage";
+import {
+    AsyncStageEventListeners,
+    EventCollection,
+    PointerEventCallback
+} from "../types/Events";
+import {
+    AsyncMessage,
+    CanvasInterface,
+    StageStateMessage
+} from "../types/Stage";
 import { Stage } from "../Stage";
 import { Color, Colors, Position, callAndPrune } from "../Utils";
 
@@ -25,9 +33,15 @@ const DEFAULT_CANVAS_INTERFACE: CanvasInterface = {
     transferToImageBitmap: () => undefined as unknown as ImageBitmap
 };
 
-export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<DetailsType> {
+export class WorkerStage<
+    DetailsType = any,
+    MessageType = any
+> extends Stage<DetailsType> {
     private offscreenCanvas: OffscreenCanvas;
-    protected eventListeners: AsyncStageEventListeners<this, AsyncMessage<MessageType>> = {
+    protected eventListeners: AsyncStageEventListeners<
+        this,
+        AsyncMessage<MessageType>
+    > = {
         beforeDraw: [],
         click: [],
         release: [],
@@ -51,57 +65,93 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
     private nextDrawEvents?: EventCollection<DetailsType>;
 
     constructor(
-        private readonly _postMessage: (message: AsyncMessage<MessageType>) => void,
+        private readonly _postMessage: (
+            message: AsyncMessage<MessageType>
+        ) => void,
         public readonly rootStyle: "classic" | "centered" = "centered",
         public bgColor: Color = Colors.White
     ) {
         const offscreen = new OffscreenCanvas(1, 1);
-        super(DEFAULT_CANVAS_INTERFACE, rootStyle, bgColor, offscreen.getContext("2d")!);
+        super(
+            DEFAULT_CANVAS_INTERFACE,
+            rootStyle,
+            bgColor,
+            offscreen.getContext("2d")!
+        );
         this.offscreenCanvas = offscreen;
     }
 
     public addEventListener<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
-        this.eventListeners[event as "click"].push(callback as unknown as PointerEventCallback<this, this>);
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
+        this.eventListeners[event as "click"].push(
+            callback as unknown as PointerEventCallback<this, this>
+        );
         return this;
     }
 
     public on<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
         this.addEventListener(event, callback);
         return this;
     }
 
     public removeEventListener<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
         if (!callback) {
             this.eventListeners[event as "click"] = [];
             return this;
         }
-        this.eventListeners[event as "click"] = this.eventListeners[event as "click"].filter(
-            cb => cb !== (callback as unknown as PointerEventCallback<this, this>)
+        this.eventListeners[event as "click"] = this.eventListeners[
+            event as "click"
+        ].filter(
+            cb =>
+                cb !== (callback as unknown as PointerEventCallback<this, this>)
         );
         return this;
     }
 
     public includeEventListener<
-        E extends keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>> = keyof AsyncStageEventListeners<
+        E extends keyof AsyncStageEventListeners<
             this,
             AsyncMessage<MessageType>
-        >
-    >(event: E, callback: AsyncStageEventListeners<this, AsyncMessage<MessageType>>[E][0]): this {
+        > = keyof AsyncStageEventListeners<this, AsyncMessage<MessageType>>
+    >(
+        event: E,
+        callback: AsyncStageEventListeners<
+            this,
+            AsyncMessage<MessageType>
+        >[E][0]
+    ): this {
         this.removeEventListener(event, callback);
         this.addEventListener(event, callback);
         return this;
@@ -121,7 +171,8 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.canvas!.offsetTop = e.canvasProperties.offsetTop;
         this.canvas!.clientWidth = e.canvasProperties.clientWidth;
         this.canvas!.clientHeight = e.canvasProperties.clientHeight;
-        this.canvas!.getBoundingClientRect = () => e.canvasProperties.boundingClientRect;
+        this.canvas!.getBoundingClientRect = () =>
+            e.canvasProperties.boundingClientRect;
     }
 
     private sendErrorString(e: string) {
@@ -129,8 +180,15 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         this.onError(error);
     }
 
-    public readonly onmessage = (event: MessageEvent<AsyncMessage<MessageType>>): void => {
-        callAndPrune(this.eventListeners, "message", [this, event.data], this.sendErrorString.bind(this));
+    public readonly onmessage = (
+        event: MessageEvent<AsyncMessage<MessageType>>
+    ): void => {
+        callAndPrune(
+            this.eventListeners,
+            "message",
+            [this, event.data],
+            this.sendErrorString.bind(this)
+        );
         const e = event.data;
         switch (e.type) {
             case "init":
@@ -141,7 +199,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 this.offscreenCanvas.width = e.width;
                 this.offscreenCanvas.height = e.height;
                 this._root.position =
-                    this.rootStyle === "centered" ? new Position(e.width / 2, e.height / 2) : new Position(0, 0);
+                    this.rootStyle === "centered"
+                        ? new Position(e.width / 2, e.height / 2)
+                        : new Position(0, 0);
                 this.postMessage({ type: "ready" });
                 this.loop();
                 break;
@@ -160,7 +220,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
 
     public draw(ctx?: OffscreenCanvasRenderingContext2D): boolean {
         this.drawEvents = this.nextDrawEvents
-            ? (JSON.parse(JSON.stringify(this.nextDrawEvents)) as EventCollection<DetailsType>)
+            ? (JSON.parse(
+                  JSON.stringify(this.nextDrawEvents)
+              ) as EventCollection<DetailsType>)
             : this.drawEvents;
         const { down, up, move, keydown, keyup, scroll } = this.drawEvents;
         down &&
@@ -170,9 +232,16 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 [
                     this,
                     {
-                        x: down.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+                        x:
+                            down.translatedPoint.x -
+                            (this.rootStyle === "centered"
+                                ? this.canvas!.width / 2
+                                : 0),
                         y:
-                            (down.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                            (down.translatedPoint.y -
+                                (this.rootStyle === "centered"
+                                    ? this.canvas!.height / 2
+                                    : 0)) *
                             (this.rootStyle === "centered" ? -1 : 1)
                     },
                     down.event,
@@ -187,9 +256,16 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 [
                     this,
                     {
-                        x: up.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+                        x:
+                            up.translatedPoint.x -
+                            (this.rootStyle === "centered"
+                                ? this.canvas!.width / 2
+                                : 0),
                         y:
-                            (up.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                            (up.translatedPoint.y -
+                                (this.rootStyle === "centered"
+                                    ? this.canvas!.height / 2
+                                    : 0)) *
                             (this.rootStyle === "centered" ? -1 : 1)
                     },
                     up.event,
@@ -204,9 +280,16 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 [
                     this,
                     {
-                        x: move.translatedPoint.x - (this.rootStyle === "centered" ? this.canvas!.width / 2 : 0),
+                        x:
+                            move.translatedPoint.x -
+                            (this.rootStyle === "centered"
+                                ? this.canvas!.width / 2
+                                : 0),
                         y:
-                            (move.translatedPoint.y - (this.rootStyle === "centered" ? this.canvas!.height / 2 : 0)) *
+                            (move.translatedPoint.y -
+                                (this.rootStyle === "centered"
+                                    ? this.canvas!.height / 2
+                                    : 0)) *
                             (this.rootStyle === "centered" ? -1 : 1)
                     },
                     move.event,
@@ -214,14 +297,34 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 ],
                 this.sendErrorString.bind(this)
             );
-        keydown && callAndPrune(this.eventListeners, "keydown", [this, keydown, this], this.sendErrorString.bind(this));
-        keyup && callAndPrune(this.eventListeners, "keyup", [this, keyup, this], this.sendErrorString.bind(this));
-        scroll && callAndPrune(this.eventListeners, "scroll", [this, scroll, this], this.sendErrorString.bind(this));
+        keydown &&
+            callAndPrune(
+                this.eventListeners,
+                "keydown",
+                [this, keydown, this],
+                this.sendErrorString.bind(this)
+            );
+        keyup &&
+            callAndPrune(
+                this.eventListeners,
+                "keyup",
+                [this, keyup, this],
+                this.sendErrorString.bind(this)
+            );
+        scroll &&
+            callAndPrune(
+                this.eventListeners,
+                "scroll",
+                [this, scroll, this],
+                this.sendErrorString.bind(this)
+            );
         if (
             this.resetKeyTargetOnClick &&
             this.drawEvents.up &&
             this.keyTarget !== "" &&
-            this.root.findDescendants(this.keyTarget).some(x => (x as Record<string, any>).pointerId === undefined)
+            this.root
+                .findDescendants(this.keyTarget)
+                .some(x => (x as Record<string, any>).pointerId === undefined)
         ) {
             this.keyTarget = "";
         }
@@ -229,7 +332,9 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
             this.resetScrollTargetOnClick &&
             this.drawEvents.down &&
             this.scrollTarget !== "" &&
-            this.root.findDescendants(this.scrollTarget).some(x => (x as Record<string, any>).pointerId === undefined)
+            this.root
+                .findDescendants(this.scrollTarget)
+                .some(x => (x as Record<string, any>).pointerId === undefined)
         ) {
             this.scrollTarget = "";
         }
@@ -260,7 +365,10 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
         );
     }
 
-    private postMessage(message: AsyncMessage<MessageType>, port?: MessagePort) {
+    private postMessage(
+        message: AsyncMessage<MessageType>,
+        port?: MessagePort
+    ) {
         if (!port) {
             this._postMessage(message);
             return;

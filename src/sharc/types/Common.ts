@@ -1,16 +1,16 @@
-export type Position = {
+export type PositionType = {
     x: number;
     y: number;
 };
 
-export type Color = {
+export type ColorType = {
     red: number;
     green: number;
     blue: number;
     alpha: number;
 };
 
-export type Bounds = {
+export type BoundsType = {
     x1: number;
     y1: number;
     x2: number;

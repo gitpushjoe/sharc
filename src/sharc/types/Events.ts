@@ -1,11 +1,11 @@
 import { Stage } from "sharc/Stage";
 import { DEFAULT_PROPERTIES, HIDDEN_SHAPE_PROPERTIES } from "./Sprites";
 import { PrivateAnimationType } from "./Animation";
-import { Position } from "./Common";
+import { PositionType } from "./Common";
 
 export type PointerEventCallback<CallerType, StageType = Stage> = (
     caller: CallerType,
-    translatedPoint: Position,
+    translatedPoint: PositionType,
     event: PointerEvent,
     stage: StageType
 ) => boolean | 0 | 1 | void;
@@ -24,7 +24,7 @@ export type KeyboardEventCallback<CallerType, StageType = Stage> = (
 
 export type PositionedPointerEvent = {
     event: PointerEvent;
-    translatedPoint: Position;
+    translatedPoint: PositionType;
 };
 
 export type EventCollection<DetailsType = any> = {
@@ -61,7 +61,7 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     hoverEnd: PointerEventCallback<CallerType>[];
     hold: ((
         sprite: CallerType,
-        translatedPoint: Position,
+        translatedPoint: PositionType,
         event: PointerEvent | undefined,
         stage: Stage
     ) => boolean | 0 | 1 | void)[];
@@ -71,7 +71,9 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     beforeDraw: StageEventCallback<CallerType>[];
     animationFinish: AnimationFinishCallback<
         CallerType,
-        PrivateAnimationType<Properties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
+        PrivateAnimationType<
+            Properties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES
+        >
     >[];
 };
 
@@ -85,6 +87,9 @@ export type StageEventListeners<CallerType = Stage> = {
     beforeDraw: StageEventCallback<CallerType, CallerType>[];
 };
 
-export type AsyncStageEventListeners<CallerType = any, MessageType = any> = StageEventListeners<CallerType> & {
+export type AsyncStageEventListeners<
+    CallerType = any,
+    MessageType = any
+> = StageEventListeners<CallerType> & {
     message: MessageCallback<CallerType, MessageType>[];
 };

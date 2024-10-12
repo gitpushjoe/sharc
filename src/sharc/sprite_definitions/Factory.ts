@@ -10,10 +10,19 @@ import {
 } from "../types/Sprites";
 import { managerUpdate } from "./Manager";
 
-export default class Factory<ParametersType=any, DetailsType = any>
-extends Sprite<DetailsType, OmitBaseProps<FactoryProperties<ParametersType>>, HiddenFactoryProperties>
-implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFactoryProperties>> {
-
+export default class Factory<ParametersType = any, DetailsType = any>
+    extends Sprite<
+        DetailsType,
+        OmitBaseProps<FactoryProperties<ParametersType>>,
+        HiddenFactoryProperties
+    >
+    implements
+        Required<
+            OmitBaseProps<
+                FactoryProperties<ParametersType> & HiddenFactoryProperties
+            >
+        >
+{
     constructor(props: FactoryProperties<ParametersType, DetailsType>) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
             props.position?.x ?? 0,
@@ -33,8 +42,12 @@ implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFact
     public anchor: AnchorPosition | null = null;
     public align: Alignment | null = null;
     public padding: number | null = null;
-    public factory: (parameters: ParametersType) => Shape<DetailsType> | undefined;
-    public parameters: ParametersType extends number ? number : ParametersType[];
+    public factory: (
+        parameters: ParametersType
+    ) => Shape<DetailsType> | undefined;
+    public parameters: ParametersType extends number
+        ? number
+        : ParametersType[];
 
     // AGGREGATE PROPERTIES
     public get position(): Position {
@@ -44,7 +57,6 @@ implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFact
         this.positionX = value.x;
         this.positionY = value.y;
     }
-
 
     // CALCULATED PROPERTIES
     public get positionX(): number {
@@ -63,7 +75,7 @@ implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFact
         this.y2 = value;
     }
 
-    public pointIsInPath() { 
+    public pointIsInPath() {
         return false;
     }
 
@@ -73,7 +85,9 @@ implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFact
 
     public generate() {
         this.removeAllChildren();
-        const parameterTypeIsNumber = (self: Factory<any, any>): self is Factory<number> => {
+        const parameterTypeIsNumber = (
+            self: Factory<any, any>
+        ): self is Factory<number> => {
             return typeof self.parameters === "number";
         };
         if (parameterTypeIsNumber(this)) {
@@ -94,14 +108,18 @@ implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFact
             }
         }
     }
-        
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+    ) {
         super.draw(ctx, {
             position: this.position,
             anchor: this.anchor,
             align: this.align,
             padding: this.padding,
-            factory: () => { return undefined; },
+            factory: () => {
+                return undefined;
+            },
             parameters: null!
         });
     }
@@ -109,7 +127,4 @@ implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFact
     public readonly drawFunction = (): Path2D => {
         return new Path2D();
     };
-
-
 }
-

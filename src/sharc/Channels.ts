@@ -1,4 +1,9 @@
-import { AnimationPackage, PrivateAnimationType, AnimationType, AnimationParams } from "./types/Animation";
+import {
+    AnimationPackage,
+    PrivateAnimationType,
+    AnimationType,
+    AnimationParams
+} from "./types/Animation";
 
 export const DEFAULT_ANIMATION_PARAMS: AnimationParams = {
     loop: false,
@@ -22,7 +27,9 @@ export class Channel<Properties> {
     }
 
     private currentAnimation(): PrivateAnimationType<Properties> | undefined {
-        return this.currentPackage()?.animations[this.index % this.currentPackage()!.animations.length];
+        return this.currentPackage()?.animations[
+            this.index % this.currentPackage()!.animations.length
+        ];
     }
 
     public queueIsEmpty(): boolean {
@@ -34,11 +41,17 @@ export class Channel<Properties> {
         this.step++;
         if (
             this.step >
-            this.currentAnimation()!.delay + this.currentAnimation()!.duration + this.currentPackage()!.params.delay!
+            this.currentAnimation()!.delay +
+                this.currentAnimation()!.duration +
+                this.currentPackage()!.params.delay!
         ) {
             this.step = 0;
             this.index++;
-            if (this.index >= this.currentPackage()!.animations.length * this.currentPackage()!.params.iterations!) {
+            if (
+                this.index >=
+                this.currentPackage()!.animations.length *
+                    this.currentPackage()!.params.iterations!
+            ) {
                 this.index = 0;
                 if (this.currentPackage()!.params.loop) {
                     this.step = 0;
@@ -52,11 +65,17 @@ export class Channel<Properties> {
                 return null;
             }
         }
-        if (this.step < this.currentAnimation()!.delay + this.currentPackage()!.params.delay!) {
+        if (
+            this.step <
+            this.currentAnimation()!.delay +
+                this.currentPackage()!.params.delay!
+        ) {
             return null;
         }
         this.currentAnimation()!.frame = Math.max(
-            this.step - this.currentAnimation()!.delay - this.currentPackage()!.params.delay!,
+            this.step -
+                this.currentAnimation()!.delay -
+                this.currentPackage()!.params.delay!,
             0
         );
         this.currentAnimation()!.channel = this.index;
@@ -67,7 +86,11 @@ export class Channel<Properties> {
         animations: AnimationType<Properties> | AnimationType<Properties>[],
         params: AnimationParams = DEFAULT_ANIMATION_PARAMS
     ) {
-        const [loop, iterations, delay] = [Boolean(params.loop), params.iterations ?? 1, params.delay ?? 0];
+        const [loop, iterations, delay] = [
+            Boolean(params.loop),
+            params.iterations ?? 1,
+            params.delay ?? 0
+        ];
         if (!Array.isArray(animations)) {
             animations = [animations];
         }
@@ -80,7 +103,8 @@ export class Channel<Properties> {
             animation.duration ??= 60;
             animation.easing ??= (x: number) => x;
             animation.name ??= "";
-            if (animation.duration <= 0) throw new Error("Animation duration must be greater than 0");
+            if (animation.duration <= 0)
+                throw new Error("Animation duration must be greater than 0");
             if (animation.delay < 0) animation.delay = 0;
         }
         return {
@@ -122,7 +146,9 @@ export class Channel<Properties> {
     }
 
     public shiftAnimation(): AnimationType<Properties> | undefined {
-        const animation = this.currentPackage()?.animations.shift() as AnimationType<Properties> | undefined;
+        const animation = this.currentPackage()?.animations.shift() as
+            | AnimationType<Properties>
+            | undefined;
         if (this.currentPackage()?.animations.length === 0) {
             this.queue.shift();
         }
@@ -130,7 +156,9 @@ export class Channel<Properties> {
     }
 
     public popAnimation(): AnimationType<Properties> | undefined {
-        const animation = this.currentPackage()?.animations.pop() as AnimationType<Properties> | undefined;
+        const animation = this.currentPackage()?.animations.pop() as
+            | AnimationType<Properties>
+            | undefined;
         if (this.currentPackage()?.animations.length === 0) {
             this.queue.pop();
         }

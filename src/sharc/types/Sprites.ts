@@ -1,13 +1,18 @@
 import { Shape } from "../Sprite";
-import { Position, Bounds, Color } from "./Common";
+import { PositionType, BoundsType, ColorType } from "./Common";
 
 export type DrawFunctionType<Property> = (
     ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
     params: Property
 ) => Path2D | void;
-export type EffectsType = (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void;
+export type EffectsType = (
+    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+) => void;
 
-export type DEFAULT_PROPERTIES<DetailsType = any> = Omit<ShapeProperties, "drawFunction"> & { details?: DetailsType };
+export type DEFAULT_PROPERTIES<DetailsType = any> = Omit<
+    ShapeProperties,
+    "drawFunction"
+> & { details?: DetailsType };
 
 export type PropMetaInfo<Properties> = {
     calculated: Set<keyof Properties>;
@@ -19,11 +24,11 @@ export type OmitBaseProps<Properties> = Omit<
 >;
 
 export type ShapeProperties<T = object> = {
-    bounds?: Bounds;
-    color?: Color;
+    bounds?: BoundsType;
+    color?: ColorType;
     alpha?: number;
     rotation?: number;
-    scale?: Position;
+    scale?: PositionType;
     name?: string;
     effects?: EffectsType;
     enabled?: boolean;
@@ -63,17 +68,17 @@ export type HIDDEN_SHAPE_PROPERTIES = {
     y2: number;
     scaleX: number;
     scaleY: number;
-    center: Position;
+    center: PositionType;
     centerX: number;
     centerY: number;
-    corner1: Position;
-    corner2: Position;
+    corner1: PositionType;
+    corner2: PositionType;
     width: number;
     height: number;
 };
 
 export type StrokeType = {
-    color?: Color;
+    color?: ColorType;
     lineWidth?: number;
     lineJoin?: CanvasLineJoin;
     lineCap?: CanvasLineCap;
@@ -88,7 +93,7 @@ export type ArrowType = {
     angle?: number;
     stroke?: StrokeType;
     closed?: boolean;
-    color?: Color;
+    color?: ColorType;
 };
 
 export type LineProperties<DetailsType = any> = {
@@ -105,9 +110,9 @@ export type HiddenArrowProperties = {
     arrowSide: "start" | "end" | "both" | "none";
     arrowAngle: number;
     arrowClosed: boolean;
-    arrowColor: Color;
+    arrowColor: ColorType;
     arrowStroke: StrokeType;
-    arrowStrokeColor: Color;
+    arrowStrokeColor: ColorType;
     arrowStrokeRed: number;
     arrowStrokeGreen: number;
     arrowStrokeBlue: number;
@@ -128,7 +133,7 @@ export type HiddenArrowProperties = {
 export type HiddenLineProperties = HiddenArrowProperties;
 
 export type EllipseProperties<DetailsType = any> = {
-    center?: Position;
+    center?: PositionType;
     radius?: number | [number, number];
     startAngle?: number;
     endAngle?: number;
@@ -142,9 +147,15 @@ export type HiddenEllipseProperties = {
     radiusY: number;
 };
 
-export type KeysOf<Properties> = keyof Properties | keyof HIDDEN_SHAPE_PROPERTIES;
+export type KeysOf<Properties> =
+    | keyof Properties
+    | keyof HIDDEN_SHAPE_PROPERTIES;
 
-export type RadiusType = [number] | [number, number] | [number, number, number] | [number, number, number, number];
+export type RadiusType =
+    | [number]
+    | [number, number]
+    | [number, number, number]
+    | [number, number, number, number];
 
 export type RectProperties<DetailsType = any> = {
     radius?: RadiusType;
@@ -152,7 +163,7 @@ export type RectProperties<DetailsType = any> = {
     DEFAULT_PROPERTIES<DetailsType>;
 
 export type HiddenStrokeProperties = {
-    strokeColor: Color;
+    strokeColor: ColorType;
     strokeRed: number;
     strokeGreen: number;
     strokeBlue: number;
@@ -171,14 +182,14 @@ export type StrokeProperties = {
 };
 
 export type BezierPoint = {
-    control1: Position;
-    control2: Position;
-    end: Position;
+    control1: PositionType;
+    control2: PositionType;
+    end: PositionType;
 };
 
 export type BezierCurveProperties<DetailsType = any> = {
     arrow?: ArrowType;
-    start?: Position;
+    start?: PositionType;
     points?: BezierPoint[];
     closePath?: boolean;
     fillRule?: CanvasFillRule;
@@ -191,7 +202,7 @@ export type HiddenBezierCurveProperties = HiddenArrowProperties & {
 };
 
 export type PathProperties<DetailsType = any> = {
-    path?: Position[];
+    path?: PositionType[];
     fillRule?: CanvasFillRule;
     closePath?: boolean;
     startRatio?: number;
@@ -201,7 +212,7 @@ export type PathProperties<DetailsType = any> = {
 
 export type PolygonProperties<DetailsType = any> = {
     sides?: number;
-    center?: Position;
+    center?: PositionType;
     radius?: number;
     fillRule?: CanvasFillRule;
     startRatio?: number;
@@ -210,7 +221,7 @@ export type PolygonProperties<DetailsType = any> = {
     Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds">;
 
 export type StarProperties<DetailsType = any> = {
-    center?: Position;
+    center?: PositionType;
     radius?: number;
     innerRadius?: number;
     startRatio?: number;
@@ -221,7 +232,7 @@ export type StarProperties<DetailsType = any> = {
 
 export type TextProperties<DetailsType = any> = {
     text?: string;
-    position?: Position;
+    position?: PositionType;
     positionIsCenter?: boolean;
     font?: string;
     fontSize?: number;
@@ -231,7 +242,7 @@ export type TextProperties<DetailsType = any> = {
     maxWidth?: number | null;
     bold?: boolean;
     italic?: boolean;
-    color?: Color;
+    color?: ColorType;
 } & StrokeProperties &
     Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds">;
 
@@ -242,7 +253,7 @@ export type HiddenTextProperties = {
 
 export type ImageProperties<DetailsType = any> = {
     src?: string;
-    srcBounds?: Bounds | null;
+    srcBounds?: BoundsType | null;
 } & StrokeProperties &
     DEFAULT_PROPERTIES<DetailsType>;
 
@@ -251,15 +262,15 @@ export type HiddenImageProperties = {
     srcY1: number;
     srcX2: number;
     srcY2: number;
-    srcCorner1: Position;
-    srcCorner2: Position;
+    srcCorner1: PositionType;
+    srcCorner2: PositionType;
     useSrcBounds: boolean;
     image: ImageBitmap | null;
 };
 
 export type LabelProperties<DetailsType = any> = TextProperties<DetailsType> & {
     padding?: number;
-    backgroundColor?: Color;
+    backgroundColor?: ColorType;
     backgroundRadius?: RadiusType;
     textStroke?: StrokeType | null;
 };
@@ -282,10 +293,16 @@ export type AnchorPosition =
     | "bottom-center"
     | "bottom-right";
 
-export type Alignment = "row-center" | "top" | "bottom" | "column-center" | "left" | "right";
+export type Alignment =
+    | "row-center"
+    | "top"
+    | "bottom"
+    | "column-center"
+    | "left"
+    | "right";
 
 export type NullSpriteProperties<DetailsType = any> = {
-    position?: Position;
+    position?: PositionType;
 } & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">;
 
 export type HiddenNullSpriteProperties = {
@@ -308,6 +325,26 @@ export type FactoryProperties<ParametersType = number, DetailsType = any> = {
 
 export type HiddenFactoryProperties = HiddenManagerProperties;
 
-export type MostlyRequired<Type extends { details?: any }> = Required<Omit<Type, "details">> & {
+export type PolarPositionType = {
+    angle?: number;
+    radius?: number;
+};
+
+export type PolarWrapperProperties<DetailsType = any> = {
+    location?: PolarPositionType;
+    offset?: PolarPositionType;
+    active?: boolean;
+} & NullSpriteProperties<DetailsType>;
+
+export type HiddenPolarWrapperProperties = {
+    angle: number;
+    radius: number;
+    offsetAngle: number;
+    offsetRadius: number;
+} & HiddenNullSpriteProperties;
+
+export type MostlyRequired<Type extends { details?: any }> = Required<
+    Omit<Type, "details">
+> & {
     details?: Type["details"];
 };

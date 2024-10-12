@@ -1,24 +1,34 @@
 import {
     BezierCurve,
     Ellipse,
+    FactorySprite,
     ImageSprite,
     LabelSprite,
     Line,
     ManagerSprite,
-    NullSprite,
+    PolarWrapper,
     Rect,
     TextSprite
 } from "./sharc/Sprites";
 import { Stage } from "./sharc/Stage";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
-import { Bounds, Colors, Easing, Position } from "./sharc/Utils";
+import {
+    Animate,
+    AnimateTo,
+    Bounds,
+    Color,
+    Colors,
+    Easing,
+    Position
+} from "./sharc/Utils";
 
 export interface Test {
     name: string;
-    apply: (stage: Stage | WorkerStage<any, string>, isOffscreen: boolean) => void;
+    apply: (
+        stage: Stage | WorkerStage<any, string>,
+        isOffscreen: boolean
+    ) => void;
 }
-
-
 
 export const tests: Test[] = [
     {
@@ -104,13 +114,15 @@ export const tests: Test[] = [
                 fps.details![2].push(fpsValue);
                 const skipped = fps.details![1] + +(fpsValue < 40);
                 const skippedPerc = ((100 * skipped) / frame).toFixed(2);
-                const avg = fps.details![2].reduce((a, b) => a + b, 0) / fps.details![2].length;
+                const avg =
+                    fps.details![2].reduce((a, b) => a + b, 0) /
+                    fps.details![2].length;
                 const stdev = Math.sqrt(
-                    fps.details![2].reduce((a, b) => a + (b - avg) ** 2, 0) / fps.details![2].length
+                    fps.details![2].reduce((a, b) => a + (b - avg) ** 2, 0) /
+                        fps.details![2].length
                 );
                 fps.text = `FPS: ${fpsValue.toFixed(2)}  Skipped: ${skippedPerc}% (${skipped})   Avg: ${avg.toFixed(2)}  Stdev: ${stdev.toFixed(2)}`;
                 fps.details = [now, skipped, fps.details![2]];
-                // console.log(1000 / stage.lastRenderMs);
             });
         }
     },
@@ -210,7 +222,16 @@ export const tests: Test[] = [
             stage.root.addChild(image);
             stage.root.addChild(
                 new Ellipse({ color: Colors.Blue, radius: 10 }).distribute(
-                    [[{ property: "centerX", from: 0, to: 1000, easing: Easing.Bounce(Easing.EASE_IN_OUT) }]],
+                    [
+                        [
+                            {
+                                property: "centerX",
+                                from: 0,
+                                to: 1000,
+                                easing: Easing.Bounce(Easing.EASE_IN_OUT)
+                            }
+                        ]
+                    ],
                     { loop: true }
                 )
             );
@@ -223,9 +244,14 @@ export const tests: Test[] = [
     },
     {
         name: "2.0-features",
-        apply: (stage: Stage | WorkerStage<any, string>, isOffscreen: boolean) => {
+        apply: (
+            stage: Stage | WorkerStage<any, string>,
+            isOffscreen: boolean
+        ) => {
             const ellipseCount = 20;
-            const log = isOffscreen ? (stage as WorkerStage).postCustomMessage : console.log;
+            const log = isOffscreen
+                ? (stage as WorkerStage).postCustomMessage
+                : console.log;
             for (let i = 0; i < ellipseCount; ++i) {
                 const ellipse = new Ellipse({
                     color: (i % 2 && Colors.Red) || Colors.Blue,
@@ -296,7 +322,10 @@ export const tests: Test[] = [
                 });
             }
             const max = 100;
-            const countup = function (sprite: TextSprite<number>, frame: number) {
+            const countup = function (
+                sprite: TextSprite<number>,
+                frame: number
+            ) {
                 sprite.details! += +(frame % 4 == 3);
                 sprite.text = `Counting up to ${max}: ${sprite.details}`;
                 if (sprite.details! == max / 2) {
@@ -417,7 +446,13 @@ export const tests: Test[] = [
             });
             text.on("beforeDraw", (sprite, frame) => {
                 const property =
-                    frame % 120 === 1 ? "center" : frame % 120 === 41 ? "corner1" : frame % 120 === 81 ? "corner2" : "";
+                    frame % 120 === 1
+                        ? "center"
+                        : frame % 120 === 41
+                          ? "corner1"
+                          : frame % 120 === 81
+                            ? "corner2"
+                            : "";
                 if (!property) {
                     return;
                 }
@@ -491,12 +526,112 @@ export const tests: Test[] = [
                     console.log(`update took ${Date.now() - start}ms`);
                 }
                 if (frame % 80 === 70) {
-                    ellipse.center = new Position(Math.random() * 300 + 150, Math.random() * 300 - 150);
-                    rect.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
-                    text.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
+                    ellipse.center = new Position(
+                        Math.random() * 300 + 150,
+                        Math.random() * 300 - 150
+                    );
+                    rect.center = new Position(
+                        Math.random() * 300 - 150,
+                        Math.random() * 300 - 150
+                    );
+                    text.center = new Position(
+                        Math.random() * 300 - 150,
+                        Math.random() * 300 - 150
+                    );
                 }
             });
             // stage.loop(1);
+        }
+    },
+    {
+        name: "polar",
+        apply: (stage: Stage | WorkerStage<any, string>) => {
+            const root = stage.root;
+            root.details = 0;
+            root.center = new Position(600, 400);
+            stage.bgColor = { ...Colors.LightSlateGray, alpha: 0.01 };
+
+            for (let i = 1; i < 7; i++) {
+                const pole = new PolarWrapper({
+                    location: { radius: 80 * i },
+                    name: `pole${i}`,
+                    channelCount: 2
+                }).addChild(
+                    new Ellipse({
+                        radius: 25,
+                        color: new Color(
+                            Math.random() * 175 + 55,
+                            Math.random() * 175 + 55,
+                            Math.random() * 175 + 55
+                        ),
+                        stroke: {
+                            color: Colors.Black,
+                            lineWidth: 5
+                        },
+                        name: `pole${i}-ellipse`
+                    })
+                        .on("release", sprite => {
+                            if (root.details === 0) {
+                                const randomPole = root.children[
+                                    Math.floor(
+                                        Math.random() * root.children.length
+                                    )
+                                ] as PolarWrapper;
+                                const parent = sprite.parent! as PolarWrapper;
+                                parent.channels[1].push(
+                                    AnimateTo("radius", randomPole.radius, 40)
+                                );
+                                randomPole.channels[1].push(
+                                    AnimateTo("radius", parent.radius, 40)
+                                );
+                                root.details += 2;
+                            }
+                        })
+                        .addChild(
+                            new PolarWrapper({
+                                location: { radius: 45 },
+                                offset: { angle: 360 / 8 }
+                            }).addChild(
+                                new FactorySprite({
+                                    factory: (n: number) =>
+                                        new Ellipse({
+                                            radius: 12,
+                                            name: `${n}`,
+                                            color: new Color(
+                                                Math.random() * 175 + 55,
+                                                Math.random() * 175 + 55,
+                                                Math.random() * 175 + 55,
+                                                Math.random() ** 2
+                                            ),
+                                            stroke: { lineWidth: 3 }
+                                        }),
+                                    parameters: 8
+                                }).on("beforeDraw", sprite => {
+                                    sprite.generate();
+                                    sprite.parent!.addChildren(
+                                        ...sprite.children
+                                    );
+                                    sprite.parent!.channels[0].push(
+                                        Animate("rotation", 360, 0, 400),
+                                        { loop: true }
+                                    );
+                                    sprite.removeSelf();
+                                })
+                            )
+                        )
+                );
+
+                pole.on("animationFinish", function () {
+                    root.details = Math.max(0, --root.details);
+                });
+
+                pole.channels[0].push(
+                    Animate("angle", 0, 360, 250 * i * 0.7),
+                    { loop: true }
+                );
+
+                root.addChild(pole);
+            }
         }
     }
 ];

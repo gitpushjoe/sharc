@@ -4,7 +4,11 @@ import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Polygon<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: Position }, object>
+    extends StrokeableSprite<
+        DetailsType,
+        OmitBaseProps<PolygonProperties> & { center?: Position },
+        object
+    >
     implements Required<OmitBaseProps<PolygonProperties>>
 {
     constructor(props: PolygonProperties<DetailsType>) {
@@ -61,7 +65,9 @@ export default class Polygon<DetailsType = any>
         return;
     }
 
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+    ) {
         this.x1 = this.centerX - this.radius;
         this.y1 = this.centerY - this.radius;
         this.x2 = this.centerX + this.radius;
@@ -83,12 +89,20 @@ export default class Polygon<DetailsType = any>
         const sides = properties.sides ?? 5;
         const radius = properties.radius ?? 5;
         if (sides < 3 || radius <= 0) {
-            throw new Error("Polygon must have at least 3 sides and a positive radius");
+            throw new Error(
+                "Polygon must have at least 3 sides and a positive radius"
+            );
         }
-        const path = Array.from({ length: parseInt(sides.toString()) }, (_, idx) => {
-            const angle = (2 * Math.PI * idx) / parseInt(sides.toString());
-            return new Position(radius * Math.cos(angle), radius * Math.sin(angle));
-        });
+        const path = Array.from(
+            { length: parseInt(sides.toString()) },
+            (_, idx) => {
+                const angle = (2 * Math.PI * idx) / parseInt(sides.toString());
+                return new Position(
+                    radius * Math.cos(angle),
+                    radius * Math.sin(angle)
+                );
+            }
+        );
         return Path.drawFunction(ctx, {
             path,
             fillRule: properties.fillRule ?? "nonzero",

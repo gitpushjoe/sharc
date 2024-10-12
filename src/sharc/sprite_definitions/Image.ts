@@ -1,11 +1,18 @@
 import { Position, Bounds } from "../Utils";
-import { ImageProperties, HiddenImageProperties, OmitBaseProps } from "../types/Sprites";
+import {
+    ImageProperties,
+    HiddenImageProperties,
+    OmitBaseProps
+} from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class ImageSprite<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
-        OmitBaseProps<ImageProperties> & { bounds?: Bounds; image?: ImageBitmap | null },
+        OmitBaseProps<ImageProperties> & {
+            bounds?: Bounds;
+            image?: ImageBitmap | null;
+        },
         HiddenImageProperties
     >
     implements Required<OmitBaseProps<ImageProperties> & HiddenImageProperties>
@@ -114,12 +121,16 @@ export default class ImageSprite<DetailsType = any>
         }
     }
 
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
+    ) {
         super.draw(ctx, {
             src: "",
             image: this.image,
             bounds: this.bounds,
-            srcBounds: this.useSrcBounds ? new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2) : null
+            srcBounds: this.useSrcBounds
+                ? new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2)
+                : null
         });
     }
 
@@ -159,7 +170,12 @@ export default class ImageSprite<DetailsType = any>
         return region;
     };
 
-    public static Bounds(x1: number, y1: number, width: number, height: number): Bounds {
+    public static Bounds(
+        x1: number,
+        y1: number,
+        width: number,
+        height: number
+    ): Bounds {
         return Bounds.fromDimensions(x1, y1, width, height);
     }
 }

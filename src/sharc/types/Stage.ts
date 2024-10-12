@@ -1,4 +1,4 @@
-import { Color } from "./Common";
+import { ColorType } from "./Common";
 import { EventCollection } from "./Events";
 
 export interface CanvasInterface {
@@ -8,7 +8,9 @@ export interface CanvasInterface {
     style: {
         touchAction: string;
     };
-    getContext: (type: "2d") => CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+    getContext: (
+        type: "2d"
+    ) => CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
     offsetLeft: number;
     offsetTop: number;
     addEventListener: (type: string, callback: (...args: any) => any) => void;
@@ -18,7 +20,10 @@ export interface CanvasInterface {
     };
     clientWidth: number;
     clientHeight: number;
-    removeEventListener: (type: string, callback: (...args: any) => any) => void;
+    removeEventListener: (
+        type: string,
+        callback: (...args: any) => any
+    ) => void;
     transferToImageBitmap?: () => ImageBitmap;
     focus?: () => void;
 }
@@ -28,7 +33,7 @@ export type InitializeWorkerMessage = {
     width: number;
     height: number;
     rootStyle: "centered" | "classic";
-    bgColor: Color;
+    bgColor: ColorType;
 };
 
 export type WorkerRenderMessage = {

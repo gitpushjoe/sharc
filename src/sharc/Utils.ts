@@ -15,7 +15,10 @@ export class Position {
 
     static equals(...positions: Position[]): boolean {
         for (let i = 1; i < positions.length; i++) {
-            if (positions[i].x !== positions[i - 1].x || positions[i].y !== positions[i - 1].y) {
+            if (
+                positions[i].x !== positions[i - 1].x ||
+                positions[i].y !== positions[i - 1].y
+            ) {
                 return false;
             }
         }
@@ -32,7 +35,10 @@ export class Position {
     }
 
     static diff(position1: Position, position2: Position): Position {
-        return new Position(position1.x - position2.x, position1.y - position2.y);
+        return new Position(
+            position1.x - position2.x,
+            position1.y - position2.y
+        );
     }
 
     static wrtBounds(position: Position, bounds: Bounds): Position {
@@ -48,6 +54,18 @@ export class Position {
 
     static scale(position: Position, scale: Position): Position {
         return new Position(position.x * scale.x, position.y * scale.y);
+    }
+
+    static distance(position1: Position, position2: Position): number {
+        return Math.sqrt(
+            Math.pow(position1.x - position2.x, 2) +
+                Math.pow(position1.y - position2.y, 2)
+        );
+    }
+
+    // returns degrees
+    static angle(position1: Position, position2: Position): number {
+        return Math.atan2(position2.y - position1.y, position2.x - position1.x);
     }
 }
 
@@ -79,11 +97,21 @@ export class Bounds {
         return true;
     }
 
-    static fromDimensions(x: number, y: number, width: number, height: number): Bounds {
+    static fromDimensions(
+        x: number,
+        y: number,
+        width: number,
+        height: number
+    ): Bounds {
         return { x1: x, y1: y, x2: x + width, y2: y + height };
     }
 
-    static fromCircle(x: number, y: number, radius: number, radiusY?: number): Bounds {
+    static fromCircle(
+        x: number,
+        y: number,
+        radius: number,
+        radiusY?: number
+    ): Bounds {
         return {
             x1: x - radius,
             y1: y - (radiusY ?? radius),
@@ -92,7 +120,12 @@ export class Bounds {
         };
     }
 
-    static fromCenter(x: number, y: number, width: number, height?: number): Bounds {
+    static fromCenter(
+        x: number,
+        y: number,
+        width: number,
+        height?: number
+    ): Bounds {
         return {
             x1: x - width / 2,
             y1: y - (height ?? width) / 2,
@@ -108,8 +141,14 @@ export class Bounds {
     }
 
     static wrtBounds(bounds: Bounds, parent: Bounds): Bounds {
-        const p1 = Position.wrtBounds(new Position(bounds.x1, bounds.y1), parent);
-        const p2 = Position.wrtBounds(new Position(bounds.x2, bounds.y2), parent);
+        const p1 = Position.wrtBounds(
+            new Position(bounds.x1, bounds.y1),
+            parent
+        );
+        const p2 = Position.wrtBounds(
+            new Position(bounds.x2, bounds.y2),
+            parent
+        );
         return new Bounds(p1.x, p1.y, p2.x, p2.y);
     }
 
@@ -137,39 +176,77 @@ export class Color {
     }
 }
 
-// export function ColorToString(color: Color) {
-//     return `rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`;
-// }
-//
-// export function Color(red: number, green: number, blue: number, alpha = 1): Color {
-//     return { red, green, blue, alpha };
-// }
+export class PolarPosition {
+    constructor(
+        public angle = 0,
+        public radius = 0
+    ) {
+        return PolarPosition.new(angle, radius);
+    }
 
-// export function Corners(x1: number, y1: number, x2: number, y2: number): Bounds {
-//     return { x1, y1, x2, y2 };
-// }
-//
-// export function Dimensions(x: number, y: number, width: number, height: number): Bounds {
-//     return { x1: x, y1: y, x2: x + width, y2: y + height };
-// }
-//
-// export function CircleBounds(x: number, y: number, radius: number, radiusY?: number): Bounds {
-//     return {
-//         x1: x - radius,
-//         y1: y - (radiusY ?? radius),
-//         x2: x + radius,
-//         y2: y + (radiusY ?? radius)
-//     };
-// }
-//
-// export function CenterBounds(x: number, y: number, width: number, height?: number): Bounds {
-//     return {
-//         x1: x - width / 2,
-//         y1: y - (height ?? width) / 2,
-//         x2: x + width / 2,
-//         y2: y + (height ?? width) / 2
-//     };
-// }
+    static new(angle = 0, radius = 0): { angle: number; radius: number } {
+        return { angle, radius };
+    }
+
+    static equals(...positions: PolarPosition[]): boolean {
+        for (let i = 1; i < positions.length; i++) {
+            if (
+                positions[i].angle !== positions[i - 1].angle ||
+                positions[i].radius !== positions[i - 1].radius
+            ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static sum(...positions: PolarPosition[]): PolarPosition {
+        const result = new PolarPosition(0, 0);
+        for (const position of positions) {
+            result.angle += position.angle;
+            result.radius += position.radius;
+        }
+        return result;
+    }
+
+    static diff(
+        position1: PolarPosition,
+        position2: PolarPosition
+    ): PolarPosition {
+        return new PolarPosition(
+            position1.angle - position2.angle,
+            position1.radius - position2.radius
+        );
+    }
+
+    static factor(position: PolarPosition, factor: number): PolarPosition {
+        return new PolarPosition(
+            position.angle * factor,
+            position.radius * factor
+        );
+    }
+
+    static fromPosition(position: Position, pole?: Position): PolarPosition {
+        pole ??= new Position();
+        return new PolarPosition(
+            Position.angle(pole, position),
+            Position.distance(pole, position)
+        );
+    }
+
+    static toPosition(polarPosition: PolarPosition, pole?: Position): Position {
+        return new Position(
+            pole?.x ??
+                0 +
+                    polarPosition.radius *
+                        Math.cos(deg2rad(polarPosition.angle)),
+            pole?.y ??
+                0 +
+                    polarPosition.radius *
+                        Math.sin(deg2rad(polarPosition.angle))
+        );
+    }
+}
 
 export function addCallback(value: number): AnimationCallback<number> {
     return (property: number) => property + value;
@@ -183,56 +260,63 @@ export function addYCallback(value: number): AnimationCallback<Position> {
     return (property: Position) => new Position(property.x, property.y + value);
 }
 
-export function addPositionCallback(x: number, y: number): AnimationCallback<Position> {
+export function addPositionCallback(
+    x: number,
+    y: number
+): AnimationCallback<Position> {
     return (property: Position) => new Position(property.x + x, property.y + y);
 }
-
-// export function getX1Y1WH(bounds: Bounds): [number, number, number, number] {
-//     return [
-//         -Math.abs(bounds.x1 - bounds.x2) / 2,
-//         -Math.abs(bounds.y1 - bounds.y2) / 2,
-//         Math.abs(bounds.x1 - bounds.x2),
-//         Math.abs(bounds.y1 - bounds.y2)
-//     ];
-// }
-
-// export function translatePosition(bounds: Bounds, position: Position): Position {
-//     return p(
-//         position.x - bounds.x1 - (bounds.x2 - bounds.x1) / 2,
-//         position.y - bounds.y1 - (bounds.y2 - bounds.y1) / 2
-//     );
-// }
-//
-// export function translateBounds(bounds: Bounds): Bounds {
-//     return Corners(
-//         translatePosition(bounds, p(bounds.x1, bounds.y1)).x,
-//         translatePosition(bounds, p(bounds.x1, bounds.y1)).y,
-//         translatePosition(bounds, p(bounds.x2, bounds.y2)).x,
-//         translatePosition(bounds, p(bounds.x2, bounds.y2)).y
-//     );
-// }
 
 export function Animate<props>(
     property: keyof props,
     from: props[typeof property] | null,
-    to: NonNullable<props[typeof property]> | AnimationCallback<NonNullable<props[typeof property]>>,
+    to:
+        | NonNullable<props[typeof property]>
+        | AnimationCallback<NonNullable<props[typeof property]>>,
     duration = 60,
     delay = 0,
     easing: EasingType = Easing.LINEAR,
     name = ""
 ): AnimationType<props> {
-    return { property, from, to, duration, delay, easing, name } as AnimationType<props>;
+    return {
+        property,
+        from,
+        to,
+        duration,
+        delay,
+        easing,
+        name
+    } as AnimationType<props>;
 }
 
 export function AnimateTo<props>(
     property: keyof props,
-    to: NonNullable<props[typeof property]> | AnimationCallback<NonNullable<props[typeof property]>>,
+    to:
+        | NonNullable<props[typeof property]>
+        | AnimationCallback<NonNullable<props[typeof property]>>,
     duration = 60,
     delay = 0,
     easing: EasingType = Easing.LINEAR,
     name = ""
 ): AnimationType<props> {
-    return { property, from: null, to, duration, delay, easing, name } as AnimationType<props>;
+    return {
+        property,
+        from: null,
+        to,
+        duration,
+        delay,
+        easing,
+        name
+    } as AnimationType<props>;
+}
+
+export function deg2rad(degrees: number, wrap = false): number {
+    return (!wrap ? degrees : ((degrees % 360) + 360) % 360) * (Math.PI / 180);
+}
+
+export function rad2deg(radians: number, wrap = false): number {
+    const degrees = radians * (180 / Math.PI);
+    return !wrap ? degrees : ((degrees % 360) + 360) % 360;
 }
 
 export function callAndPrune<
@@ -265,17 +349,21 @@ Event listeners should only return true (or 1), false (or 0), or undefined (incl
             pruned.push(callback);
         }
     }
-    listeners[key] = listeners[key].filter(callback => !pruned.includes(callback)) as listeners[key];
+    listeners[key] = listeners[key].filter(
+        callback => !pruned.includes(callback)
+    ) as listeners[key];
 }
 
 export const Easing = {
     LINEAR: (x: number) => x,
     EASE_IN: (x: number) => 1 - Math.pow(1 - x, 2),
     EASE_OUT: (x: number) => x * x,
-    EASE_IN_OUT: (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2),
+    EASE_IN_OUT: (x: number) =>
+        x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2,
     EASE_IN_CUBIC: (x: number) => 1 - Math.pow(1 - x, 3),
     EASE_OUT_CUBIC: (x: number) => x * x * x,
-    EASE_IN_OUT_CUBIC: (x: number) => (x < 0.5 ? 4 * Math.pow(x, 3) : 1 - Math.pow(-2 * x + 2, 3) / 2),
+    EASE_IN_OUT_CUBIC: (x: number) =>
+        x < 0.5 ? 4 * Math.pow(x, 3) : 1 - Math.pow(-2 * x + 2, 3) / 2,
     Bounce: (curve: EasingType) => {
         return (x: number) => (x < 0.5 ? curve(x * 2) : curve(2 * (1 - x)));
     }

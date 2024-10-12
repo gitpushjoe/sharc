@@ -1,12 +1,28 @@
 import { Color } from "sharc/Utils";
 import { Sprite } from "../Sprite";
-import { StrokeProperties, HiddenStrokeProperties, StrokeType, DEFAULT_PROPERTIES } from "../types/Sprites";
+import {
+    StrokeProperties,
+    HiddenStrokeProperties,
+    StrokeType,
+    DEFAULT_PROPERTIES
+} from "../types/Sprites";
 
-export default class StrokeableSprite<DetailsType = any, Properties = object, HiddenProperties = object>
-    extends Sprite<DetailsType, Properties & StrokeProperties, HiddenProperties & HiddenStrokeProperties>
+export default class StrokeableSprite<
+        DetailsType = any,
+        Properties = object,
+        HiddenProperties = object
+    >
+    extends Sprite<
+        DetailsType,
+        Properties & StrokeProperties,
+        HiddenProperties & HiddenStrokeProperties
+    >
     implements Required<StrokeProperties & HiddenStrokeProperties>
 {
-    constructor(props: { stroke?: StrokeType | null } & Properties & DEFAULT_PROPERTIES<DetailsType>) {
+    constructor(
+        props: { stroke?: StrokeType | null } & Properties &
+            DEFAULT_PROPERTIES<DetailsType>
+    ) {
         super(props);
         this.strokeRed = props.stroke?.color?.red ?? 0;
         this.strokeGreen = props.stroke?.color?.green ?? 0;
@@ -16,9 +32,11 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
         this.strokeJoin = props.stroke?.lineJoin ?? "miter";
         this.strokeCap = props.stroke?.lineCap ?? "butt";
         this.strokeDash = props.stroke?.lineDash ?? 0;
-        this.strokeDashGap = props.stroke?.lineDashGap ?? props.stroke?.lineDash ?? 0;
+        this.strokeDashGap =
+            props.stroke?.lineDashGap ?? props.stroke?.lineDash ?? 0;
         this.strokeOffset = props.stroke?.lineDashOffset ?? 0;
-        this.strokeEnabled = props.stroke !== null && props.stroke !== undefined;
+        this.strokeEnabled =
+            props.stroke !== null && props.stroke !== undefined;
     }
 
     // NORMAL PROPERTIES
@@ -106,7 +124,10 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
         }
     }
 
-    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: Required<Properties>) {
+    public draw(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        properties?: Required<Properties>
+    ) {
         super.draw(ctx, {
             ...properties!,
             stroke: this.strokeEnabled
