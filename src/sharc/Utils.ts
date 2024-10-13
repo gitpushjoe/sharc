@@ -220,7 +220,9 @@ export function Animate<Properties extends Record<string, unknown>, Property ext
     duration = 60,
     easing: EasingType = Easing.LINEAR,
     delay = 0,
-    name = ""
+    name = "",
+    clamp: Properties[typeof property] | null = null,
+    minClamp: Properties[typeof property] | null = null
 ): AnimationType<Properties> {
     return {
         property,
@@ -229,17 +231,21 @@ export function Animate<Properties extends Record<string, unknown>, Property ext
         duration,
         delay,
         easing,
-        name
+        name,
+        clamp,
+        minClamp
     } as unknown as AnimationType<Properties>;
 }
 
-export function AnimateTo<Properties, P extends keyof Properties>(
-    property: true extends IsNumeric<Properties[P]> ? P : never,
+export function AnimateTo<Properties extends Record<string, unknown>, Property extends keyof Properties>(
+    property: true extends IsNumeric<Properties[Property]> ? Property : never,
     to: NonNullable<Properties[typeof property]> | AnimationCallback<NonNullable<Properties[typeof property]>>,
     duration = 60,
     easing: EasingType = Easing.LINEAR,
     delay = 0,
-    name = ""
+    name = "",
+    clamp: Properties[typeof property] | null = null,
+    minClamp: Properties[typeof property] | null = null
 ): AnimationType<Properties> {
     return {
         property,
@@ -248,7 +254,9 @@ export function AnimateTo<Properties, P extends keyof Properties>(
         duration,
         delay,
         easing,
-        name
+        name,
+        clamp,
+        minClamp
     } as unknown as AnimationType<Properties>;
 }
 

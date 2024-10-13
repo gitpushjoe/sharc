@@ -6,13 +6,15 @@ import {
     LabelSprite,
     Line,
     ManagerSprite,
+    NullSprite,
     PolarWrapper,
+    Polygon,
     Rect,
     TextSprite
 } from "./sharc/Sprites";
 import { Stage } from "./sharc/Stage";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
-import { Animate, AnimateTo, Bounds, Colors, Easing, Position } from "./sharc/Utils";
+import { Animate, AnimateTo, Bounds, Color, Colors, Easing, Position } from "./sharc/Utils";
 import { ColorType } from "./sharc/types/Common";
 
 export interface Test {
@@ -38,10 +40,10 @@ export const tests: Test[] = [
         name: "perf",
         apply: (stage: Stage | WorkerStage<any, string>) => {
             for (let i = 0; i < 70 * 30; i++) {
-                const ellipse = new Ellipse({ color: Colors.Blue, radius: 10 });
+                const ellipse = new Polygon({ sides: 5, color: Colors.Blue, radius: 10 });
                 ellipse.centerX = 20 + (i % 70) * 15;
                 ellipse.centerY = 65 + Math.floor(i / 70) * 25;
-                ellipse.channels[0].push(
+                ellipse.animate(
                     {
                         property: "centerX",
                         from: null,
@@ -54,7 +56,7 @@ export const tests: Test[] = [
 
                 ellipse.createChannels(2);
 
-                ellipse.channels[1].push(
+                ellipse.animate(
                     Animate(
                         "color",
                         getRandomColor(180, 55),
@@ -65,7 +67,7 @@ export const tests: Test[] = [
                     { loop: true }
                 );
 
-                ellipse.channels[2].push(Animate("rotation", 0, 360, 20, Easing.EASE_IN_OUT), { loop: true });
+                ellipse.animate(Animate("rotation", 0, 360, 20, Easing.EASE_IN_OUT), { loop: true });
 
                 stage.root.addChild(ellipse);
             }
@@ -254,7 +256,7 @@ export const tests: Test[] = [
                         if (stage.currentFrame >= 240) {
                             return 1;
                         }
-                        sprite.channels[0].push({
+                        sprite.animate({
                             property: "scale",
                             from: Position.new(1, 1),
                             to: new Position(1.5, 1.5),
@@ -334,7 +336,7 @@ export const tests: Test[] = [
         }
     },
     {
-        name: "readme",
+        name: "readme", // TODO(gitpushjoe): update readme
         apply: (stage: Stage | WorkerStage<any, string>) => {
             (stage.root.center = new Position(600, 400)), (stage.root.scaleY = -1);
             const circle = new Ellipse({
@@ -349,8 +351,7 @@ export const tests: Test[] = [
                 }
             });
             stage.root.addChild(circle);
-            circle.createChannels(1); // every sprite is created with 1 channel by default
-            circle.channels[0].push(
+            circle.animate(
                 {
                     property: "centerX",
                     from: -stage.width! / 2 + circle.radiusX / 2,
@@ -360,16 +361,14 @@ export const tests: Test[] = [
                 },
                 { loop: true }
             );
-            circle.channels[1].push(
-                [
-                    {
-                        property: "centerY",
-                        from: 20,
-                        to: -stage.height! / 2 + circle.radiusY / 2,
-                        duration: 40,
-                        easing: Easing.Bounce(Easing.EASE_OUT)
-                    }
-                ],
+            circle.animate(
+                {
+                    property: "centerY",
+                    from: 20,
+                    to: -stage.height! / 2 + circle.radiusY / 2,
+                    duration: 40,
+                    easing: Easing.Bounce(Easing.EASE_OUT)
+                },
                 { loop: true }
             );
         }
@@ -511,8 +510,8 @@ export const tests: Test[] = [
                             const randomPole = root.children[
                                 Math.floor(Math.random() * root.children.length)
                             ] as PolarWrapper;
-                            parent.channels[1].push(AnimateTo("radius", randomPole.radius, 40));
-                            randomPole.channels[1].push(AnimateTo("radius", parent.radius, 40));
+                            parent.animate(AnimateTo("radius", randomPole.radius, 40));
+                            randomPole.animate(AnimateTo("radius", parent.radius, 40));
                             root.details += 2;
                         })
                         .addChild(
@@ -532,7 +531,7 @@ export const tests: Test[] = [
                                 }).on("beforeDraw", sprite => {
                                     sprite.generate();
                                     sprite.parent!.addChildren(...sprite.children);
-                                    sprite.parent!.channels[0].push(AnimateTo("rotation", -360, 400), { loop: true });
+                                    sprite.parent!.animate(AnimateTo("rotation", -360, 400), { loop: true });
                                     sprite.removeSelf();
                                 })
                             )
@@ -543,12 +542,147 @@ export const tests: Test[] = [
                     root.details = Math.max(0, --root.details);
                 });
 
-                pole.channels[0].push(Animate("rotation", 0, 360, 250 * i * 0.7), {
+                pole.animate(Animate("rotation", 0, 360, 250 * i * 0.7), {
                     loop: true
                 });
 
                 root.addChild(pole);
             }
+        }
+    },
+    {
+        name: "clamp-test",
+        apply: (stage: Stage | WorkerStage<any, string>) => {
+            const ellipseProps = {
+                color: Colors.Blue,
+                radius: 25,
+                center: new Position(250, 0),
+                stroke: { lineWidth: 5 }
+            };
+            const ellipses = [
+                new Ellipse({
+                    ...ellipseProps,
+                    color: Colors.Black,
+                    name: "no-clamp"
+                })
+                    .animate(
+                        {
+                            property: "centerX",
+                            from: 250,
+                            to: x => x + 500,
+                            duration: 90,
+                            easing: Easing.Bounce(Easing.EASE_IN_OUT)
+                        },
+                        { loop: true }
+                    )
+                    .animate(Animate("color", Colors.Black, Colors.Fuchsia, 90, Easing.Bounce(Easing.EASE_IN_OUT)), {
+                        loop: true
+                    }),
+                new Ellipse({
+                    ...ellipseProps,
+                    name: "clamp"
+                })
+                    .animate(
+                        {
+                            property: "centerX",
+                            from: 250,
+                            to: x => x + 500,
+                            duration: 90,
+                            easing: Easing.Bounce(Easing.EASE_IN_OUT),
+                            clamp: 750 - 150
+                        },
+                        { loop: true }
+                    )
+                    .animate(
+                        {
+                            property: "color",
+                            from: Colors.Black,
+                            to: Colors.Fuchsia,
+                            duration: 90,
+                            easing: Easing.Bounce(Easing.EASE_IN_OUT),
+                            clamp: new Color(200, 0, 200)
+                        },
+                        { loop: true }
+                    ),
+                new Ellipse({
+                    ...ellipseProps,
+                    name: "min-clamp"
+                })
+                    .animate(
+                        {
+                            property: "centerX",
+                            from: 250,
+                            to: x => x + 500,
+                            duration: 90,
+                            easing: Easing.Bounce(Easing.EASE_IN_OUT),
+                            minClamp: 250 + 150
+                        },
+                        { loop: true }
+                    )
+                    .animate(
+                        {
+                            property: "color",
+                            from: Colors.Black,
+                            to: Colors.Fuchsia,
+                            duration: 90,
+                            easing: Easing.Bounce(Easing.EASE_IN_OUT),
+                            minClamp: new Color(50, 0, 50)
+                        },
+                        { loop: true }
+                    ),
+                new Ellipse({
+                    ...ellipseProps,
+                    name: "clamp+min-clamp"
+                })
+                    .animate(
+                        {
+                            property: "centerX",
+                            from: 250,
+                            to: x => x + 500,
+                            duration: 90,
+                            easing: Easing.Bounce(Easing.EASE_IN_OUT),
+                            clamp: 750 - 150,
+                            minClamp: 250 + 150
+                        },
+                        { loop: true }
+                    )
+                    .animate(
+                        {
+                            property: "color",
+                            from: Colors.Black,
+                            to: Colors.Fuchsia,
+                            duration: 90,
+                            easing: Easing.Bounce(Easing.EASE_IN_OUT),
+                            clamp: new Color(200, 0, 200),
+                            minClamp: new Color(50, 0, 50)
+                        },
+                        { loop: true }
+                    )
+            ];
+
+            const manager = new ManagerSprite({
+                anchor: "center-left",
+                align: "column-center",
+                padding: 10,
+                position: new Position(50, 200)
+            });
+            ellipses.forEach(ellipse =>
+                manager.addChild(
+                    new NullSprite({}).addChildren(
+                        new TextSprite({
+                            text: ellipse.name,
+                            fontSize: 50,
+                            color: Colors.Black,
+                            textAlign: "right",
+                            position: { x: 200, y: -25 }
+                        }),
+                        ellipse
+                    )
+                )
+            );
+
+            manager.update(["padding", "anchor"]);
+            stage.root.addChild(manager);
         }
     }
 ];

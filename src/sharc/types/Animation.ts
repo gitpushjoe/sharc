@@ -25,6 +25,8 @@ export type PrivateAnimationType<Properties> = {
         frame?: number;
         channel?: number;
         name?: string;
+        clamp?: Properties[K] | null;
+        minClamp?: Properties[K] | null;
         _from?: Properties[K]; // used by sprites to store the original value
         _to?: Properties[K];
     };
@@ -40,6 +42,8 @@ export type AnimationType<Properties> = NonNullable<
             delay?: number;
             easing?: EasingType;
             name?: string;
+            clamp?: Properties[K] | null;
+            minClamp?: Properties[K] | null;
         };
     }[keyof NumericOnly<Properties>]
 >;

@@ -292,6 +292,13 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract blur: number;
     public abstract gradient: CanvasGradient | null;
 
+    public get none(): number {
+        return 0;
+    }
+    public set none(_: number) {
+        return;
+    }
+
     public abstract pointIsInPath(
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         x: number,
@@ -304,6 +311,23 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract distribute(
         animations: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[][],
         params?: AnimationParams
+    ): this;
+    public abstract animate(
+        animation: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>,
+        params?: AnimationParams,
+        channel?: number
+    ): this;
+    public abstract animate(
+        animations: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[],
+        params?: AnimationParams,
+        channel?: number
+    ): this;
+    public abstract animate<T extends boolean>(
+        animations: T extends 0
+            ? AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>
+            : AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[],
+        params?: AnimationParams,
+        channel?: number
     ): this;
 
     public abstract addEventListener<
@@ -338,8 +362,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     public channels: Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[]; // to-do: ensure that details can never be animated
     protected stage?: Stage;
     public currentFrame = 0;
-    // future update:
-    // protected schedulers: SpriteSchedulers<this> = [];
 
     // NORMAL PROPERTIES
     public rotation = 0;
@@ -555,7 +577,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             };
         }
         this.currentFrame++;
-        this.animate();
+        this.animationStep();
         ctx.save();
         this.effects(ctx);
         ctx.globalAlpha = this.alpha;
@@ -850,6 +872,44 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return this;
     }
 
+    public animate(
+        animation: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>,
+        params?: AnimationParams,
+        channel?: number
+    ): this;
+
+    public animate(
+        animations: AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[],
+        params?: AnimationParams,
+        channel?: number
+    ): this;
+
+
+    public animate<T extends boolean>(
+        animations: T extends 0
+            ? AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>
+            : AnimationType<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>[],
+        params: AnimationParams = { loop: false, iterations: 1, delay: 0 },
+        channel = -1
+    ): this {
+        if (channel === -1) {
+            channel = 0;
+            while (this.channels[channel]?.queueIsEmpty() === false) {
+                channel++;
+            }
+            if (channel >= this.channels.length) {
+                this.createChannels(2);
+            }
+        }
+        this.channels[channel].push(
+            animations as ChannelAnimationType<
+                Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES
+            >,
+            params
+        );
+        return this;
+    }
+
     private set<
         T extends string &
             keyof (Omit<
@@ -871,7 +931,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return true;
     }
 
-    private animate() {
+    private animationStep() {
         const animations = this.channels.map(channel => channel.stepForward()).filter(animation => animation !== null);
         for (const animation of animations.reverse()) {
             this.animateProperty(animation!);
@@ -899,6 +959,14 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 animation._to = animation.to;
             }
         }
+        if (animation.frame === 0) {
+            if (animation.clamp !== null && typeof animation._to !== typeof animation.clamp) {
+                throw new Error(
+                    `Type of animation.clamp (${typeof animation.clamp}) doesn't match ` +
+                        `type of animation.to (${typeof animation._to})`
+                );
+            }
+        }
         const [from, to, frame, duration, easing] = [
             animation._from as number | Record<string, number>,
             animation._to as number | Record<string, number>,
@@ -911,7 +979,10 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             typeof from === "number" &&
             typeof to === "number"
         ) {
-            this.set(animation.property as any, from + easing(frame / duration) * (to - from));
+            let value = from + easing(frame / duration) * (to - from);
+            value = animation.clamp !== null ? Math.min(value, animation.clamp as number) : value;
+            value = animation.minClamp !== null ? Math.max(value, animation.minClamp as number) : value;
+            this.set(animation.property as any, value);
         } else if (typeof (this as Record<any, any>)[animation.property as keyof Properties] === "object") {
             if (typeof from !== "object" || typeof to !== "object") {
                 this.raiseAnimationError(from, to, animation.property as string);
@@ -923,7 +994,16 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
                 if (p_from === undefined || p_to === undefined) {
                     this.raiseAnimationError(from, to, key);
                 }
-                current[key] = p_from + easing(frame / duration) * (p_to - p_from);
+                let value = p_from + easing(frame / duration) * (p_to - p_from);
+                value =
+                    animation.clamp !== null
+                        ? Math.min(value, (animation.clamp as Record<string, number>)[key])
+                        : value;
+                value =
+                    animation.minClamp !== null
+                        ? Math.max(value, (animation.minClamp as Record<string, number>)[key])
+                        : value;
+                current[key] = value;
             }
             this.set(animation.property as any, current);
         } else {

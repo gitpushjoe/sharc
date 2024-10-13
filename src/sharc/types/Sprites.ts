@@ -70,6 +70,7 @@ export type HIDDEN_SHAPE_PROPERTIES = {
     corner2: PositionType;
     width: number;
     height: number;
+    none: number;
 };
 
 export type StrokeType = {

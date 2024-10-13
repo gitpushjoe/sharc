@@ -88,6 +88,8 @@ export class Channel<Properties> {
             animation.duration ??= 60;
             animation.easing ??= (x: number) => x;
             animation.name ??= "";
+            animation.clamp ??= null;
+            animation.minClamp ??= null;
             if (animation.duration <= 0) throw new Error("Animation duration must be greater than 0");
             if (animation.delay < 0) animation.delay = 0;
         }
@@ -97,8 +99,8 @@ export class Channel<Properties> {
         };
     }
 
-    public push<_ extends 0>(animations: ChannelAnimationType<Properties>, params?: AnimationParams): this;
-    public push<_ extends 1>(animations: ChannelAnimationType<Properties>[], params?: AnimationParams): this;
+    public push(animations: ChannelAnimationType<Properties>, params?: AnimationParams): this;
+    public push(animations: ChannelAnimationType<Properties>[], params?: AnimationParams): this;
 
     public push<T extends 0 | 1>(
         animations: T extends 0 ? ChannelAnimationType<Properties> : ChannelAnimationType<Properties>[],
@@ -111,8 +113,8 @@ export class Channel<Properties> {
         return this;
     }
 
-    public unshift<_ extends 0>(animations: ChannelAnimationType<Properties>, params?: AnimationParams): this;
-    public unshift<_ extends 1>(animations: ChannelAnimationType<Properties>[], params?: AnimationParams): this;
+    public unshift(animations: ChannelAnimationType<Properties>, params?: AnimationParams): this;
+    public unshift(animations: ChannelAnimationType<Properties>[], params?: AnimationParams): this;
 
     public unshift<T extends 0 | 1>(
         animations: T extends 0 ? ChannelAnimationType<Properties> : ChannelAnimationType<Properties>[],
@@ -127,12 +129,12 @@ export class Channel<Properties> {
         return this;
     }
 
-    public enqueue<_ extends 0>(
+    public enqueue(
         animations: ChannelAnimationType<Properties>,
         index: number,
         params?: AnimationParams
     ): this;
-    public enqueue<_ extends 1>(
+    public enqueue(
         animations: ChannelAnimationType<Properties>[],
         index: number,
         params?: AnimationParams
