@@ -15,10 +15,10 @@ import {
     DrawFunctionType,
     EffectsType,
     HIDDEN_SHAPE_PROPERTIES,
-    MostlyRequired
+    MostlyRequired,
 } from "./types/Sprites";
 import { SpriteEventListeners, PointerEventCallback } from "./types/Events";
-import { Channel } from "./Channels";
+import { Channel, ChannelAnimationType } from "./Channels";
 import { Stage } from "./Stage";
 
 export abstract class Shape<
@@ -1083,7 +1083,15 @@ export abstract class Sprite<
         }
         for (let idx = 0; idx < animations.length; idx++) {
             const animation = animations[idx];
-            this.channels[idx % this.channels.length].push(animation, params);
+            this.channels[idx % this.channels.length].push(
+                animation as unknown as ChannelAnimationType<
+                    Properties &
+                        HiddenProperties &
+                        HIDDEN_SHAPE_PROPERTIES &
+                        DEFAULT_PROPERTIES
+                >,
+                params
+            );
         }
         return this;
     }
@@ -1143,7 +1151,7 @@ export abstract class Sprite<
                 >;
                 animation._to = callback(
                     animation._from as number | Record<string, number>
-                );
+                ) as number as typeof animation._to;
             } else {
                 animation._to = animation.to;
             }

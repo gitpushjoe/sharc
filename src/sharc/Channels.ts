@@ -4,12 +4,19 @@ import {
     AnimationType,
     AnimationParams
 } from "./types/Animation";
+import { DEFAULT_PROPERTIES, HIDDEN_SHAPE_PROPERTIES } from "./types/Sprites";
 
 export const DEFAULT_ANIMATION_PARAMS: AnimationParams = {
     loop: false,
     iterations: 1,
     delay: 0
 };
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+export type ChannelAnimationType<Properties> = IsAny<Properties> extends true
+    ? AnimationType<HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>
+    : AnimationType<Properties>;
 
 export class Channel<Properties> {
     private queue: AnimationPackage<Properties>[];
@@ -83,7 +90,9 @@ export class Channel<Properties> {
     }
 
     private verifyAnimations(
-        animations: AnimationType<Properties> | AnimationType<Properties>[],
+        animations:
+            | ChannelAnimationType<Properties>
+            | ChannelAnimationType<Properties>[],
         params: AnimationParams = DEFAULT_ANIMATION_PARAMS
     ) {
         const [loop, iterations, delay] = [
@@ -113,9 +122,20 @@ export class Channel<Properties> {
         };
     }
 
-    public push(
-        animations: AnimationType<Properties> | AnimationType<Properties>[],
-        params: AnimationParams = DEFAULT_ANIMATION_PARAMS
+    public push<_ extends 0>(
+        animations: ChannelAnimationType<Properties>,
+        params?: AnimationParams
+    ): this;
+    public push<_ extends 1>(
+        animations: ChannelAnimationType<Properties>[],
+        params?: AnimationParams
+    ): this;
+
+    public push<T extends 0 | 1>(
+        animations: T extends 0
+            ? ChannelAnimationType<Properties>
+            : ChannelAnimationType<Properties>[],
+        params = DEFAULT_ANIMATION_PARAMS
     ) {
         const pkg = this.verifyAnimations(animations, params);
         if (pkg) {
@@ -124,8 +144,19 @@ export class Channel<Properties> {
         return this;
     }
 
-    public unshift(
-        animations: AnimationType<Properties> | AnimationType<Properties>[],
+    public unshift<_ extends 0>(
+        animations: ChannelAnimationType<Properties>,
+        params?: AnimationParams
+    ): this;
+    public unshift<_ extends 1>(
+        animations: ChannelAnimationType<Properties>[],
+        params?: AnimationParams
+    ): this;
+
+    public unshift<T extends 0 | 1>(
+        animations: T extends 0
+            ? ChannelAnimationType<Properties>
+            : ChannelAnimationType<Properties>[],
         params: AnimationParams = DEFAULT_ANIMATION_PARAMS
     ) {
         const pkg = this.verifyAnimations(animations, params);
@@ -134,6 +165,39 @@ export class Channel<Properties> {
             this.step = 0;
             this.index = 0;
         }
+        return this;
+    }
+
+    public enqueue<_ extends 0>(
+        animations: ChannelAnimationType<Properties>,
+        index: number,
+        params?: AnimationParams): this;
+    public enqueue<_ extends 1>(
+        animations: ChannelAnimationType<Properties>[],
+        index: number,
+        params?: AnimationParams): this;
+
+    public enqueue<T extends 0 | 1>(
+        animations: T extends 0
+            ? ChannelAnimationType<Properties>
+            : ChannelAnimationType<Properties>[],
+        index = 1,
+        params: AnimationParams = DEFAULT_ANIMATION_PARAMS
+    ) {
+        if (this.currentPackage() === undefined) {
+            this.push(animations as ChannelAnimationType<Properties>, params);
+            return this;
+        }
+        if (index === 0) {
+            this.clear();
+            this.push(animations as ChannelAnimationType<Properties>, params);
+            return this;
+        }
+        if (index <= this.queue.length) {
+            this.queue[index] = this.verifyAnimations(animations, params)!;
+            return this;
+        }
+        this.push(animations as ChannelAnimationType<Properties>, params);
         return this;
     }
 
@@ -163,28 +227,6 @@ export class Channel<Properties> {
             this.queue.pop();
         }
         return animation;
-    }
-
-    public enqueue(
-        animations: AnimationType<Properties> | AnimationType<Properties>[],
-        index = 1,
-        params: AnimationParams = DEFAULT_ANIMATION_PARAMS
-    ) {
-        if (this.currentPackage() === undefined) {
-            this.push(animations, params);
-            return this;
-        }
-        if (index === 0) {
-            this.clear();
-            this.push(animations, params);
-            return this;
-        }
-        if (index <= this.queue.length) {
-            this.queue[index] = this.verifyAnimations(animations, params)!;
-            return this;
-        }
-        this.push(animations, params);
-        return this;
     }
 
     public clear(): this {

@@ -1,4 +1,4 @@
-import { AnimationCallback, AnimationType } from "./types/Animation";
+import { AnimationCallback, AnimationType, IsNumeric } from "./types/Animation";
 import { EasingType } from "./types/Animation";
 
 export class Position {
@@ -267,17 +267,20 @@ export function addPositionCallback(
     return (property: Position) => new Position(property.x + x, property.y + y);
 }
 
-export function Animate<props>(
-    property: keyof props,
-    from: props[typeof property] | null,
+export function Animate<
+    Properties extends Record<string, unknown>,
+    Property extends keyof Properties
+>(
+    property: true extends IsNumeric<Properties[Property]> ? Property : never,
+    from: Properties[typeof property] | null,
     to:
-        | NonNullable<props[typeof property]>
-        | AnimationCallback<NonNullable<props[typeof property]>>,
+        | NonNullable<Properties[typeof property]>
+        | AnimationCallback<NonNullable<Properties[typeof property]>>,
     duration = 60,
-    delay = 0,
     easing: EasingType = Easing.LINEAR,
+    delay = 0,
     name = ""
-): AnimationType<props> {
+): AnimationType<Properties> {
     return {
         property,
         from,
@@ -286,19 +289,19 @@ export function Animate<props>(
         delay,
         easing,
         name
-    } as AnimationType<props>;
+    } as unknown as AnimationType<Properties>;
 }
 
-export function AnimateTo<props>(
-    property: keyof props,
+export function AnimateTo<Properties, P extends keyof Properties>(
+    property: true extends IsNumeric<Properties[P]> ? P : never,
     to:
-        | NonNullable<props[typeof property]>
-        | AnimationCallback<NonNullable<props[typeof property]>>,
+        | NonNullable<Properties[typeof property]>
+        | AnimationCallback<NonNullable<Properties[typeof property]>>,
     duration = 60,
-    delay = 0,
     easing: EasingType = Easing.LINEAR,
+    delay = 0,
     name = ""
-): AnimationType<props> {
+): AnimationType<Properties> {
     return {
         property,
         from: null,
@@ -307,7 +310,7 @@ export function AnimateTo<props>(
         delay,
         easing,
         name
-    } as AnimationType<props>;
+    } as unknown as AnimationType<Properties>;
 }
 
 export function deg2rad(degrees: number, wrap = false): number {

@@ -16,11 +16,11 @@ import {
     Animate,
     AnimateTo,
     Bounds,
-    Color,
     Colors,
     Easing,
     Position
 } from "./sharc/Utils";
+import { ColorType } from "./sharc/types/Common";
 
 export interface Test {
     name: string;
@@ -29,6 +29,17 @@ export interface Test {
         isOffscreen: boolean
     ) => void;
 }
+
+const getRandomColor = (
+    range?: number,
+    min?: number,
+    alpha?: number
+): ColorType => ({
+    red: Math.random() * (range ?? 255) + (min ?? 0),
+    green: Math.random() * (range ?? 255) + (min ?? 0),
+    blue: Math.random() * (range ?? 255) + (min ?? 0),
+    alpha: alpha ?? 1
+});
 
 export const tests: Test[] = [
     {
@@ -58,34 +69,18 @@ export const tests: Test[] = [
                 ellipse.createChannels(2);
 
                 ellipse.channels[1].push(
-                    {
-                        property: "color",
-                        from: {
-                            red: Math.random() * 180 + 55,
-                            green: Math.random() * 180 + 55,
-                            blue: Math.random() * 180 + 55,
-                            alpha: 1
-                        },
-                        to: () => ({
-                            red: Math.random() * 180 + 55,
-                            green: Math.random() * 180 + 55,
-                            blue: Math.random() * 180 + 55,
-                            alpha: 1
-                        }),
-                        duration: 20,
-                        easing: Easing.Bounce(Easing.EASE_IN_OUT)
-                    },
+                    Animate(
+                        "color",
+                        getRandomColor(180, 55),
+                        () => getRandomColor(180, 55),
+                        20,
+                        Easing.Bounce(Easing.EASE_IN_OUT)
+                    ),
                     { loop: true }
                 );
 
                 ellipse.channels[2].push(
-                    {
-                        property: "rotation",
-                        from: 0,
-                        to: 360,
-                        duration: 20,
-                        easing: Easing.EASE_IN_OUT
-                    },
+                    Animate("rotation", 0, 360, 20, Easing.EASE_IN_OUT),
                     { loop: true }
                 );
 
@@ -224,12 +219,13 @@ export const tests: Test[] = [
                 new Ellipse({ color: Colors.Blue, radius: 10 }).distribute(
                     [
                         [
-                            {
-                                property: "centerX",
-                                from: 0,
-                                to: 1000,
-                                easing: Easing.Bounce(Easing.EASE_IN_OUT)
-                            }
+                            Animate(
+                                "centerX",
+                                0,
+                                1000,
+                                100,
+                                Easing.Bounce(Easing.EASE_IN_OUT)
+                            )
                         ]
                     ],
                     { loop: true }
@@ -257,7 +253,7 @@ export const tests: Test[] = [
                     color: (i % 2 && Colors.Red) || Colors.Blue,
                     radius: 50,
                     stroke: { lineWidth: 5 },
-                    center: { x: 50 + (i + 2) * 40, y: 50 + (i % 2) * 40 },
+                    center: new Position(50 + (i + 2) * 40, 50 + (i % 2) * 40),
                     name: `ellipse${i}`
                 })
                     .on("drag", (sprite, pos) => {
@@ -296,7 +292,7 @@ export const tests: Test[] = [
                         sprite.channels[0].push({
                             property: "scale",
                             from: Position.new(1, 1),
-                            to: { x: 1.5, y: 1.5 },
+                            to: new Position(1.5, 1.5),
                             duration: 30,
                             easing: Easing.Bounce(Easing.EASE_IN_OUT)
                         });
@@ -339,7 +335,7 @@ export const tests: Test[] = [
                 new TextSprite<number>({
                     text: `Counting up to ${max}: 0`,
                     fontSize: 50,
-                    position: { x: 1175, y: 725 },
+                    position: new Position(1175, 725),
                     textAlign: "right",
                     details: 0
                 })
@@ -352,7 +348,7 @@ export const tests: Test[] = [
                 stage.root.addChild(
                     new LabelSprite({
                         text: "Click me and type!",
-                        position: { x: 50, y: 200 + 72 * i },
+                        position: new Position(50, 200 + 72 * i),
                         fontSize: 50,
                         backgroundColor: Colors.LightBlue,
                         backgroundRadius: [10, 10],
@@ -378,12 +374,12 @@ export const tests: Test[] = [
     {
         name: "readme",
         apply: (stage: Stage | WorkerStage<any, string>) => {
-            stage.root.center = { x: 600, y: 400 };
-            stage.root.scaleY = -1;
+            (stage.root.center = new Position(600, 400)),
+                (stage.root.scaleY = -1);
             const circle = new Ellipse({
                 color: Colors.Red,
                 radius: 100,
-                center: { x: 50, y: -50 },
+                center: new Position(50, -50),
                 stroke: {
                     color: Colors.Pink,
                     lineWidth: 10,
@@ -394,16 +390,13 @@ export const tests: Test[] = [
             stage.root.addChild(circle);
             circle.createChannels(1); // every sprite is created with 1 channel by default
             circle.channels[0].push(
-                [
-                    {
-                        property: "centerX",
-                        from: -stage.width! / 2 + circle.radiusX / 2,
-                        to: stage.width! / 2 - circle.radiusX / 2,
-                        duration: 100,
-                        delay: 0,
-                        easing: Easing.Bounce(Easing.LINEAR)
-                    }
-                ],
+                {
+                    property: "centerX",
+                    from: -stage.width! / 2 + circle.radiusX / 2,
+                    to: stage.width! / 2 - circle.radiusX / 2,
+                    duration: 100,
+                    easing: Easing.Bounce(Easing.LINEAR)
+                },
                 { loop: true }
             );
             circle.channels[1].push(
@@ -413,7 +406,6 @@ export const tests: Test[] = [
                         from: 20,
                         to: -stage.height! / 2 + circle.radiusY / 2,
                         duration: 40,
-                        delay: 0,
                         easing: Easing.Bounce(Easing.EASE_OUT)
                     }
                 ],
@@ -540,7 +532,6 @@ export const tests: Test[] = [
                     );
                 }
             });
-            // stage.loop(1);
         }
     },
     {
@@ -559,11 +550,7 @@ export const tests: Test[] = [
                 }).addChild(
                     new Ellipse({
                         radius: 25,
-                        color: new Color(
-                            Math.random() * 175 + 55,
-                            Math.random() * 175 + 55,
-                            Math.random() * 175 + 55
-                        ),
+                        color: getRandomColor(175, 55),
                         stroke: {
                             color: Colors.Black,
                             lineWidth: 5
@@ -571,21 +558,20 @@ export const tests: Test[] = [
                         name: `pole${i}-ellipse`
                     })
                         .on("release", sprite => {
-                            if (root.details === 0) {
-                                const randomPole = root.children[
-                                    Math.floor(
-                                        Math.random() * root.children.length
-                                    )
-                                ] as PolarWrapper;
-                                const parent = sprite.parent! as PolarWrapper;
-                                parent.channels[1].push(
-                                    AnimateTo("radius", randomPole.radius, 40)
-                                );
-                                randomPole.channels[1].push(
-                                    AnimateTo("radius", parent.radius, 40)
-                                );
-                                root.details += 2;
+                            if (root.details !== 0) {
+                                return;
                             }
+                            const parent = sprite.parent! as PolarWrapper;
+                            const randomPole = root.children[
+                                Math.floor(Math.random() * root.children.length)
+                            ] as PolarWrapper;
+                            parent.channels[1].push(
+                                AnimateTo("radius", randomPole.radius, 40)
+                            );
+                            randomPole.channels[1].push(
+                                AnimateTo("radius", parent.radius, 40)
+                            );
+                            root.details += 2;
                         })
                         .addChild(
                             new PolarWrapper({
@@ -597,11 +583,10 @@ export const tests: Test[] = [
                                         new Ellipse({
                                             radius: 12,
                                             name: `${n}`,
-                                            color: new Color(
-                                                Math.random() * 175 + 55,
-                                                Math.random() * 175 + 55,
-                                                Math.random() * 175 + 55,
-                                                Math.random() ** 2
+                                            color: getRandomColor(
+                                                175,
+                                                55,
+                                                0.25
                                             ),
                                             stroke: { lineWidth: 3 }
                                         }),
@@ -612,7 +597,7 @@ export const tests: Test[] = [
                                         ...sprite.children
                                     );
                                     sprite.parent!.channels[0].push(
-                                        Animate("rotation", 360, 0, 400),
+                                        AnimateTo("rotation", -360, 400),
                                         { loop: true }
                                     );
                                     sprite.removeSelf();
@@ -625,10 +610,9 @@ export const tests: Test[] = [
                     root.details = Math.max(0, --root.details);
                 });
 
-                pole.channels[0].push(
-                    Animate("angle", 0, 360, 250 * i * 0.7),
-                    { loop: true }
-                );
+                pole.channels[0].push(Animate("rotation", 0, 360, 250 * i * 0.7), {
+                    loop: true
+                });
 
                 root.addChild(pole);
             }
