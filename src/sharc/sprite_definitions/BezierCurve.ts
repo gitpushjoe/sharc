@@ -12,22 +12,14 @@ import Line from "./Line";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class BezierCurve<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<BezierCurveProperties>,
-        HiddenBezierCurveProperties
-    >
-    implements
-        Required<
-            OmitBaseProps<BezierCurveProperties & HiddenBezierCurveProperties>
-        >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<BezierCurveProperties>, HiddenBezierCurveProperties>
+    implements Required<OmitBaseProps<BezierCurveProperties & HiddenBezierCurveProperties>>
 {
     constructor(props: BezierCurveProperties<DetailsType>) {
-        (props as typeof props & { bounds: Bounds }).bounds =
-            BezierCurve.getBoundsFromCurves(
-                new Position(props.start?.x ?? 0, props.start?.y ?? 0),
-                props.points ?? []
-            );
+        (props as typeof props & { bounds: Bounds }).bounds = BezierCurve.getBoundsFromCurves(
+            new Position(props.start?.x ?? 0, props.start?.y ?? 0),
+            props.points ?? []
+        );
         super(props);
         this.points = props.points ?? [];
         this.closePath = props.closePath ?? false;
@@ -77,12 +69,7 @@ export default class BezierCurve<DetailsType = any>
     // AGGREGATE PROPERTIES
     public get arrowStroke(): StrokeType {
         return {
-            color: new Color(
-                this.arrowStrokeRed,
-                this.arrowStrokeGreen,
-                this.arrowStrokeBlue,
-                this.arrowStrokeAlpha
-            ),
+            color: new Color(this.arrowStrokeRed, this.arrowStrokeGreen, this.arrowStrokeBlue, this.arrowStrokeAlpha),
             lineWidth: this.arrowStrokeWidth,
             lineJoin: this.arrowStrokeJoin,
             lineCap: this.arrowStrokeCap,
@@ -105,12 +92,7 @@ export default class BezierCurve<DetailsType = any>
     }
 
     public get arrowStrokeColor(): Color {
-        return new Color(
-            this.arrowStrokeRed,
-            this.arrowStrokeGreen,
-            this.arrowStrokeBlue,
-            this.arrowStrokeAlpha
-        );
+        return new Color(this.arrowStrokeRed, this.arrowStrokeGreen, this.arrowStrokeBlue, this.arrowStrokeAlpha);
     }
     public set arrowStrokeColor(value: Color) {
         this.arrowStrokeRed = value.red;
@@ -120,12 +102,7 @@ export default class BezierCurve<DetailsType = any>
     }
 
     public get arrowColor(): Color {
-        return new Color(
-            this.arrowRed,
-            this.arrowGreen,
-            this.arrowBlue,
-            this.arrowAlpha
-        );
+        return new Color(this.arrowRed, this.arrowGreen, this.arrowBlue, this.arrowAlpha);
     }
     public set arrowColor(value: Color) {
         this.arrowRed = value.red;
@@ -166,13 +143,8 @@ export default class BezierCurve<DetailsType = any>
         throw new Error("Bounds cannot be set on BezierCurve");
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
-        const bounds = BezierCurve.getBoundsFromCurves(
-            new Position(this.startX, this.startY),
-            this.points
-        );
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
+        const bounds = BezierCurve.getBoundsFromCurves(new Position(this.startX, this.startY), this.points);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
         this.x2 = bounds.x2;
@@ -186,10 +158,7 @@ export default class BezierCurve<DetailsType = any>
         });
     }
 
-    private static getBoundsFromCurves(
-        start: Position,
-        points: BezierPoint[]
-    ): Bounds {
+    private static getBoundsFromCurves(start: Position, points: BezierPoint[]): Bounds {
         let [x1, y1, x2, y2] = [start.x, start.y, start.x, start.y];
         points.forEach(curve => {
             x1 = Math.min(x1, curve.end.x);
@@ -219,47 +188,17 @@ export default class BezierCurve<DetailsType = any>
         const bounds = new Bounds(x1, y1, x2, y2);
         const region = new Path2D();
         region.moveTo(
-            Position.wrtBounds(
-                new Position(
-                    properties.start?.x ?? 0,
-                    properties.start?.y ?? 0
-                ),
-                bounds
-            ).x,
-            Position.wrtBounds(
-                new Position(
-                    properties.start?.x ?? 0,
-                    properties.start?.y ?? 0
-                ),
-                bounds
-            ).y
+            Position.wrtBounds(new Position(properties.start?.x ?? 0, properties.start?.y ?? 0), bounds).x,
+            Position.wrtBounds(new Position(properties.start?.x ?? 0, properties.start?.y ?? 0), bounds).y
         );
         properties.points?.forEach(point => {
             region.bezierCurveTo(
-                Position.wrtBounds(
-                    new Position(point.control1.x, point.control1.y),
-                    bounds
-                ).x,
-                Position.wrtBounds(
-                    new Position(point.control1.x, point.control1.y),
-                    bounds
-                ).y,
-                Position.wrtBounds(
-                    new Position(point.control2.x, point.control2.y),
-                    bounds
-                ).x,
-                Position.wrtBounds(
-                    new Position(point.control2.x, point.control2.y),
-                    bounds
-                ).y,
-                Position.wrtBounds(
-                    new Position(point.end.x, point.end.y),
-                    bounds
-                ).x,
-                Position.wrtBounds(
-                    new Position(point.end.x, point.end.y),
-                    bounds
-                ).y
+                Position.wrtBounds(new Position(point.control1.x, point.control1.y), bounds).x,
+                Position.wrtBounds(new Position(point.control1.x, point.control1.y), bounds).y,
+                Position.wrtBounds(new Position(point.control2.x, point.control2.y), bounds).x,
+                Position.wrtBounds(new Position(point.control2.x, point.control2.y), bounds).y,
+                Position.wrtBounds(new Position(point.end.x, point.end.y), bounds).x,
+                Position.wrtBounds(new Position(point.end.x, point.end.y), bounds).y
             );
         });
         if (properties.closePath) {
@@ -268,10 +207,7 @@ export default class BezierCurve<DetailsType = any>
         ctx.fill(region, properties.fillRule ?? "nonzero");
         StrokeableSprite.strokeRegion(ctx, properties.stroke, region);
         const side = properties.arrow?.side ?? "none";
-        if (
-            properties?.arrow?.side === "start" ||
-            properties?.arrow?.side === "both"
-        ) {
+        if (properties?.arrow?.side === "start" || properties?.arrow?.side === "both") {
             const newStart = Position.wrtBounds(
                 {
                     x: properties.start?.x ?? 0,
@@ -302,28 +238,15 @@ export default class BezierCurve<DetailsType = any>
                 y: (newBounds.y1 + newBounds.y2) / 2
             };
             properties.arrow.side = "start";
-            region.addPath(
-                Line.drawArrow(
-                    ctx,
-                    newBounds,
-                    properties.arrow,
-                    properties.arrow?.stroke,
-                    center
-                )
-            );
+            region.addPath(Line.drawArrow(ctx, newBounds, properties.arrow, properties.arrow?.stroke, center));
         }
         properties.arrow!.side = side;
-        if (
-            properties?.arrow?.side === "end" ||
-            properties?.arrow?.side === "both"
-        ) {
+        if (properties?.arrow?.side === "end" || properties?.arrow?.side === "both") {
             const newEnd = Position.wrtBounds(
                 properties.points?.length
                     ? {
-                          x: properties.points[properties.points.length - 1].end
-                              .x,
-                          y: properties.points[properties.points.length - 1].end
-                              .y
+                          x: properties.points[properties.points.length - 1].end.x,
+                          y: properties.points[properties.points.length - 1].end.y
                       }
                     : {
                           x: properties.start?.x ?? 0,
@@ -334,10 +257,8 @@ export default class BezierCurve<DetailsType = any>
             const newControl2 = Position.wrtBounds(
                 properties.points?.length
                     ? {
-                          x: properties.points[properties.points.length - 1]
-                              .control2.x,
-                          y: properties.points[properties.points.length - 1]
-                              .control2.y
+                          x: properties.points[properties.points.length - 1].control2.x,
+                          y: properties.points[properties.points.length - 1].control2.y
                       }
                     : {
                           x: properties.start?.x ?? 0,
@@ -356,15 +277,7 @@ export default class BezierCurve<DetailsType = any>
                 y: (newBounds.y1 + newBounds.y2) / 2
             };
             properties.arrow.side = "end";
-            region.addPath(
-                Line.drawArrow(
-                    ctx,
-                    newBounds,
-                    properties.arrow,
-                    properties.arrow?.stroke,
-                    center
-                )
-            );
+            region.addPath(Line.drawArrow(ctx, newBounds, properties.arrow, properties.arrow?.stroke, center));
         }
         properties.arrow!.side = side;
         return region;

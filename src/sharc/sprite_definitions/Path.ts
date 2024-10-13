@@ -36,9 +36,7 @@ export default class Path<DetailsType = any>
         return;
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         const bounds = Path.getBoundsFromPath(this.path);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
@@ -58,17 +56,9 @@ export default class Path<DetailsType = any>
         properties: PathProperties
     ): Path2D => {
         let path =
-            properties.path?.map(point =>
-                Position.wrtBounds(
-                    point,
-                    Path.getBoundsFromPath(properties.path ?? [])
-                )
-            ) ?? [];
-        path = Path.getPathSegment(
-            path,
-            properties.startRatio ?? 0,
-            properties.endRatio ?? 1
-        );
+            properties.path?.map(point => Position.wrtBounds(point, Path.getBoundsFromPath(properties.path ?? []))) ??
+            [];
+        path = Path.getPathSegment(path, properties.startRatio ?? 0, properties.endRatio ?? 1);
         if (path.length === 0) {
             return new Path2D();
         }
@@ -87,11 +77,7 @@ export default class Path<DetailsType = any>
 
     public readonly drawFunction = Path.drawFunction;
 
-    public static getPathSegment(
-        path: Position[],
-        start: number,
-        end: number
-    ): Position[] {
+    public static getPathSegment(path: Position[], start: number, end: number): Position[] {
         if (start === 0 && end === 1) {
             return path;
         } else if (start === end) {
@@ -101,9 +87,7 @@ export default class Path<DetailsType = any>
         } else if (start < 0 || end > 1) {
             throw new Error("Start and end must be between 0 and 1");
         }
-        const distances = path.map((point, idx) =>
-            Path.calculateDistance(point, path[idx + 1] ?? path[0])
-        );
+        const distances = path.map((point, idx) => Path.calculateDistance(point, path[idx + 1] ?? path[0]));
         distances.pop();
         const totalDistance = distances.reduce((a, b) => a + b, 0);
         const newPath = [] as Position[];
@@ -125,22 +109,10 @@ export default class Path<DetailsType = any>
                 rightRatio = (end - ratio) * (1 / currentRatio);
             }
             if (ratio + currentRatio > start) {
-                newPath.push(
-                    Path.interpolate(
-                        path[currentIdx],
-                        path[currentIdx + 1] ?? path[0],
-                        leftRatio
-                    )
-                );
+                newPath.push(Path.interpolate(path[currentIdx], path[currentIdx + 1] ?? path[0], leftRatio));
             }
             if (ratio < end && ratio + currentRatio > end) {
-                newPath.push(
-                    Path.interpolate(
-                        path[currentIdx],
-                        path[currentIdx + 1] ?? path[0],
-                        rightRatio
-                    )
-                );
+                newPath.push(Path.interpolate(path[currentIdx], path[currentIdx + 1] ?? path[0], rightRatio));
                 return newPath;
             }
             ratio += currentRatio;
@@ -149,21 +121,11 @@ export default class Path<DetailsType = any>
         return end === 1 ? newPath.concat(path[path.length - 1]) : newPath;
     }
 
-    public static interpolate(
-        point1: Position,
-        point2: Position,
-        ratio: number
-    ): Position {
-        return new Position(
-            point1.x + ratio * (point2.x - point1.x),
-            point1.y + ratio * (point2.y - point1.y)
-        );
+    public static interpolate(point1: Position, point2: Position, ratio: number): Position {
+        return new Position(point1.x + ratio * (point2.x - point1.x), point1.y + ratio * (point2.y - point1.y));
     }
 
-    public static calculateDistance(
-        point1: Position,
-        point2: Position
-    ): number {
+    public static calculateDistance(point1: Position, point2: Position): number {
         return Position.distance(point1, point2);
     }
 

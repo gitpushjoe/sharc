@@ -1,9 +1,5 @@
 import { Bounds } from "../Utils";
-import {
-    EllipseProperties,
-    HiddenEllipseProperties,
-    OmitBaseProps
-} from "../types/Sprites";
+import { EllipseProperties, HiddenEllipseProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Ellipse<DetailsType = any>
@@ -14,25 +10,16 @@ export default class Ellipse<DetailsType = any>
         },
         HiddenEllipseProperties
     >
-    implements
-        Required<OmitBaseProps<EllipseProperties> & HiddenEllipseProperties>
+    implements Required<OmitBaseProps<EllipseProperties> & HiddenEllipseProperties>
 {
     constructor(props: EllipseProperties<DetailsType>) {
         super(props);
         this.startAngle = props.startAngle ?? 0;
         this.endAngle = props.endAngle ?? 360;
-        const radius =
-            typeof props.radius === "number"
-                ? [props.radius, props.radius]
-                : props.radius ?? [5, 5];
+        const radius = typeof props.radius === "number" ? [props.radius, props.radius] : props.radius ?? [5, 5];
         this.radiusX = radius[0];
         this.radiusY = radius[1];
-        const bounds = Bounds.fromCircle(
-            props.center?.x ?? 0,
-            props.center?.y ?? 0,
-            radius[0],
-            radius[1]
-        );
+        const bounds = Bounds.fromCircle(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
         this.x2 = bounds.x2;
@@ -72,9 +59,7 @@ export default class Ellipse<DetailsType = any>
         this.height = value * 2;
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
             center: { x: this.centerX, y: this.centerY },
             radius: [this.radiusX, this.radiusY],
@@ -97,12 +82,7 @@ export default class Ellipse<DetailsType = any>
             typeof properties.radius === "number"
                 ? [properties.radius, properties.radius]
                 : properties.radius ?? [5, 5];
-        const bounds = Bounds.fromCircle(
-            properties.center!.x,
-            properties.center!.y,
-            radiusX,
-            radiusY
-        );
+        const bounds = Bounds.fromCircle(properties.center!.x, properties.center!.y, radiusX, radiusY);
         const coords = getX1Y1WH(bounds);
         ctx.beginPath();
         const region = new Path2D();

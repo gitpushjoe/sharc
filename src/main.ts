@@ -30,26 +30,14 @@ tests.forEach(test => {
                 }
             });
             if (useOffscreen) {
-                const worker = new Worker(
-                    new URL("./worker.ts", import.meta.url),
-                    { type: "module" }
-                );
-                stage = new OffscreenStage<any, string>(
-                    canvasEl,
-                    worker,
-                    "centered"
-                );
-                stage.on(
-                    "message",
-                    (stage: OffscreenStage<any, string>, msg) => {
-                        if (msg.type == "ready") {
-                            (stage as OffscreenStage).postCustomMessage(
-                                test.name
-                            );
-                            stage.loop(framerate);
-                        }
+                const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+                stage = new OffscreenStage<any, string>(canvasEl, worker, "centered");
+                stage.on("message", (stage: OffscreenStage<any, string>, msg) => {
+                    if (msg.type == "ready") {
+                        (stage as OffscreenStage).postCustomMessage(test.name);
+                        stage.loop(framerate);
                     }
-                );
+                });
             } else {
                 stage = new Stage(canvasEl, "classic");
                 test.apply(stage, useOffscreen);
@@ -60,6 +48,4 @@ tests.forEach(test => {
 });
 
 localStorage.getItem("lastTest") &&
-    document
-        .getElementById(localStorage.getItem("lastTest")!)
-        ?.parentElement?.setAttribute("open", "");
+    document.getElementById(localStorage.getItem("lastTest")!)?.parentElement?.setAttribute("open", "");

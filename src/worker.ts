@@ -4,11 +4,7 @@ import { tests } from "./tests";
 
 postMessage("Hello from worker!");
 
-const stage: WorkerStage = new WorkerStage(
-    postMessage.bind(null),
-    "classic",
-    Colors.White
-);
+const stage: WorkerStage = new WorkerStage(postMessage.bind(null), "classic", Colors.White);
 onmessage = stage.onmessage;
 
 stage.on("message", (stage, message) => {

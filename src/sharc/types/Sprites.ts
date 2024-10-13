@@ -5,14 +5,9 @@ export type DrawFunctionType<Property> = (
     ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
     params: Property
 ) => Path2D | void;
-export type EffectsType = (
-    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-) => void;
+export type EffectsType = (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void;
 
-export type DEFAULT_PROPERTIES<DetailsType = any> = Omit<
-    ShapeProperties,
-    "drawFunction"
-> & { details?: DetailsType };
+export type DEFAULT_PROPERTIES<DetailsType = any> = Omit<ShapeProperties, "drawFunction"> & { details?: DetailsType };
 
 export type PropMetaInfo<Properties> = {
     calculated: Set<keyof Properties>;
@@ -147,15 +142,9 @@ export type HiddenEllipseProperties = {
     radiusY: number;
 };
 
-export type KeysOf<Properties> =
-    | keyof Properties
-    | keyof HIDDEN_SHAPE_PROPERTIES;
+export type KeysOf<Properties> = keyof Properties | keyof HIDDEN_SHAPE_PROPERTIES;
 
-export type RadiusType =
-    | [number]
-    | [number, number]
-    | [number, number, number]
-    | [number, number, number, number];
+export type RadiusType = [number] | [number, number] | [number, number, number] | [number, number, number, number];
 
 export type RectProperties<DetailsType = any> = {
     radius?: RadiusType;
@@ -293,13 +282,7 @@ export type AnchorPosition =
     | "bottom-center"
     | "bottom-right";
 
-export type Alignment =
-    | "row-center"
-    | "top"
-    | "bottom"
-    | "column-center"
-    | "left"
-    | "right";
+export type Alignment = "row-center" | "top" | "bottom" | "column-center" | "left" | "right";
 
 export type NullSpriteProperties<DetailsType = any> = {
     position?: PositionType;
@@ -343,8 +326,6 @@ export type HiddenPolarWrapperProperties = {
     offsetRadius: number;
 } & HiddenNullSpriteProperties;
 
-export type MostlyRequired<Type extends { details?: any }> = Required<
-    Omit<Type, "details">
-> & {
+export type MostlyRequired<Type extends { details?: any }> = Required<Omit<Type, "details">> & {
     details?: Type["details"];
 };

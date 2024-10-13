@@ -1,17 +1,9 @@
 import { Bounds, Position, invalidSetterFor } from "../Utils";
-import {
-    TextProperties,
-    HiddenTextProperties,
-    OmitBaseProps
-} from "../types/Sprites";
+import { TextProperties, HiddenTextProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class TextSprite<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<TextProperties>,
-        HiddenTextProperties
-    >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<TextProperties>, HiddenTextProperties>
     implements Required<OmitBaseProps<TextProperties>>
 {
     constructor(props: TextProperties<DetailsType>) {
@@ -28,9 +20,7 @@ export default class TextSprite<DetailsType = any>
         this.maxWidth = props.maxWidth ?? null;
         this.bold = props.bold ?? false;
         this.italic = props.italic ?? false;
-        const bounds = this.calculateBounds(
-            new OffscreenCanvas(0, 0).getContext("2d")!
-        );
+        const bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
         this.x2 = bounds.x2;
@@ -62,9 +52,7 @@ export default class TextSprite<DetailsType = any>
 
     // CALCULATED PROPERTIES
     public get bounds() {
-        return this.calculateBounds(
-            new OffscreenCanvas(0, 0).getContext("2d")!
-        );
+        return this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
     }
     @invalidSetterFor("Text")
     public set bounds(_value: Bounds) {
@@ -73,10 +61,7 @@ export default class TextSprite<DetailsType = any>
 
     public get center() {
         const bounds = this.bounds;
-        return new Position(
-            (bounds.x1 + bounds.x2) / 2,
-            (bounds.y1 + bounds.y2) / 2
-        );
+        return new Position((bounds.x1 + bounds.x2) / 2, (bounds.y1 + bounds.y2) / 2);
     }
     public set center(value: Position) {
         const center = this.center;
@@ -137,9 +122,7 @@ export default class TextSprite<DetailsType = any>
         throw new Error("Text height cannot be set");
     }
 
-    private calculateBounds(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    private calculateBounds(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         ctx.font = `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize}px ${this.font}`;
         ctx.textBaseline = this.textBaseline;
         ctx.direction = this.textDirection;
@@ -161,28 +144,14 @@ export default class TextSprite<DetailsType = any>
               ? -height
               : 0;
         return {
-            x1:
-                this.positionX +
-                (this.positionIsCenter ? -width / 2 : 0) -
-                xOffset,
-            y1:
-                this.positionY +
-                (this.positionIsCenter ? -height / 2 : 0) +
-                yOffset,
-            x2:
-                this.positionX +
-                (this.positionIsCenter ? width / 2 : width) -
-                xOffset,
-            y2:
-                this.positionY +
-                (this.positionIsCenter ? height / 2 : height) +
-                yOffset
+            x1: this.positionX + (this.positionIsCenter ? -width / 2 : 0) - xOffset,
+            y1: this.positionY + (this.positionIsCenter ? -height / 2 : 0) + yOffset,
+            x2: this.positionX + (this.positionIsCenter ? width / 2 : width) - xOffset,
+            y2: this.positionY + (this.positionIsCenter ? height / 2 : height) + yOffset
         };
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         if ((this.root as TextSprite).stage?.rootStyle === "centered") {
             this.scaleY *= -1;
         }
@@ -219,20 +188,10 @@ export default class TextSprite<DetailsType = any>
         const metrics = ctx.measureText(text ?? "");
         const textWidth = metrics.width;
         const height = properties.fontSize! * 0.725;
-        ctx.fillText(
-            text ?? "",
-            -textWidth / 2,
-            height / 2,
-            maxWidth ?? undefined
-        );
+        ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
             StrokeableSprite.strokeRegion(ctx, properties.stroke);
-            ctx.strokeText(
-                text ?? "",
-                -textWidth / 2,
-                height / 2,
-                maxWidth ?? undefined
-            );
+            ctx.strokeText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         }
 
         const region = new Path2D();

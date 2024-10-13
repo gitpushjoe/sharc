@@ -1,27 +1,12 @@
 import { Sprite } from "../Sprite";
 import { Position, Bounds } from "../Utils";
-import {
-    DEFAULT_PROPERTIES,
-    HiddenNullSpriteProperties,
-    NullSpriteProperties,
-    OmitBaseProps
-} from "../types/Sprites";
+import { DEFAULT_PROPERTIES, HiddenNullSpriteProperties, NullSpriteProperties, OmitBaseProps } from "../types/Sprites";
 
 export default class NullSprite<DetailsType = any>
-    extends Sprite<
-        DetailsType,
-        OmitBaseProps<NullSpriteProperties>,
-        HiddenNullSpriteProperties
-    >
-    implements
-        Required<
-            OmitBaseProps<NullSpriteProperties> & HiddenNullSpriteProperties
-        >
+    extends Sprite<DetailsType, OmitBaseProps<NullSpriteProperties>, HiddenNullSpriteProperties>
+    implements Required<OmitBaseProps<NullSpriteProperties> & HiddenNullSpriteProperties>
 {
-    constructor(
-        props: NullSpriteProperties<DetailsType> &
-            Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">
-    ) {
+    constructor(props: NullSpriteProperties<DetailsType> & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
             props.position?.x ?? 0,
             props.position?.y ?? 0,

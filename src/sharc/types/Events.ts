@@ -71,9 +71,7 @@ export type SpriteEventListeners<CallerType = undefined, Properties = any> = {
     beforeDraw: StageEventCallback<CallerType>[];
     animationFinish: AnimationFinishCallback<
         CallerType,
-        PrivateAnimationType<
-            Properties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES
-        >
+        PrivateAnimationType<Properties & DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
     >[];
 };
 
@@ -87,9 +85,6 @@ export type StageEventListeners<CallerType = Stage> = {
     beforeDraw: StageEventCallback<CallerType, CallerType>[];
 };
 
-export type AsyncStageEventListeners<
-    CallerType = any,
-    MessageType = any
-> = StageEventListeners<CallerType> & {
+export type AsyncStageEventListeners<CallerType = any, MessageType = any> = StageEventListeners<CallerType> & {
     message: MessageCallback<CallerType, MessageType>[];
 };

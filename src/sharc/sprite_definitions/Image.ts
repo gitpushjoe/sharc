@@ -1,9 +1,5 @@
 import { Position, Bounds } from "../Utils";
-import {
-    ImageProperties,
-    HiddenImageProperties,
-    OmitBaseProps
-} from "../types/Sprites";
+import { ImageProperties, HiddenImageProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class ImageSprite<DetailsType = any>
@@ -121,16 +117,12 @@ export default class ImageSprite<DetailsType = any>
         }
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
             src: "",
             image: this.image,
             bounds: this.bounds,
-            srcBounds: this.useSrcBounds
-                ? new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2)
-                : null
+            srcBounds: this.useSrcBounds ? new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2) : null
         });
     }
 
@@ -170,12 +162,7 @@ export default class ImageSprite<DetailsType = any>
         return region;
     };
 
-    public static Bounds(
-        x1: number,
-        y1: number,
-        width: number,
-        height: number
-    ): Bounds {
+    public static Bounds(x1: number, y1: number, width: number, height: number): Bounds {
         return Bounds.fromDimensions(x1, y1, width, height);
     }
 }

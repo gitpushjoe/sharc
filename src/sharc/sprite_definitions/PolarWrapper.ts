@@ -8,15 +8,8 @@ import {
 } from "../types/Sprites";
 
 export default class PolarWrapper<DetailsType = any>
-    extends Sprite<
-        DetailsType,
-        OmitBaseProps<PolarWrapperProperties<DetailsType>>,
-        HiddenPolarWrapperProperties
-    >
-    implements
-        Required<
-            OmitBaseProps<PolarWrapperProperties & HiddenPolarWrapperProperties>
-        >
+    extends Sprite<DetailsType, OmitBaseProps<PolarWrapperProperties<DetailsType>>, HiddenPolarWrapperProperties>
+    implements Required<OmitBaseProps<PolarWrapperProperties & HiddenPolarWrapperProperties>>
 {
     constructor(props: PolarWrapperProperties<DetailsType>) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
@@ -82,21 +75,13 @@ export default class PolarWrapper<DetailsType = any>
         return false;
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         if (!this.active) {
             return;
         }
         const child = this.child;
-        const childPosition = new PolarPosition(
-            this.location?.angle ?? 0,
-            this.location?.radius ?? 0
-        );
-        const offset = new PolarPosition(
-            this.offset?.angle ?? 0,
-            this.offset?.radius ?? 0
-        );
+        const childPosition = new PolarPosition(this.location?.angle ?? 0, this.location?.radius ?? 0);
+        const offset = new PolarPosition(this.offset?.angle ?? 0, this.offset?.radius ?? 0);
         if (child) {
             child.center = PolarPosition.toPosition(childPosition);
         } else {
@@ -104,10 +89,7 @@ export default class PolarWrapper<DetailsType = any>
         }
         for (let i = 1; i < this.children.length; i++) {
             this.children[i].center = PolarPosition.toPosition(
-                PolarPosition.sum(
-                    childPosition,
-                    PolarPosition.factor(offset, i)
-                )
+                PolarPosition.sum(childPosition, PolarPosition.factor(offset, i))
             );
         }
         super.draw(ctx, {

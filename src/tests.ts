@@ -12,29 +12,15 @@ import {
 } from "./sharc/Sprites";
 import { Stage } from "./sharc/Stage";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
-import {
-    Animate,
-    AnimateTo,
-    Bounds,
-    Colors,
-    Easing,
-    Position
-} from "./sharc/Utils";
+import { Animate, AnimateTo, Bounds, Colors, Easing, Position } from "./sharc/Utils";
 import { ColorType } from "./sharc/types/Common";
 
 export interface Test {
     name: string;
-    apply: (
-        stage: Stage | WorkerStage<any, string>,
-        isOffscreen: boolean
-    ) => void;
+    apply: (stage: Stage | WorkerStage<any, string>, isOffscreen: boolean) => void;
 }
 
-const getRandomColor = (
-    range?: number,
-    min?: number,
-    alpha?: number
-): ColorType => ({
+const getRandomColor = (range?: number, min?: number, alpha?: number): ColorType => ({
     red: Math.random() * (range ?? 255) + (min ?? 0),
     green: Math.random() * (range ?? 255) + (min ?? 0),
     blue: Math.random() * (range ?? 255) + (min ?? 0),
@@ -79,10 +65,7 @@ export const tests: Test[] = [
                     { loop: true }
                 );
 
-                ellipse.channels[2].push(
-                    Animate("rotation", 0, 360, 20, Easing.EASE_IN_OUT),
-                    { loop: true }
-                );
+                ellipse.channels[2].push(Animate("rotation", 0, 360, 20, Easing.EASE_IN_OUT), { loop: true });
 
                 stage.root.addChild(ellipse);
             }
@@ -109,12 +92,9 @@ export const tests: Test[] = [
                 fps.details![2].push(fpsValue);
                 const skipped = fps.details![1] + +(fpsValue < 40);
                 const skippedPerc = ((100 * skipped) / frame).toFixed(2);
-                const avg =
-                    fps.details![2].reduce((a, b) => a + b, 0) /
-                    fps.details![2].length;
+                const avg = fps.details![2].reduce((a, b) => a + b, 0) / fps.details![2].length;
                 const stdev = Math.sqrt(
-                    fps.details![2].reduce((a, b) => a + (b - avg) ** 2, 0) /
-                        fps.details![2].length
+                    fps.details![2].reduce((a, b) => a + (b - avg) ** 2, 0) / fps.details![2].length
                 );
                 fps.text = `FPS: ${fpsValue.toFixed(2)}  Skipped: ${skippedPerc}% (${skipped})   Avg: ${avg.toFixed(2)}  Stdev: ${stdev.toFixed(2)}`;
                 fps.details = [now, skipped, fps.details![2]];
@@ -217,17 +197,7 @@ export const tests: Test[] = [
             stage.root.addChild(image);
             stage.root.addChild(
                 new Ellipse({ color: Colors.Blue, radius: 10 }).distribute(
-                    [
-                        [
-                            Animate(
-                                "centerX",
-                                0,
-                                1000,
-                                100,
-                                Easing.Bounce(Easing.EASE_IN_OUT)
-                            )
-                        ]
-                    ],
+                    [[Animate("centerX", 0, 1000, 100, Easing.Bounce(Easing.EASE_IN_OUT))]],
                     { loop: true }
                 )
             );
@@ -240,14 +210,9 @@ export const tests: Test[] = [
     },
     {
         name: "2.0-features",
-        apply: (
-            stage: Stage | WorkerStage<any, string>,
-            isOffscreen: boolean
-        ) => {
+        apply: (stage: Stage | WorkerStage<any, string>, isOffscreen: boolean) => {
             const ellipseCount = 20;
-            const log = isOffscreen
-                ? (stage as WorkerStage).postCustomMessage
-                : console.log;
+            const log = isOffscreen ? (stage as WorkerStage).postCustomMessage : console.log;
             for (let i = 0; i < ellipseCount; ++i) {
                 const ellipse = new Ellipse({
                     color: (i % 2 && Colors.Red) || Colors.Blue,
@@ -318,10 +283,7 @@ export const tests: Test[] = [
                 });
             }
             const max = 100;
-            const countup = function (
-                sprite: TextSprite<number>,
-                frame: number
-            ) {
+            const countup = function (sprite: TextSprite<number>, frame: number) {
                 sprite.details! += +(frame % 4 == 3);
                 sprite.text = `Counting up to ${max}: ${sprite.details}`;
                 if (sprite.details! == max / 2) {
@@ -374,8 +336,7 @@ export const tests: Test[] = [
     {
         name: "readme",
         apply: (stage: Stage | WorkerStage<any, string>) => {
-            (stage.root.center = new Position(600, 400)),
-                (stage.root.scaleY = -1);
+            (stage.root.center = new Position(600, 400)), (stage.root.scaleY = -1);
             const circle = new Ellipse({
                 color: Colors.Red,
                 radius: 100,
@@ -438,13 +399,7 @@ export const tests: Test[] = [
             });
             text.on("beforeDraw", (sprite, frame) => {
                 const property =
-                    frame % 120 === 1
-                        ? "center"
-                        : frame % 120 === 41
-                          ? "corner1"
-                          : frame % 120 === 81
-                            ? "corner2"
-                            : "";
+                    frame % 120 === 1 ? "center" : frame % 120 === 41 ? "corner1" : frame % 120 === 81 ? "corner2" : "";
                 if (!property) {
                     return;
                 }
@@ -518,18 +473,9 @@ export const tests: Test[] = [
                     console.log(`update took ${Date.now() - start}ms`);
                 }
                 if (frame % 80 === 70) {
-                    ellipse.center = new Position(
-                        Math.random() * 300 + 150,
-                        Math.random() * 300 - 150
-                    );
-                    rect.center = new Position(
-                        Math.random() * 300 - 150,
-                        Math.random() * 300 - 150
-                    );
-                    text.center = new Position(
-                        Math.random() * 300 - 150,
-                        Math.random() * 300 - 150
-                    );
+                    ellipse.center = new Position(Math.random() * 300 + 150, Math.random() * 300 - 150);
+                    rect.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
+                    text.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
                 }
             });
         }
@@ -565,12 +511,8 @@ export const tests: Test[] = [
                             const randomPole = root.children[
                                 Math.floor(Math.random() * root.children.length)
                             ] as PolarWrapper;
-                            parent.channels[1].push(
-                                AnimateTo("radius", randomPole.radius, 40)
-                            );
-                            randomPole.channels[1].push(
-                                AnimateTo("radius", parent.radius, 40)
-                            );
+                            parent.channels[1].push(AnimateTo("radius", randomPole.radius, 40));
+                            randomPole.channels[1].push(AnimateTo("radius", parent.radius, 40));
                             root.details += 2;
                         })
                         .addChild(
@@ -583,23 +525,14 @@ export const tests: Test[] = [
                                         new Ellipse({
                                             radius: 12,
                                             name: `${n}`,
-                                            color: getRandomColor(
-                                                175,
-                                                55,
-                                                0.25
-                                            ),
+                                            color: getRandomColor(175, 55, 0.25),
                                             stroke: { lineWidth: 3 }
                                         }),
                                     parameters: 8
                                 }).on("beforeDraw", sprite => {
                                     sprite.generate();
-                                    sprite.parent!.addChildren(
-                                        ...sprite.children
-                                    );
-                                    sprite.parent!.channels[0].push(
-                                        AnimateTo("rotation", -360, 400),
-                                        { loop: true }
-                                    );
+                                    sprite.parent!.addChildren(...sprite.children);
+                                    sprite.parent!.channels[0].push(AnimateTo("rotation", -360, 400), { loop: true });
                                     sprite.removeSelf();
                                 })
                             )

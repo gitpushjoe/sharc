@@ -4,11 +4,7 @@ import Path from "./Path";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Star<DetailsType = any>
-    extends StrokeableSprite<
-        DetailsType,
-        OmitBaseProps<StarProperties> & { center?: Position },
-        object
-    >
+    extends StrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: Position }, object>
     implements Required<OmitBaseProps<StarProperties>>
 {
     constructor(props: StarProperties<DetailsType>) {
@@ -17,8 +13,7 @@ export default class Star<DetailsType = any>
         this.fillRule = props.fillRule ?? "nonzero";
         this.startRatio = props.startRatio ?? 0;
         this.endRatio = props.endRatio ?? 1;
-        this.innerRadius =
-            props.innerRadius ?? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2;
+        this.innerRadius = props.innerRadius ?? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2;
         const center = props.center ?? { x: 0, y: 0 };
         this.centerX = center.x;
         this.centerY = center.y;
@@ -68,9 +63,7 @@ export default class Star<DetailsType = any>
         return;
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         this.x1 = this.centerX - this.radius;
         this.y1 = this.centerY - this.radius;
         this.x2 = this.centerX + this.radius;
@@ -90,14 +83,10 @@ export default class Star<DetailsType = any>
         properties: StarProperties
     ): Path2D => {
         const radius = properties.radius ?? 5;
-        const innerRadius =
-            properties.innerRadius ?? (radius * (3 - Math.sqrt(5))) / 2;
+        const innerRadius = properties.innerRadius ?? (radius * (3 - Math.sqrt(5))) / 2;
 
         const pointFromAngle = (angle: number, radius: number) => {
-            return new Position(
-                radius * Math.cos(Math.PI / 2 + angle),
-                radius * Math.sin(Math.PI / 2 + angle)
-            );
+            return new Position(radius * Math.cos(Math.PI / 2 + angle), radius * Math.sin(Math.PI / 2 + angle));
         };
 
         const path = [

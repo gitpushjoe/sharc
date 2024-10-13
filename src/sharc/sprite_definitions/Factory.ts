@@ -11,17 +11,8 @@ import {
 import { managerUpdate } from "./Manager";
 
 export default class Factory<ParametersType = any, DetailsType = any>
-    extends Sprite<
-        DetailsType,
-        OmitBaseProps<FactoryProperties<ParametersType>>,
-        HiddenFactoryProperties
-    >
-    implements
-        Required<
-            OmitBaseProps<
-                FactoryProperties<ParametersType> & HiddenFactoryProperties
-            >
-        >
+    extends Sprite<DetailsType, OmitBaseProps<FactoryProperties<ParametersType>>, HiddenFactoryProperties>
+    implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFactoryProperties>>
 {
     constructor(props: FactoryProperties<ParametersType, DetailsType>) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
@@ -42,12 +33,8 @@ export default class Factory<ParametersType = any, DetailsType = any>
     public anchor: AnchorPosition | null = null;
     public align: Alignment | null = null;
     public padding: number | null = null;
-    public factory: (
-        parameters: ParametersType
-    ) => Shape<DetailsType> | undefined;
-    public parameters: ParametersType extends number
-        ? number
-        : ParametersType[];
+    public factory: (parameters: ParametersType) => Shape<DetailsType> | undefined;
+    public parameters: ParametersType extends number ? number : ParametersType[];
 
     // AGGREGATE PROPERTIES
     public get position(): Position {
@@ -85,9 +72,7 @@ export default class Factory<ParametersType = any, DetailsType = any>
 
     public generate() {
         this.removeAllChildren();
-        const parameterTypeIsNumber = (
-            self: Factory<any, any>
-        ): self is Factory<number> => {
+        const parameterTypeIsNumber = (self: Factory<any, any>): self is Factory<number> => {
             return typeof self.parameters === "number";
         };
         if (parameterTypeIsNumber(this)) {
@@ -109,9 +94,7 @@ export default class Factory<ParametersType = any, DetailsType = any>
         }
     }
 
-    public draw(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D
-    ) {
+    public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
             position: this.position,
             anchor: this.anchor,

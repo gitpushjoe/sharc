@@ -1,29 +1,24 @@
 export type EasingType = (x: number) => number;
 
-export type AnimationCallback<PropertyType> = (
-    property: PropertyType
-) => PropertyType;
+export type AnimationCallback<PropertyType> = (property: PropertyType) => PropertyType;
 
-export type IsNumeric<T> =
-    number extends T
+export type IsNumeric<T> = number extends T
+    ? true
+    : T extends number[]
+      ? true
+      : T extends Record<string, number>
         ? true
-        : T extends number[]
-          ? true
-          : T extends Record<string, number>
-            ? true
-            : false;
+        : false;
 
 export type NumericOnly<P> = {
-    [K in keyof P as true extends IsNumeric<P[K]> ? K : never]: P[K]
+    [K in keyof P as true extends IsNumeric<P[K]> ? K : never]: P[K];
 };
 
 export type PrivateAnimationType<Properties> = {
     [K in keyof Properties]: {
         property: K;
         from: Properties[K] | null;
-        to:
-            | NonNullable<Properties[K]>
-            | AnimationCallback<NonNullable<Properties[K]>>;
+        to: NonNullable<Properties[K]> | AnimationCallback<NonNullable<Properties[K]>>;
         duration: number;
         delay: number;
         easing: EasingType;
@@ -40,9 +35,7 @@ export type AnimationType<Properties> = NonNullable<
         [K in keyof Properties]: {
             property: K;
             from: Properties[K] | null;
-            to:
-                | NonNullable<Properties[K]>
-                | AnimationCallback<NonNullable<Properties[K]>>;
+            to: NonNullable<Properties[K]> | AnimationCallback<NonNullable<Properties[K]>>;
             duration?: number;
             delay?: number;
             easing?: EasingType;
