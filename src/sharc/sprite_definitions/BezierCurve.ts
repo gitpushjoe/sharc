@@ -15,18 +15,18 @@ export default class BezierCurve<DetailsType = any>
     extends StrokeableSprite<DetailsType, OmitBaseProps<BezierCurveProperties>, HiddenBezierCurveProperties>
     implements Required<OmitBaseProps<BezierCurveProperties & HiddenBezierCurveProperties>>
 {
-    constructor(props: BezierCurveProperties<DetailsType>) {
+    constructor(props: BezierCurveProperties<DetailsType>, defaults?: BezierCurveProperties<DetailsType>) {
         (props as typeof props & { bounds: Bounds }).bounds = BezierCurve.getBoundsFromCurves(
-            new Position(props.start?.x ?? 0, props.start?.y ?? 0),
-            props.points ?? []
+            new Position(props.start?.x ?? defaults?.start?.x ?? 0, props.start?.y ?? defaults?.start?.y ?? 0),
+            props.points ?? defaults?.points ?? []
         );
-        super(props);
-        this.points = props.points ?? [];
-        this.closePath = props.closePath ?? false;
-        this.fillRule = props.fillRule ?? "nonzero";
-        this.startX = props.start?.x ?? 0;
-        this.startY = props.start?.y ?? 0;
-        this.arrow = props.arrow ?? {};
+        super(props, defaults);
+        this.points = props.points ?? defaults?.points ?? this.points;
+        this.closePath = props.closePath ?? defaults?.closePath ?? this.closePath;
+        this.fillRule = props.fillRule ?? defaults?.fillRule ?? this.fillRule;
+        this.startX = props.start?.x ?? defaults?.start?.x ?? this.startX;
+        this.startY = props.start?.y ?? defaults?.start?.y ?? this.startY;
+        this.arrow = props.arrow ?? defaults?.arrow ?? {};
     }
 
     // NORMAL PROPERTIES
@@ -112,26 +112,28 @@ export default class BezierCurve<DetailsType = any>
     }
 
     public get arrow(): ArrowType {
-        return {
-            length: this.arrowLength,
-            side: this.arrowSide,
-            angle: this.arrowAngle,
-            stroke: this.arrowStroke,
-            closed: this.arrowClosed,
-            color: this.arrowColor
-        };
+        return this.arrowSide === "none"
+            ? { side: "none" }
+            : {
+                  length: this.arrowLength,
+                  side: this.arrowSide,
+                  angle: this.arrowAngle,
+                  stroke: this.arrowStroke,
+                  closed: this.arrowClosed,
+                  color: this.arrowColor
+              };
     }
     public set arrow(value: ArrowType) {
-        this.arrowLength = value.length ?? 20;
         this.arrowSide =
-            value.side ??
+            (value.side ??
             (value.length !== undefined ||
                 value.angle !== undefined ||
                 value.color !== undefined ||
                 value.stroke !== undefined ||
-                value.closed !== undefined)
+                value.closed !== undefined))
                 ? "end"
                 : "none";
+        this.arrowLength = value.length ?? 20;
         this.arrowAngle = value.angle ?? 90;
         this.arrowStroke = value.stroke ?? {};
         this.arrowClosed = value.closed ?? false;

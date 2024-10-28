@@ -11,14 +11,14 @@ export default class Line<DetailsType = any>
     >
     implements Required<OmitBaseProps<LineProperties & HiddenLineProperties>>
 {
-    constructor(props: LineProperties<DetailsType>) {
-        super(props);
-        this.lineWidth = props.lineWidth ?? 1;
-        this.lineCap = props.lineCap ?? "butt";
-        this.lineDash = props.lineDash ?? 0;
-        this.lineDashGap = props.lineDashGap ?? 0;
-        this.lineDashOffset = props.lineDashOffset ?? 0;
-        this.arrow = props.arrow ?? {};
+    constructor(props: LineProperties<DetailsType>, defaults?: LineProperties<DetailsType>) {
+        super(props, defaults);
+        this.lineWidth = props.lineWidth ?? defaults?.lineWidth ?? this.lineWidth;
+        this.lineCap = props.lineCap ?? defaults?.lineCap ?? this.lineCap;
+        this.lineDash = props.lineDash ?? defaults?.lineDash ?? this.lineDash;
+        this.lineDashGap = props.lineDashGap ?? defaults?.lineDashGap ?? this.lineDashGap;
+        this.lineDashOffset = props.lineDashOffset ?? defaults?.lineDashOffset ?? this.lineDashOffset;
+        this.arrow = props.arrow ?? defaults?.arrow ?? {};
     }
 
     // NORMAL PROPERTIES
@@ -95,26 +95,28 @@ export default class Line<DetailsType = any>
     }
 
     public get arrow(): ArrowType {
-        return {
-            length: this.arrowLength,
-            side: this.arrowSide,
-            angle: this.arrowAngle,
-            stroke: this.arrowStroke,
-            closed: this.arrowClosed,
-            color: this.arrowColor
-        };
+        return this.arrowSide === "none"
+            ? { side: "none" }
+            : {
+                  length: this.arrowLength,
+                  side: this.arrowSide,
+                  angle: this.arrowAngle,
+                  stroke: this.arrowStroke,
+                  closed: this.arrowClosed,
+                  color: this.arrowColor
+              };
     }
     public set arrow(value: ArrowType) {
-        this.arrowLength = value.length ?? 20;
         this.arrowSide =
-            value.side ??
+            (value.side ??
             (value.length !== undefined ||
                 value.angle !== undefined ||
                 value.color !== undefined ||
                 value.stroke !== undefined ||
-                value.closed !== undefined)
+                value.closed !== undefined))
                 ? "end"
                 : "none";
+        this.arrowLength = value.length ?? 20;
         this.arrowAngle = value.angle ?? 90;
         this.arrowStroke = value.stroke ?? {};
         this.arrowClosed = value.closed ?? false;

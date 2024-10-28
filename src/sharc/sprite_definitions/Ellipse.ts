@@ -12,11 +12,17 @@ export default class Ellipse<DetailsType = any>
     >
     implements Required<OmitBaseProps<EllipseProperties> & HiddenEllipseProperties>
 {
-    constructor(props: EllipseProperties<DetailsType>) {
-        super(props);
-        this.startAngle = props.startAngle ?? 0;
-        this.endAngle = props.endAngle ?? 360;
-        const radius = typeof props.radius === "number" ? [props.radius, props.radius] : props.radius ?? [5, 5];
+    constructor(props: EllipseProperties<DetailsType>, defaults?: EllipseProperties<DetailsType>) {
+        super(props, defaults);
+        this.startAngle = props.startAngle ?? defaults?.startAngle ?? this.startAngle;
+        this.endAngle = props.endAngle ?? defaults?.endAngle ?? this.endAngle;
+        const radius =
+            typeof props.radius === "number"
+                ? [props.radius, props.radius]
+                : (props.radius ??
+                  (typeof defaults?.radius === "number"
+                      ? [defaults.radius, defaults.radius]
+                      : (defaults?.radius ?? [5, 5])));
         this.radiusX = radius[0];
         this.radiusY = radius[1];
         const bounds = Bounds.fromCircle(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
@@ -81,7 +87,7 @@ export default class Ellipse<DetailsType = any>
         const [radiusX, radiusY] =
             typeof properties.radius === "number"
                 ? [properties.radius, properties.radius]
-                : properties.radius ?? [5, 5];
+                : (properties.radius ?? [5, 5]);
         const bounds = Bounds.fromCircle(properties.center!.x, properties.center!.y, radiusX, radiusY);
         const coords = getX1Y1WH(bounds);
         ctx.beginPath();

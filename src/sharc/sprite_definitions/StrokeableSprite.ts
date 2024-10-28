@@ -6,19 +6,29 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
     extends Sprite<DetailsType, Properties & StrokeProperties, HiddenProperties & HiddenStrokeProperties>
     implements Required<StrokeProperties & HiddenStrokeProperties>
 {
-    constructor(props: { stroke?: StrokeType | null } & Properties & DEFAULT_PROPERTIES<DetailsType>) {
-        super(props);
-        this.strokeRed = props.stroke?.color?.red ?? 0;
-        this.strokeGreen = props.stroke?.color?.green ?? 0;
-        this.strokeBlue = props.stroke?.color?.blue ?? 0;
-        this.strokeAlpha = props.stroke?.color?.alpha ?? 1;
-        this.strokeWidth = props.stroke?.lineWidth ?? 1;
-        this.strokeJoin = props.stroke?.lineJoin ?? "miter";
-        this.strokeCap = props.stroke?.lineCap ?? "butt";
-        this.strokeDash = props.stroke?.lineDash ?? 0;
-        this.strokeDashGap = props.stroke?.lineDashGap ?? props.stroke?.lineDash ?? 0;
-        this.strokeOffset = props.stroke?.lineDashOffset ?? 0;
-        this.strokeEnabled = props.stroke !== null && props.stroke !== undefined;
+    constructor(
+        props: { stroke?: StrokeType | null } & Properties & DEFAULT_PROPERTIES<DetailsType>,
+        defaults?: { stroke?: StrokeType | null } & Properties & DEFAULT_PROPERTIES<DetailsType>
+    ) {
+        super(props, defaults);
+        this.strokeRed = props.stroke?.color?.red ?? defaults?.stroke?.color?.red ?? this.strokeRed;
+        this.strokeGreen = props.stroke?.color?.green ?? defaults?.stroke?.color?.green ?? this.strokeGreen;
+        this.strokeBlue = props.stroke?.color?.blue ?? defaults?.stroke?.color?.blue ?? this.strokeBlue;
+        this.strokeAlpha = props.stroke?.color?.alpha ?? defaults?.stroke?.color?.alpha ?? this.strokeAlpha;
+        this.strokeWidth = props.stroke?.lineWidth ?? defaults?.stroke?.lineWidth ?? this.strokeWidth;
+        this.strokeJoin = props.stroke?.lineJoin ?? defaults?.stroke?.lineJoin ?? this.strokeJoin;
+        this.strokeCap = props.stroke?.lineCap ?? defaults?.stroke?.lineCap ?? this.strokeCap;
+        this.strokeDash = props.stroke?.lineDash ?? defaults?.stroke?.lineDash ?? this.strokeDash;
+        this.strokeDashGap =
+            props.stroke?.lineDashGap ??
+            props.stroke?.lineDash ??
+            defaults?.stroke?.lineDashGap ??
+            props.stroke?.lineDash ??
+            this.strokeDashGap;
+        this.strokeOffset = props.stroke?.lineDashOffset ?? defaults?.stroke?.lineDashOffset ?? this.strokeOffset;
+        this.strokeEnabled =
+            (props.stroke !== null && props.stroke !== undefined) ||
+            (defaults?.stroke !== null && defaults?.stroke !== undefined);
     }
 
     // NORMAL PROPERTIES

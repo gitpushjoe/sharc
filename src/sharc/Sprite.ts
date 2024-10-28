@@ -533,28 +533,33 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         stage: undefined
     };
 
-    constructor(props: Properties & DEFAULT_PROPERTIES<DetailsType>) {
+    constructor(
+        props: Properties & DEFAULT_PROPERTIES<DetailsType>,
+        defaults?: Properties & DEFAULT_PROPERTIES<DetailsType>
+    ) {
         super();
         this.name = props.name ?? "";
         this.enabled = props.enabled ?? true;
 
         // set normal properties
-        this.rotation = props.rotation ?? this.rotation;
-        this.alpha = props.alpha ?? this.alpha;
-        this.gradient = props.gradient ?? this.gradient;
-        this.effects = props.effects ?? this.effects;
-        this.red = props.color?.red ?? this.red;
-        this.green = props.color?.green ?? this.green;
-        this.blue = props.color?.blue ?? this.blue;
-        this.colorAlpha = props.color?.alpha ?? this.colorAlpha;
-        this.x1 = props.bounds?.x1 ?? this.x1;
-        this.y1 = props.bounds?.y1 ?? this.y1;
-        this.x2 = props.bounds?.x2 ?? this.x2;
-        this.y2 = props.bounds?.y2 ?? this.y2;
-        this.scaleX = props.scale?.x ?? this.scaleX;
-        this.scaleY = props.scale?.y ?? this.scaleY;
-        this.channelCount = props.channelCount ?? this.channelCount;
-        this.details = props.details;
+        this.rotation = props.rotation ?? defaults?.rotation ?? this.rotation;
+        this.blur = props.blur ?? defaults?.blur ?? this.blur;
+        this.alpha = props.alpha ?? defaults?.alpha ?? this.alpha;
+        this.gradient = props.gradient ?? defaults?.gradient ?? this.gradient;
+        this.effects = props.effects ?? defaults?.effects ?? this.effects;
+        this.red = props.color?.red ?? defaults?.color?.red ?? this.red;
+        this.green = props.color?.green ?? defaults?.color?.green ?? this.green;
+        this.blue = props.color?.blue ?? defaults?.color?.blue ?? this.blue;
+        this.colorAlpha = props.color?.alpha ?? defaults?.color?.alpha ?? this.colorAlpha;
+        this.x1 = props.bounds?.x1 ?? defaults?.bounds?.x1 ?? this.x1;
+        this.y1 = props.bounds?.y1 ?? defaults?.bounds?.y1 ?? this.y1;
+        this.x2 = props.bounds?.x2 ?? defaults?.bounds?.x2 ?? this.x2;
+        this.y2 = props.bounds?.y2 ?? defaults?.bounds?.y2 ?? this.y2;
+        this.scaleX = props.scale?.x ?? defaults?.scale?.x ?? this.scaleX;
+        this.scaleY = props.scale?.y ?? defaults?.scale?.y ?? this.scaleY;
+        this.channelCount = props.channelCount ?? defaults?.channelCount ?? this.channelCount;
+        this.details = props.details ?? defaults?.details;
+
 
         this.channels = Array.from(
             { length: this.channelCount },
@@ -883,7 +888,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         params?: AnimationParams,
         channel?: number
     ): this;
-
 
     public animate<T extends boolean>(
         animations: T extends 0

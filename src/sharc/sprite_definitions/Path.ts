@@ -6,13 +6,13 @@ export default class Path<DetailsType = any>
     extends StrokeableSprite<DetailsType, OmitBaseProps<PathProperties>, object>
     implements Required<OmitBaseProps<PathProperties>>
 {
-    constructor(props: PathProperties<DetailsType>) {
-        super(props);
-        this.path = props.path ?? [];
-        this.closePath = props.closePath ?? false;
-        this.fillRule = props.fillRule ?? "nonzero";
-        this.startRatio = props.startRatio ?? 0;
-        this.endRatio = props.endRatio ?? 1;
+    constructor(props: PathProperties<DetailsType>, defaults?: PathProperties<DetailsType>) {
+        super(props, defaults);
+        this.path = props.path ?? defaults?.path ?? this.path;
+        this.closePath = props.closePath ?? defaults?.closePath ?? this.closePath;
+        this.fillRule = props.fillRule ?? defaults?.fillRule ?? this.fillRule;
+        this.startRatio = props.startRatio ?? defaults?.startRatio ?? this.startRatio;
+        this.endRatio = props.endRatio ?? defaults?.endRatio ?? this.endRatio;
         const bounds = Path.getBoundsFromPath(this.path);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;

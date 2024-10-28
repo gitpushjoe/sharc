@@ -1,7 +1,7 @@
 {
   "name": "sharc-js",
   "private": false,
-  "version": "3.0.0-dev5",
+  "version": "3.0.0-dev6",
   "type": "module",
   "files": [
     "dist",
@@ -12,6 +12,7 @@
     "./Animation.js": "./dist/Animation.js",
     "./Stage.js": "./dist/Stage.js",
     "./Sprites.js": "./dist/Sprites.js",
+    "./Theme.js": "./dist/Theme.js",
     "./Channels.js": "./dist/Channels.js",
     "./Utils.js": "./dist/Utils.js",
     "./async_stages/OffscreenStage.js": "./dist/async_stages/OffscreenStage.js",
@@ -31,6 +32,10 @@
     "./Channels": {
       "import": "./dist/Channels.js",
       "types": "./dist/Channels.d.ts"
+    },
+    "./Theme": {
+        "import": "./dist/Theme.js",
+        "types": "./dist/Theme.d.ts"
     },
     "./Utils": {
       "import": "./dist/Utils.js",
@@ -71,6 +76,10 @@
     "./types/Stage": {
       "import": "./dist/types/Stage.js",
       "types": "./dist/types/Stage.d.ts"
+    },
+    "./types/Theme": {
+        "import": "./dist/types/Theme.js",
+        "types": "./dist/types/Theme.d.ts"
     }
   },
   "typesVersions": {
@@ -83,6 +92,8 @@
       "sharc-js/Channels": [ "./dist/Channels.js" ],
       "Utils": [ "./dist/Utils.d.ts" ],
       "sharc-js/Utils": [ "./dist/Utils.js" ],
+      "Theme": [ "./dist/Theme.d.ts" ],
+      "sharc-js/Theme": [ "./dist/Theme.d.ts" ],
       "async_stages/OffscreenStage": [ "./dist/async_stages/OffscreenStage.d.ts" ],
       "sharc-js/async_stages/OffscreenStage": [ "./dist/async_stages/OffscreenStage.js" ],
       "async_stages/WorkerStage": [ "./dist/async_stages/WorkerStage.d.ts" ],
@@ -100,7 +111,9 @@
       "types/Sprites": [ "./dist/types/Sprites.d.ts" ],
       "sharc-js/types/Sprites": [ "./dist/types/Sprites.js" ],
       "types/Stage": [ "./dist/types/Stage.d.ts" ],
-      "sharc-js/types/Stage": [ "./dist/types/Stage.js" ]
+      "sharc-js/types/Stage": [ "./dist/types/Stage.js" ],
+      "types/Theme": [ "./dist/types/Theme.d.ts" ],
+      "sharc-js/types/Theme": [ "./dist/types/Theme.js" ]
     }
   },
   "references": [

@@ -6,9 +6,9 @@ export default class Rect<DetailsType = any>
     extends StrokeableSprite<DetailsType, OmitBaseProps<RectProperties> & { bounds?: Bounds }, object>
     implements Required<OmitBaseProps<RectProperties>>
 {
-    constructor(props: RectProperties<DetailsType>) {
-        super(props);
-        this.radius = props.radius ?? [0];
+    constructor(props: RectProperties<DetailsType>, defaults?: RectProperties<DetailsType>) {
+        super(props, defaults);
+        this.radius = props.radius ?? defaults?.radius ?? this.radius;
     }
 
     // NORMAL PROPERTIES

@@ -7,14 +7,18 @@ export default class Star<DetailsType = any>
     extends StrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: Position }, object>
     implements Required<OmitBaseProps<StarProperties>>
 {
-    constructor(props: StarProperties<DetailsType>) {
-        super(props);
-        this.radius = props.radius ?? 5;
-        this.fillRule = props.fillRule ?? "nonzero";
-        this.startRatio = props.startRatio ?? 0;
-        this.endRatio = props.endRatio ?? 1;
-        this.innerRadius = props.innerRadius ?? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2;
-        const center = props.center ?? { x: 0, y: 0 };
+    constructor(props: StarProperties<DetailsType>, defaults?: StarProperties<DetailsType>) {
+        super(props, defaults);
+        this.radius = props.radius ?? defaults?.radius ?? this.radius;
+        this.fillRule = props.fillRule ?? defaults?.fillRule ?? this.fillRule;
+        this.startRatio = props.startRatio ?? defaults?.startRatio ?? this.startRatio;
+        this.endRatio = props.endRatio ?? defaults?.endRatio ?? this.endRatio;
+        this.innerRadius =
+            props.innerRadius ??
+            (props.radius !== undefined
+                ? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2
+                : (defaults?.innerRadius ?? ((defaults?.radius ?? 5) * (3 - Math.sqrt(5))) / 2));
+        const center = props.center ?? defaults?.center ?? new Position();
         this.centerX = center.x;
         this.centerY = center.y;
     }

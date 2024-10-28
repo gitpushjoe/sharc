@@ -11,19 +11,19 @@ export default class PolarWrapper<DetailsType = any>
     extends Sprite<DetailsType, OmitBaseProps<PolarWrapperProperties<DetailsType>>, HiddenPolarWrapperProperties>
     implements Required<OmitBaseProps<PolarWrapperProperties & HiddenPolarWrapperProperties>>
 {
-    constructor(props: PolarWrapperProperties<DetailsType>) {
+    constructor(props: PolarWrapperProperties<DetailsType>, defaults?: PolarWrapperProperties<DetailsType>) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
-            props.position?.x ?? 0,
-            props.position?.y ?? 0,
-            props.position?.x ?? 0,
-            props.position?.y ?? 0
+            props.position?.x ?? defaults?.position?.x ?? 0,
+            props.position?.y ?? defaults?.position?.y ?? 0,
+            props.position?.x ?? defaults?.position?.x ?? 0,
+            props.position?.y ?? defaults?.position?.y ?? 0
         );
-        super(props);
-        this.angle = props.location?.angle ?? 0;
-        this.radius = props.location?.radius ?? 0;
-        this.offsetAngle = props.offset?.angle ?? 0;
-        this.offsetRadius = props.offset?.radius ?? 0;
-        this.active = props.active ?? true;
+        super(props, defaults);
+        this.angle = props.location?.angle ?? defaults?.location?.angle ?? this.angle;
+        this.radius = props.location?.radius ?? defaults?.location?.radius ?? this.radius;
+        this.offsetAngle = props.offset?.angle ?? defaults?.offset?.angle ?? this.offsetAngle;
+        this.offsetRadius = props.offset?.radius ?? defaults?.offset?.radius ?? this.offsetRadius;
+        this.active = props.active ?? defaults?.active ?? this.active;
     }
 
     // NORMAL PROPERTIES

@@ -6,20 +6,20 @@ export default class TextSprite<DetailsType = any>
     extends StrokeableSprite<DetailsType, OmitBaseProps<TextProperties>, HiddenTextProperties>
     implements Required<OmitBaseProps<TextProperties>>
 {
-    constructor(props: TextProperties<DetailsType>) {
-        super(props);
-        this.text = props.text ?? "";
-        this.positionX = props.position?.x ?? 0;
-        this.positionY = props.position?.y ?? 0;
-        this.positionIsCenter = props.positionIsCenter ?? false;
-        this.font = props.font ?? "sans-serif";
-        this.fontSize = props.fontSize ?? 16;
-        this.textAlign = props.textAlign ?? "start";
-        this.textBaseline = props.textBaseline ?? "alphabetic";
-        this.textDirection = props.textDirection ?? "inherit";
-        this.maxWidth = props.maxWidth ?? null;
-        this.bold = props.bold ?? false;
-        this.italic = props.italic ?? false;
+    constructor(props: TextProperties<DetailsType>, defaults?: TextProperties<DetailsType>) {
+        super(props, defaults);
+        this.text = props.text ?? defaults?.text ?? this.text;
+        this.positionX = props.position?.x ?? defaults?.position?.x ?? this.positionX;
+        this.positionY = props.position?.y ?? defaults?.position?.y ?? this.positionY;
+        this.positionIsCenter = props.positionIsCenter ?? defaults?.positionIsCenter ?? this.positionIsCenter;
+        this.font = props.font ?? defaults?.font ?? this.font;
+        this.fontSize = props.fontSize ?? defaults?.fontSize ?? this.fontSize;
+        this.textAlign = props.textAlign ?? defaults?.textAlign ?? this.textAlign;
+        this.textBaseline = props.textBaseline ?? defaults?.textBaseline ?? this.textBaseline;
+        this.textDirection = props.textDirection ?? defaults?.textDirection ?? this.textDirection;
+        this.maxWidth = props.maxWidth ?? defaults?.maxWidth ?? this.maxWidth;
+        this.bold = props.bold ?? defaults?.bold ?? this.bold;
+        this.italic = props.italic ?? defaults?.italic ?? this.italic;
         const bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;

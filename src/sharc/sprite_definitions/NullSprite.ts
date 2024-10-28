@@ -6,15 +6,16 @@ export default class NullSprite<DetailsType = any>
     extends Sprite<DetailsType, OmitBaseProps<NullSpriteProperties>, HiddenNullSpriteProperties>
     implements Required<OmitBaseProps<NullSpriteProperties> & HiddenNullSpriteProperties>
 {
-    constructor(props: NullSpriteProperties<DetailsType> & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">) {
+    constructor(props: NullSpriteProperties<DetailsType> & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">,
+        defaults?: NullSpriteProperties<DetailsType> & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
-            props.position?.x ?? 0,
-            props.position?.y ?? 0,
-            props.position?.x ?? 0,
-            props.position?.y ?? 0
+            props.position?.x ?? defaults?.position?.x ?? 0,
+            props.position?.y ?? defaults?.position?.y ?? 0,
+            props.position?.x ?? defaults?.position?.x ?? 0,
+            props.position?.y ?? defaults?.position?.y ?? 0
         );
         props.position ??= new Position(0, 0);
-        super(props as Required<typeof props>);
+        super(props, defaults);
     }
 
     // AGGREGATE PROPERTIES

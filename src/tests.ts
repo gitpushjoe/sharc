@@ -16,6 +16,7 @@ import { Stage } from "./sharc/Stage";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 import { Animate, AnimateTo, Bounds, Color, Colors, Easing, Position } from "./sharc/Utils";
 import { ColorType } from "./sharc/types/Common";
+import { Theme } from "./sharc/Theme";
 
 export interface Test {
     name: string;
@@ -81,7 +82,8 @@ export const tests: Test[] = [
                 bold: true
             });
             stage.root.addChild(fps);
-
+    
+            stage.root.logHierarchy();
             (stage as Stage).on("beforeDraw", (_, frame) => {
                 if (frame % 5 !== 4) {
                     return;
@@ -534,7 +536,7 @@ export const tests: Test[] = [
                                     sprite.parent!.animate(AnimateTo("rotation", -360, 400), { loop: true });
                                     sprite.removeSelf();
                                 })
-                            )
+                            ).animate(Animate("rotation", 0, -360, 140), {loop: true})
                         )
                 );
 
@@ -560,11 +562,12 @@ export const tests: Test[] = [
                 stroke: { lineWidth: 5 }
             };
             const ellipses = [
-                new Ellipse({
-                    ...ellipseProps,
-                    color: Colors.Black,
-                    name: "no-clamp"
-                })
+                new Ellipse(
+                    {
+                        name: "no-clamp"
+                    },
+                    ellipseProps
+                )
                     .animate(
                         {
                             property: "centerX",
@@ -578,10 +581,12 @@ export const tests: Test[] = [
                     .animate(Animate("color", Colors.Black, Colors.Fuchsia, 90, Easing.Bounce(Easing.EASE_IN_OUT)), {
                         loop: true
                     }),
-                new Ellipse({
-                    ...ellipseProps,
-                    name: "clamp"
-                })
+                new Ellipse(
+                    {
+                        name: "clamp"
+                    },
+                    ellipseProps
+                )
                     .animate(
                         {
                             property: "centerX",
@@ -604,10 +609,12 @@ export const tests: Test[] = [
                         },
                         { loop: true }
                     ),
-                new Ellipse({
-                    ...ellipseProps,
-                    name: "min-clamp"
-                })
+                new Ellipse(
+                    {
+                        name: "min-clamp"
+                    },
+                    ellipseProps
+                )
                     .animate(
                         {
                             property: "centerX",
@@ -630,10 +637,12 @@ export const tests: Test[] = [
                         },
                         { loop: true }
                     ),
-                new Ellipse({
-                    ...ellipseProps,
-                    name: "clamp+min-clamp"
-                })
+                new Ellipse(
+                    {
+                        name: "clamp+min-clamp"
+                    },
+                    ellipseProps
+                )
                     .animate(
                         {
                             property: "centerX",
@@ -683,6 +692,58 @@ export const tests: Test[] = [
 
             manager.update(["padding", "anchor"]);
             stage.root.addChild(manager);
+        }
+    },
+    {
+        name: "themes",
+        apply: (stage: Stage | WorkerStage<any, string>) => {
+
+            const t = new Theme({
+                Rect: {
+                    color: Colors.Lime,
+                    radius: [5],
+                    stroke: { lineWidth: 5, color: Colors.None },
+                },
+                Ellipse: {
+                    blur: 5,
+                    color: Colors.Aqua,
+                    gradient: (() => {
+                        const ctx = new OffscreenCanvas(0, 0).getContext('2d')!;
+                        const gradient = ctx.createLinearGradient(-50, 0, 50, 0);
+                        gradient.addColorStop(0, "aqua");
+                        gradient.addColorStop(0.5, "white");
+                        gradient.addColorStop(1, "aqua");
+                        return gradient;
+                    })()
+                },
+            });
+
+            const root = stage.root;
+
+            const rect = new t.Rect({ 
+                bounds: Rect.Bounds(0, 0, 100, 100),
+                stroke: { color: Colors.DarkGreen } 
+            });
+            const rectWithoutTheme = new Rect({ 
+                bounds: Rect.Bounds(0, 0, 100, 100),
+                stroke: { color: Colors.DarkGreen } 
+            });
+
+            const ellipse = new t.Ellipse({
+                radius: 50,
+            });
+            const ellipseWithoutTheme = new Ellipse({
+                radius: 25,
+            });
+
+            const manager = new t.ManagerSprite({
+                position: new Position(200, 200),
+                align: 'row-center',
+                padding: 25,
+            }).addChildren(rect, rectWithoutTheme, ellipse, ellipseWithoutTheme);
+            manager.update(['align', 'padding']);
+
+            root.addChild(manager);
         }
     }
 ];

@@ -13,14 +13,14 @@ export default class ImageSprite<DetailsType = any>
     >
     implements Required<OmitBaseProps<ImageProperties> & HiddenImageProperties>
 {
-    constructor(props: ImageProperties<DetailsType>) {
-        super(props);
-        this.src = props.src ?? "";
-        this.useSrcBounds = props.srcBounds === null ? false : true;
-        this.srcX1 = props.srcBounds?.x1 ?? 0;
-        this.srcY1 = props.srcBounds?.y1 ?? 0;
-        this.srcX2 = props.srcBounds?.x2 ?? 0;
-        this.srcY2 = props.srcBounds?.y2 ?? 0;
+    constructor(props: ImageProperties<DetailsType>, defaults?: ImageProperties<DetailsType>) {
+        super(props, defaults);
+        this.src = props.src ?? defaults?.src ?? this.src;
+        this.useSrcBounds = props.srcBounds !== null || defaults?.srcBounds !== null;
+        this.srcX1 = props.srcBounds?.x1 ?? defaults?.srcBounds?.x1 ?? this.srcX1;
+        this.srcY1 = props.srcBounds?.y1 ?? defaults?.srcBounds?.y1 ?? this.srcY1;
+        this.srcX2 = props.srcBounds?.x2 ?? defaults?.srcBounds?.x2 ?? this.srcX2;
+        this.srcY2 = props.srcBounds?.y2 ?? defaults?.srcBounds?.y2 ?? this.srcY2;
     }
 
     private async setImage(value: HTMLImageElement | ImageBitmap) {

@@ -7,15 +7,15 @@ export default class Polygon<DetailsType = any>
     extends StrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: Position }, object>
     implements Required<OmitBaseProps<PolygonProperties>>
 {
-    constructor(props: PolygonProperties<DetailsType>) {
-        super(props);
-        this.startRatio = props.startRatio ?? 0;
-        this.radius = props.radius ?? 5;
-        this.endRatio = props.endRatio ?? 1;
-        this.sides = props.sides ?? 5;
-        this.fillRule = props.fillRule ?? "nonzero";
-        this.centerX = props.center?.x ?? 0;
-        this.centerY = props.center?.y ?? 0;
+    constructor(props: PolygonProperties<DetailsType>, defaults?: PolygonProperties<DetailsType>) {
+        super(props, defaults);
+        this.startRatio = props.startRatio ?? defaults?.startRatio ?? this.startRatio;
+        this.radius = props.radius ?? defaults?.radius ?? this.radius;
+        this.endRatio = props.endRatio ?? defaults?.endRatio ?? this.endRatio;
+        this.sides = props.sides ?? defaults?.sides ?? this.sides;
+        this.fillRule = props.fillRule ?? defaults?.fillRule ?? this.fillRule;
+        this.centerX = props.center?.x ?? defaults?.center?.x ?? this.centerX;
+        this.centerY = props.center?.y ?? defaults?.center?.y ?? this.centerY;
     }
 
     // NORMAL PROPERTIES

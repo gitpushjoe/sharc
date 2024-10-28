@@ -14,17 +14,17 @@ export default class Factory<ParametersType = any, DetailsType = any>
     extends Sprite<DetailsType, OmitBaseProps<FactoryProperties<ParametersType>>, HiddenFactoryProperties>
     implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFactoryProperties>>
 {
-    constructor(props: FactoryProperties<ParametersType, DetailsType>) {
+    constructor(props: FactoryProperties<ParametersType, DetailsType>, defaults?: FactoryProperties<ParametersType, DetailsType>) {
         (props as DEFAULT_PROPERTIES).bounds = new Bounds(
-            props.position?.x ?? 0,
-            props.position?.y ?? 0,
-            props.position?.x ?? 0,
-            props.position?.y ?? 0
+            props.position?.x ?? defaults?.position?.x ?? 0,
+            props.position?.y ?? defaults?.position?.y ?? 0,
+            props.position?.x ?? defaults?.position?.x ?? 0,
+            props.position?.y ?? defaults?.position?.y ?? 0
         );
-        super(props);
-        this.anchor = props.anchor ?? null;
-        this.align = props.align ?? null;
-        this.padding = props.padding ?? null;
+        super(props, defaults);
+        this.anchor = props.anchor ?? defaults?.anchor ?? this.anchor;
+        this.align = props.align ?? defaults?.align ?? this.align;
+        this.padding = props.padding ?? defaults?.padding ?? this.padding;
         this.factory = props.factory;
         this.parameters = props.parameters;
     }
