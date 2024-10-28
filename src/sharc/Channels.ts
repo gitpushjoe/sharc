@@ -30,7 +30,8 @@ export class Channel<Properties> {
     }
 
     private currentAnimation(): PrivateAnimationType<Properties> | undefined {
-        return this.currentPackage()?.animations[this.index % this.currentPackage()!.animations.length];
+        const currentPackage = this.currentPackage();
+        return currentPackage?.animations[this.index % currentPackage.animations.length];
     }
 
     public queueIsEmpty(): boolean {

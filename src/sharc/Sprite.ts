@@ -560,7 +560,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         this.channelCount = props.channelCount ?? defaults?.channelCount ?? this.channelCount;
         this.details = props.details ?? defaults?.details;
 
-
         this.channels = Array.from(
             { length: this.channelCount },
             () => new Channel<Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES>()
@@ -936,9 +935,15 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     private animationStep() {
-        const animations = this.channels.map(channel => channel.stepForward()).filter(animation => animation !== null);
-        for (const animation of animations.reverse()) {
-            this.animateProperty(animation!);
+        const animations: any[] = []; // to-do: add the very long typen ame
+        for (const channel of this.channels) {
+            const animation = channel.stepForward();
+            if (animation !== null) {
+                animations.push(animation);
+            }
+        }
+        for (let i = animations.length - 1; i >= 0; --i) {
+            this.animateProperty(animations[i]!);
         }
         return this;
     }
@@ -978,20 +983,19 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             animation.duration,
             animation.easing
         ];
-        if (
-            typeof (this as Record<any, any>)[animation.property as keyof Properties] === "number" &&
-            typeof from === "number" &&
-            typeof to === "number"
-        ) {
-            let value = from + easing(frame / duration) * (to - from);
+        const animationPropertyType = typeof (this as Record<any, any>)[animation.property as keyof Properties];
+        const fromType = typeof from;
+        const toType = typeof to;
+        if (animationPropertyType === "number" && fromType === "number" && toType === "number") {
+            let value = (from as number) + easing(frame / duration) * ((to as number) - (from as number));
             value = animation.clamp !== null ? Math.min(value, animation.clamp as number) : value;
             value = animation.minClamp !== null ? Math.max(value, animation.minClamp as number) : value;
             this.set(animation.property as any, value);
-        } else if (typeof (this as Record<any, any>)[animation.property as keyof Properties] === "object") {
-            if (typeof from !== "object" || typeof to !== "object") {
+        } else if (animationPropertyType === "object") {
+            if (fromType !== "object" || toType !== "object") {
                 this.raiseAnimationError(from, to, animation.property as string);
             }
-            const current = { ...(to as object) } as Record<string, number>;
+            const current = {} as Record<string, number>;
             for (const key of Object.keys(to as object)) {
                 const p_from = from[key as keyof typeof from] as number;
                 const p_to = to[key as keyof typeof to] as number;

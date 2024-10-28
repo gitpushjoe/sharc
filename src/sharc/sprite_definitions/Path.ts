@@ -55,9 +55,10 @@ export default class Path<DetailsType = any>
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         properties: PathProperties
     ): Path2D => {
-        let path =
-            properties.path?.map(point => Position.wrtBounds(point, Path.getBoundsFromPath(properties.path ?? []))) ??
-            [];
+        let path: Position[] = [];
+        for (const point of (properties.path ?? [])) {
+            path.push(Position.wrtBounds(point, Path.getBoundsFromPath(properties.path ?? [])));
+        }
         path = Path.getPathSegment(path, properties.startRatio ?? 0, properties.endRatio ?? 1);
         if (path.length === 0) {
             return new Path2D();
@@ -130,11 +131,19 @@ export default class Path<DetailsType = any>
     }
 
     public static getBoundsFromPath(path: Position[]): Bounds {
-        return new Bounds(
-            Math.min(...path.map(point => point.x)),
-            Math.min(...path.map(point => point.y)),
-            Math.max(...path.map(point => point.x)),
-            Math.max(...path.map(point => point.y))
+        const bounds = new Bounds(
+            Number.POSITIVE_INFINITY,
+            Number.POSITIVE_INFINITY,
+            Number.NEGATIVE_INFINITY,
+            Number.NEGATIVE_INFINITY,
         );
+        for (let i = 0; i < path.length; ++i) {
+            const point = path[i];
+            bounds.x1 = Math.min(bounds.x1, point.x);
+            bounds.y1 = Math.min(bounds.y1, point.y);
+            bounds.x2 = Math.max(bounds.x2, point.x);
+            bounds.y2 = Math.max(bounds.y2, point.y);
+        }
+        return bounds;
     }
 }

@@ -85,10 +85,11 @@ export default class Polygon<DetailsType = any>
         if (sides < 3 || radius <= 0) {
             throw new Error("Polygon must have at least 3 sides and a positive radius");
         }
-        const path = Array.from({ length: parseInt(sides.toString()) }, (_, idx) => {
-            const angle = (2 * Math.PI * idx) / parseInt(sides.toString());
-            return new Position(radius * Math.cos(angle), radius * Math.sin(angle));
-        });
+        const path: Position[] = [];
+        for (let idx = 0; idx < sides; ++idx) {
+            const angle = (2 * Math.PI * idx) / sides;
+            path.push(new Position(radius * Math.cos(angle), radius * Math.sin(angle)));
+        };
         return Path.drawFunction(ctx, {
             path,
             fillRule: properties.fillRule ?? "nonzero",
