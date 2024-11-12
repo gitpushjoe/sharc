@@ -1,6 +1,13 @@
 import { Sprite } from "../Sprite";
 import { Color, Bounds, Position } from "../Utils";
-import { ArrowType, HiddenLineProperties, LineProperties, OmitBaseProps, StrokeType } from "../types/Sprites";
+import {
+    ArrowType,
+    DropShadowType,
+    HiddenLineProperties,
+    LineProperties,
+    OmitBaseProps,
+    StrokeType
+} from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Line<DetailsType = any>
@@ -108,14 +115,14 @@ export default class Line<DetailsType = any>
     }
     public set arrow(value: ArrowType) {
         this.arrowSide =
-            (value.side ??
+            value.side ??
             (value.length !== undefined ||
-                value.angle !== undefined ||
-                value.color !== undefined ||
-                value.stroke !== undefined ||
-                value.closed !== undefined))
+            value.angle !== undefined ||
+            value.color !== undefined ||
+            value.stroke !== undefined ||
+            value.closed !== undefined
                 ? "end"
-                : "none";
+                : "none");
         this.arrowLength = value.length ?? 20;
         this.arrowAngle = value.angle ?? 90;
         this.arrowStroke = value.stroke ?? {};
@@ -166,7 +173,8 @@ export default class Line<DetailsType = any>
         line: Bounds,
         arrow: ArrowType,
         stroke: StrokeType | undefined = undefined,
-        offset: Position = { x: 0, y: 0 }
+        offset: Position = new Position(),
+        dropShadow?: DropShadowType | null
     ): Path2D {
         if (arrow.side === "none" || arrow.length === 0) {
             return new Path2D();
@@ -209,6 +217,14 @@ export default class Line<DetailsType = any>
             }
             ctx.fillStyle = Color.toString(arrow.color ?? new Color(0, 0, 0, 0));
             ctx.fill(region, arrow.closed ? "evenodd" : "nonzero");
+            StrokeableSprite.strokeDropShadow(
+                ctx,
+                dropShadow,
+                region,
+                stroke,
+                arrow.color?.alpha,
+               arrow.closed ? "evenodd" : "nonzero",
+            );
             StrokeableSprite.strokeRegion(ctx, stroke, region);
             res.addPath(region);
         }
@@ -217,7 +233,9 @@ export default class Line<DetailsType = any>
 
     public readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: LineProperties
+        properties: LineProperties,
+        dropShadow: DropShadowType | null | undefined,
+        colorAlpha?: number,
     ): Path2D => {
         const bounds = Bounds.wrtSelf(properties.bounds ?? new Bounds(0, 0, 0, 0));
         ctx.lineWidth = properties.lineWidth ?? 1;
@@ -225,6 +243,15 @@ export default class Line<DetailsType = any>
         ctx.strokeStyle = Color.toString(properties.color ?? new Color(0, 0, 0));
         ctx.setLineDash([properties.lineDash ?? 0, properties.lineDashGap ?? 0]);
         ctx.lineDashOffset = properties.lineDashOffset ?? 0;
+        dropShadow &&
+            Sprite.drawDropShadow(ctx, dropShadow, undefined, colorAlpha, undefined, (ctx, shadow) => {
+                ctx.strokeStyle = Color.toString(shadow?.color ?? new Color(0, 0, 0));
+                ctx.beginPath();
+                ctx.moveTo(bounds.x1, bounds.y1);
+                ctx.lineTo(bounds.x2, bounds.y2);
+                ctx.stroke();
+                ctx.closePath();
+            });
         ctx.beginPath();
         ctx.moveTo(bounds.x1, bounds.y1);
         ctx.lineTo(bounds.x2, bounds.y2);
@@ -233,7 +260,9 @@ export default class Line<DetailsType = any>
         const region = new Path2D();
         region.moveTo(bounds.x1, bounds.y1);
         region.lineTo(bounds.x2, bounds.y2);
-        region.addPath(Line.drawArrow(ctx, bounds, properties.arrow ?? {}, properties.arrow?.stroke ?? {}));
+        region.addPath(
+            Line.drawArrow(ctx, bounds, properties.arrow ?? {}, properties.arrow?.stroke ?? {}, undefined, dropShadow)
+        );
         return region;
     };
 

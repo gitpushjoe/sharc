@@ -1,6 +1,12 @@
-import { Color } from "sharc/Utils";
+import { Color } from "../Utils";
 import { Sprite } from "../Sprite";
-import { StrokeProperties, HiddenStrokeProperties, StrokeType, DEFAULT_PROPERTIES } from "../types/Sprites";
+import {
+    StrokeProperties,
+    HiddenStrokeProperties,
+    StrokeType,
+    DEFAULT_PROPERTIES,
+    DropShadowType
+} from "../types/Sprites";
 
 export default class StrokeableSprite<DetailsType = any, Properties = object, HiddenProperties = object>
     extends Sprite<DetailsType, Properties & StrokeProperties, HiddenProperties & HiddenStrokeProperties>
@@ -114,6 +120,55 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
         if (region) {
             ctx.stroke(region);
         }
+    }
+
+    public static strokeDropShadow(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        dropShadow: DropShadowType | null | undefined,
+        region: Path2D | undefined,
+        stroke?: StrokeType | null,
+        colorAlpha = 1,
+        fillRule: CanvasFillRule = "evenodd",
+        callback?: (
+            ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+            dropshadow?: DropShadowType | null | undefined
+        ) => void
+    ) {
+        if (!dropShadow) {
+            return;
+        }
+        ctx.save();
+        ctx.translate(dropShadow.offset?.x ?? 0, dropShadow.offset?.y ?? 0);
+        ctx.scale(dropShadow.scale?.x ?? 1, dropShadow?.scale?.y ?? 1);
+        ctx.fillStyle = Color.toString(
+            new Color(
+                dropShadow.color?.red ?? 0,
+                dropShadow.color?.green ?? 0,
+                dropShadow.color?.blue ?? 0,
+                (dropShadow.color?.alpha ?? 0) * (colorAlpha ?? 1) * (dropShadow.alpha ?? 1)
+            )
+        );
+        if (dropShadow.blur) {
+            ctx.filter = `blur(${dropShadow.blur}px)`;
+        }
+        if (callback) {
+            callback(ctx, dropShadow);
+        } else if (region) {
+            ctx.fill(region, fillRule);
+        }
+        if (stroke) {
+            const prevStrokeColor = stroke?.color ?? new Color();
+            const strokeColor = new Color(
+                dropShadow.color?.red ?? 0,
+                dropShadow.color?.green ?? 0,
+                dropShadow.color?.blue ?? 0,
+                (dropShadow.color?.alpha ?? 0) * (stroke?.color?.alpha ?? 1) * (dropShadow.alpha ?? 1)
+            );
+            stroke ? (stroke.color = strokeColor) : 0;
+            StrokeableSprite.strokeRegion(ctx, stroke, region);
+            stroke ? (stroke.color = prevStrokeColor) : 0;
+        }
+        ctx.restore();
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, properties?: Required<Properties>) {

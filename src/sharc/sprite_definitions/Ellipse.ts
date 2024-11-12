@@ -1,5 +1,5 @@
 import { Bounds } from "../Utils";
-import { EllipseProperties, HiddenEllipseProperties, OmitBaseProps } from "../types/Sprites";
+import { DropShadowType, EllipseProperties, HiddenEllipseProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Ellipse<DetailsType = any>
@@ -76,7 +76,9 @@ export default class Ellipse<DetailsType = any>
 
     public readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: EllipseProperties
+        properties: EllipseProperties,
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         const getX1Y1WH = (bounds: Bounds) => [
             -Math.abs(bounds.x1 - bounds.x2) / 2,
@@ -102,6 +104,7 @@ export default class Ellipse<DetailsType = any>
             ((properties.endAngle ?? 0) * Math.PI) / 180
         );
         region.closePath();
+        StrokeableSprite.strokeDropShadow(ctx, dropShadow, region, properties.stroke, colorAlpha);
         ctx.fill(region, "nonzero");
         ctx.closePath();
         StrokeableSprite.strokeRegion(ctx, properties.stroke, region);

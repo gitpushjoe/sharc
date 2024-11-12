@@ -1,5 +1,6 @@
-import { Position, Bounds } from "../Utils";
-import { ImageProperties, HiddenImageProperties, OmitBaseProps } from "../types/Sprites";
+import { ColorType } from "sharc/types/Common";
+import { Position, Bounds, Color } from "../Utils";
+import { ImageProperties, HiddenImageProperties, OmitBaseProps, DropShadowType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class ImageSprite<DetailsType = any>
@@ -16,7 +17,7 @@ export default class ImageSprite<DetailsType = any>
     constructor(props: ImageProperties<DetailsType>, defaults?: ImageProperties<DetailsType>) {
         super(props, defaults);
         this.src = props.src ?? defaults?.src ?? this.src;
-        this.useSrcBounds = props.srcBounds !== null || defaults?.srcBounds !== null;
+        this.useSrcBounds = Boolean(props.srcBounds || defaults?.srcBounds);
         this.srcX1 = props.srcBounds?.x1 ?? defaults?.srcBounds?.x1 ?? this.srcX1;
         this.srcY1 = props.srcBounds?.y1 ?? defaults?.srcBounds?.y1 ?? this.srcY1;
         this.srcX2 = props.srcBounds?.x2 ?? defaults?.srcBounds?.x2 ?? this.srcX2;
@@ -128,11 +129,33 @@ export default class ImageSprite<DetailsType = any>
 
     public readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: ImageProperties & { image?: ImageBitmap | null }
+        properties: ImageProperties & { image?: ImageBitmap | null },
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         const { image, srcBounds: sourceBounds, bounds } = properties;
         const width = bounds!.x2 - bounds!.x1;
         const height = bounds!.y2 - bounds!.y1;
+        const region = new Path2D();
+        region.moveTo(-width / 2, -height / 2);
+        region.lineTo(width / 2, -height / 2);
+        region.lineTo(width / 2, height / 2);
+        region.lineTo(-width / 2, height / 2);
+        region.closePath();
+
+        const shadowColor: ColorType = {
+            red: dropShadow?.color?.red ?? 1,
+            green: dropShadow?.color?.green ?? 1,
+            blue: dropShadow?.color?.blue ?? 1,
+            alpha: (dropShadow?.color?.alpha ?? 1) * (dropShadow?.alpha ?? 1) * (colorAlpha ?? 1)
+        };
+
+        const filter = ctx.filter === "none" ? "" : ctx.filter;
+        if (dropShadow) {
+            ctx.filter =
+                `drop-shadow(${dropShadow?.offset?.x ?? 0}px ${dropShadow?.offset?.y ?? 0}px ${dropShadow?.blur ?? 0}px ${Color.toString(shadowColor)}`;
+        }
+
         if (image) {
             if (sourceBounds) {
                 ctx.drawImage(
@@ -150,15 +173,32 @@ export default class ImageSprite<DetailsType = any>
                 ctx.drawImage(image, -width / 2, -height / 2, width, height);
             }
         }
-
-        const region = new Path2D();
-        region.moveTo(-width / 2, -height / 2);
-        region.lineTo(width / 2, -height / 2);
-        region.lineTo(width / 2, height / 2);
-        region.lineTo(-width / 2, height / 2);
-        region.closePath();
-
         StrokeableSprite.strokeRegion(ctx, properties.stroke, region);
+
+        if (!dropShadow) {
+            return region;
+        }
+
+        ctx.filter = filter === "" ? "none" : filter;
+        if (image) {
+            if (sourceBounds) {
+                ctx.drawImage(
+                    image,
+                    sourceBounds.x1,
+                    sourceBounds.y1,
+                    sourceBounds.x2 - sourceBounds.x1,
+                    sourceBounds.y2 - sourceBounds.y1,
+                    -width / 2,
+                    -height / 2,
+                    width,
+                    height
+                );
+            } else {
+                ctx.drawImage(image, -width / 2, -height / 2, width, height);
+            }
+        }
+        StrokeableSprite.strokeRegion(ctx, properties.stroke, region);
+
         return region;
     };
 

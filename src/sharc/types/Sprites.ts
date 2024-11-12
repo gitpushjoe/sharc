@@ -1,22 +1,42 @@
 import { Shape } from "../Sprite";
 import { PositionType, BoundsType, ColorType } from "./Common";
 
+export type DropShadowType = {
+    color?: ColorType;
+    offset?: PositionType;
+    scale?: PositionType;
+    blur?: number;
+    alpha?: number;
+};
+
 export type DrawFunctionType<Property> = (
     ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-    params: Property
+    params: Property,
+    dropShadow?: DropShadowType | null,
+    colorAlpha?: number
 ) => Path2D | void;
 export type EffectsType = (ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void;
 
 export type DEFAULT_PROPERTIES<DetailsType = any> = Omit<ShapeProperties, "drawFunction"> & { details?: DetailsType };
 
-export type PropMetaInfo<Properties> = {
-    calculated: Set<keyof Properties>;
-};
-
 export type OmitBaseProps<Properties> = Omit<
     Properties,
     keyof (DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES & StrokeProperties)
 >;
+
+export type ColorStopType = [number, ColorType];
+export type LinearGradientType = {
+    type: 'linear';
+    direction?: 'horizontal' | 'vertical';
+    colorStops: ColorStopType[];
+};
+export type RadialGradientType = {
+    type: 'radial';
+    innerRadius?: number;
+    outerRadius?: number;
+    colorStops: ColorStopType[];
+};
+export type GradientType = LinearGradientType | RadialGradientType;
 
 export type ShapeProperties<T = object> = {
     bounds?: BoundsType;
@@ -30,7 +50,8 @@ export type ShapeProperties<T = object> = {
     drawFunction: DrawFunctionType<T>;
     channelCount?: number;
     blur?: number;
-    gradient?: CanvasGradient | null;
+    gradient?: GradientType | null;
+    dropShadow?: DropShadowType | null;
 };
 
 export type NORMAL_SHAPE_PROPERTIES =

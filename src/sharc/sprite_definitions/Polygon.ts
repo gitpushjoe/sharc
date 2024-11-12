@@ -1,10 +1,10 @@
-import { Bounds, Position, invalidSetterFor } from "../Utils";
-import { OmitBaseProps, PolygonProperties } from "../types/Sprites";
+import { Bounds, Position } from "../Utils";
+import { DropShadowType, OmitBaseProps, PolygonProperties } from "../types/Sprites";
 import Path from "./Path";
-import StrokeableSprite from "./StrokeableSprite";
+import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
 
 export default class Polygon<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: Position }, object>
+    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: Position }, object>
     implements Required<OmitBaseProps<PolygonProperties>>
 {
     constructor(props: PolygonProperties<DetailsType>, defaults?: PolygonProperties<DetailsType>) {
@@ -16,6 +16,7 @@ export default class Polygon<DetailsType = any>
         this.fillRule = props.fillRule ?? defaults?.fillRule ?? this.fillRule;
         this.centerX = props.center?.x ?? defaults?.center?.x ?? this.centerX;
         this.centerY = props.center?.y ?? defaults?.center?.y ?? this.centerY;
+        this._bounds = Bounds.fromCircle(this.center.x, this.center.y, this.radius);
     }
 
     // NORMAL PROPERTIES
@@ -29,48 +30,25 @@ export default class Polygon<DetailsType = any>
     private _centerX = 0;
     private _centerY = 0;
 
-    public get centerX(): number {
-        return this._centerX;
+    protected shiftX(value: number) {
+        console.log({ value }, 'shiftx');
+        this._centerX += value;
+        this._x1 += value;
+        this._x2 += value;
     }
-    public set centerX(value: number) {
-        this._centerX = value;
-        this.x1 = this._centerX - this.radius;
-        this.x2 = this._centerX + this.radius;
-    }
-
-    public get centerY(): number {
-        return this._centerY;
-    }
-    public set centerY(value: number) {
-        this._centerY = value;
-        this.y1 = this._centerY - this.radius;
-        this.y2 = this._centerY + this.radius;
-    }
-
-    // AGGREGATE PROPERTIES
-    public get center(): Position {
-        return { x: this.centerX, y: this.centerY };
-    }
-    public set center(value: Position) {
-        this._centerX = value.x;
-        this._centerY = value.y;
-    }
-
-    @invalidSetterFor("Polygon")
-    public set bounds(_bounds: Bounds) {
-        return;
+    protected shiftY(value: number) {
+        console.log({ value }, 'shifty');
+        this._centerY += value;
+        this._y1 += value;
+        this._y2 += value;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
-        this.x1 = this.centerX - this.radius;
-        this.y1 = this.centerY - this.radius;
-        this.x2 = this.centerX + this.radius;
-        this.y2 = this.centerY + this.radius;
         super.draw(ctx, {
             sides: this.sides,
             radius: this.radius,
             fillRule: this.fillRule,
-            center: new Position(this.centerX, this.centerY),
+            center: this.center,
             startRatio: this.startRatio,
             endRatio: this.endRatio
         });
@@ -78,7 +56,9 @@ export default class Polygon<DetailsType = any>
 
     public readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: PolygonProperties
+        properties: PolygonProperties,
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         const sides = properties.sides ?? 5;
         const radius = properties.radius ?? 5;
@@ -89,7 +69,7 @@ export default class Polygon<DetailsType = any>
         for (let idx = 0; idx < sides; ++idx) {
             const angle = (2 * Math.PI * idx) / sides;
             path.push(new Position(radius * Math.cos(angle), radius * Math.sin(angle)));
-        };
+        }
         return Path.drawFunction(ctx, {
             path,
             fillRule: properties.fillRule ?? "nonzero",
@@ -97,6 +77,6 @@ export default class Polygon<DetailsType = any>
             stroke: properties.stroke,
             startRatio: properties.startRatio ?? 0,
             endRatio: properties.endRatio ?? 1
-        });
+        }, dropShadow, colorAlpha);
     };
 }

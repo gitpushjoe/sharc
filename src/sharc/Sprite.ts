@@ -4,7 +4,9 @@ import { EventCollection, PositionedPointerEvent, StageEventCallback } from "./t
 import {
     DEFAULT_PROPERTIES,
     DrawFunctionType,
+    DropShadowType,
     EffectsType,
+    GradientType,
     HIDDEN_SHAPE_PROPERTIES,
     MostlyRequired
 } from "./types/Sprites";
@@ -290,7 +292,8 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract blue: number;
     public abstract colorAlpha: number;
     public abstract blur: number;
-    public abstract gradient: CanvasGradient | null;
+    public abstract gradient: GradientType | null;
+    public abstract dropShadow: DropShadowType | null;
 
     public get none(): number {
         return 0;
@@ -366,7 +369,8 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     // NORMAL PROPERTIES
     public rotation = 0;
     public alpha = 1;
-    public gradient: CanvasGradient | null = null;
+    public gradient: GradientType | null = null;
+    public dropShadow: DropShadowType | null = null;
     public effects: EffectsType = () => {
         return;
     };
@@ -398,12 +402,13 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     }
 
     public get color(): Color {
-        return new Color(this.red, this.green, this.blue);
+        return new Color(this.red, this.green, this.blue, this.colorAlpha);
     }
     public set color(value: Color) {
         this.red = value.red;
         this.green = value.green;
         this.blue = value.blue;
+        this.colorAlpha = value.alpha;
     }
 
     public get scale(): Position {
@@ -533,6 +538,42 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         stage: undefined
     };
 
+    public static drawDropShadow(
+        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+        dropShadow: DropShadowType | null | undefined,
+        region: Path2D | undefined,
+        colorAlpha = 1,
+        fillRule: CanvasFillRule = "evenodd",
+        callback?: (
+            ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+            dropshadow?: DropShadowType | null | undefined
+        ) => void
+    ) {
+        if (!dropShadow) {
+            return;
+        }
+        ctx.save();
+        ctx.translate(dropShadow.offset?.x ?? 0, dropShadow.offset?.y ?? 0);
+        ctx.scale(dropShadow.scale?.x ?? 1, dropShadow?.scale?.y ?? 1);
+        ctx.fillStyle = Color.toString(
+            new Color(
+                dropShadow.color?.red ?? 0,
+                dropShadow.color?.green ?? 0,
+                dropShadow.color?.blue ?? 0,
+                (dropShadow.color?.alpha ?? 0) * (colorAlpha ?? 1) * (dropShadow.alpha ?? 1)
+            )
+        );
+        if (dropShadow.blur) {
+            ctx.filter = `blur(${dropShadow.blur}px)`;
+        }
+        if (callback) {
+            callback(ctx, dropShadow);
+        } else if (region) {
+            ctx.fill(region, fillRule);
+        }
+        ctx.restore();
+    }
+
     constructor(
         props: Properties & DEFAULT_PROPERTIES<DetailsType>,
         defaults?: Properties & DEFAULT_PROPERTIES<DetailsType>
@@ -546,6 +587,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         this.blur = props.blur ?? defaults?.blur ?? this.blur;
         this.alpha = props.alpha ?? defaults?.alpha ?? this.alpha;
         this.gradient = props.gradient ?? defaults?.gradient ?? this.gradient;
+        this.dropShadow = props.dropShadow ?? defaults?.dropShadow ?? this.dropShadow;
         this.effects = props.effects ?? defaults?.effects ?? this.effects;
         this.red = props.color?.red ?? defaults?.color?.red ?? this.red;
         this.green = props.color?.green ?? defaults?.color?.green ?? this.green;
@@ -586,19 +628,33 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         this.effects(ctx);
         ctx.globalAlpha = this.alpha;
         ctx.translate(Math.min(this.x1, this.x2) + this.width / 2, Math.min(this.y1, this.y2) + this.height / 2);
-        ctx.fillStyle = this.gradient
-            ? this.gradient
-            : Color.toString({
-                  red: this.red,
-                  green: this.green,
-                  blue: this.blue,
-                  alpha: this.colorAlpha
-              });
         if (this.rotation !== 0) {
             ctx.rotate((this.rotation * Math.PI) / 180);
         }
         if (this.scaleX !== 1 || this.scaleY !== 1) {
             ctx.scale(this.scaleX, this.scaleY);
+        }
+        if (!this.gradient) {
+            ctx.fillStyle = Color.toString(this.color);
+        } else {
+            const gradient =
+                this.gradient.type === "linear"
+                    ? this.gradient.direction === "vertical"
+                        ? ctx.createLinearGradient(0, this.height / 2, 0, this.height / 2)
+                        : ctx.createLinearGradient(-this.width / 2, 0, this.width / 2, 0)
+                    : ctx.createRadialGradient(
+                          0,
+                          0,
+                          this.gradient.innerRadius ?? 0,
+                          0,
+                          0,
+                          this.gradient.outerRadius ?? 1
+                      );
+            for (let i = 0; i < this.gradient.colorStops.length; ++i) {
+                const colorStop = this.gradient.colorStops[i];
+                gradient.addColorStop(colorStop[0], Color.toString(colorStop[1]));
+            }
+            ctx.fillStyle = gradient;
         }
         if (this.blur !== 0) {
             ctx.filter = `blur(${this.blur}px)`;
@@ -607,7 +663,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             const event = this.events!.stage;
             callAndPrune(this.eventListeners, "beforeDraw", [this, event.currentFrame, this.events!.stage]);
         }
-        const region = this.drawFunction(ctx, properties!);
+        const region = this.drawFunction(ctx, properties!, this.dropShadow, this.colorAlpha);
         if (region !== undefined) {
             this._region = region;
         }
@@ -849,9 +905,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         const green = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.green;
         const blue = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.blue;
         console.log(
-            `%c${"\t".repeat(indent)} ⌞${name} \t{ ${this.constructor.name} @ (${this.x1}, ${this.y1}) (${this.x2}, ${
-                this.y2
-            }) }`,
+            `%c${"\t".repeat(indent)} ⌞${name} \t{ ${this.constructor.name} @ (${this.x1.toLocaleString()}, ${this.y1.toLocaleString()}) (${this.x2.toLocaleString()}, ${this.y2.toLocaleString()}) }`,
             `color: ${Color.toString(new Color(red, green, blue))}; font-weight: bold;`
         );
         this._children.forEach(child => child.logHierarchy(indent + 1));
@@ -943,7 +997,11 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             }
         }
         for (let i = animations.length - 1; i >= 0; --i) {
-            this.animateProperty(animations[i]!);
+            this.animateProperty(
+                animations[i]! as PrivateAnimationType<
+                    Properties & HiddenProperties & HIDDEN_SHAPE_PROPERTIES & DEFAULT_PROPERTIES
+                >
+            );
         }
         return this;
     }

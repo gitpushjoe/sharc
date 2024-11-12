@@ -141,7 +141,8 @@ export class Color {
         return { red, green, blue, alpha };
     }
 
-    static toString(color: Color): string {
+    static toString(color?: Color): string {
+        color ??= new Color();
         return `rgba(${color.red}, ${color.green}, ${color.blue}, ${color.alpha})`;
     }
 }

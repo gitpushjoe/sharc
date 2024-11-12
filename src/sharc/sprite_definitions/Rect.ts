@@ -1,5 +1,5 @@
 import { Bounds } from "../Utils";
-import { RectProperties, RadiusType, OmitBaseProps } from "../types/Sprites";
+import { RectProperties, RadiusType, OmitBaseProps, DropShadowType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Rect<DetailsType = any>
@@ -24,18 +24,22 @@ export default class Rect<DetailsType = any>
     public readonly drawFunction = Rect.drawFunction;
     public static readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: RectProperties
+        properties: RectProperties,
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         const coords = Bounds.wrtSelf(properties.bounds ?? new Bounds(0, 0, 0, 0));
         if (properties.stroke === null || properties.stroke?.lineWidth === 0) {
             if (properties.radius && properties.radius[0] === 0 && properties.radius.length === 1) {
                 const region = new Path2D();
                 region.rect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1);
+                StrokeableSprite.strokeDropShadow(ctx, dropShadow, region, properties.stroke, colorAlpha);
                 ctx.fill(region, "nonzero");
                 return region;
             } else {
                 const region = new Path2D();
                 region.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+                StrokeableSprite.strokeDropShadow(ctx, dropShadow, region, properties.stroke, colorAlpha);
                 ctx.fill(region, "nonzero");
                 return region;
             }
@@ -44,12 +48,14 @@ export default class Rect<DetailsType = any>
         if (properties.stroke?.lineDash === 0) {
             const region = new Path2D();
             region.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+            StrokeableSprite.strokeDropShadow(ctx, dropShadow, region, properties.stroke, colorAlpha, "nonzero");
             ctx.fill(region, "nonzero");
             ctx.stroke(region);
             return region;
         } else {
             const region = new Path2D();
             region.roundRect(coords.x1, coords.y1, coords.x2 - coords.x1, coords.y2 - coords.y1, properties.radius);
+            // StrokeableSprite.drawDropShadow(ctx, dropShadow, region, properties.stroke, colorAlpha);
             ctx.fill(region, "nonzero");
             ctx.stroke(region);
             return region;

@@ -1,9 +1,10 @@
-import { Position, Bounds, invalidSetterFor } from "../Utils";
-import { PathProperties, OmitBaseProps } from "../types/Sprites";
+import { Position, Bounds } from "../Utils";
+import { PathProperties, OmitBaseProps, DropShadowType } from "../types/Sprites";
+import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Path<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<PathProperties>, object>
+    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<PathProperties>, object>
     implements Required<OmitBaseProps<PathProperties>>
 {
     constructor(props: PathProperties<DetailsType>, defaults?: PathProperties<DetailsType>) {
@@ -13,11 +14,7 @@ export default class Path<DetailsType = any>
         this.fillRule = props.fillRule ?? defaults?.fillRule ?? this.fillRule;
         this.startRatio = props.startRatio ?? defaults?.startRatio ?? this.startRatio;
         this.endRatio = props.endRatio ?? defaults?.endRatio ?? this.endRatio;
-        const bounds = Path.getBoundsFromPath(this.path);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        this._bounds = Path.getBoundsFromPath(this.path);
     }
 
     // NORMAL PROPERTIES
@@ -27,21 +24,28 @@ export default class Path<DetailsType = any>
     public startRatio = 0;
     public endRatio = 1;
 
-    // Bounds cannot be set, only get
-    public get bounds(): Bounds {
-        return Path.getBoundsFromPath(this.path);
+    protected shiftX(value: number) {
+        for (let i = 0; i < this.path.length; ++i) {
+            this.path[i].x += value;
+        }
+        this._bounds = Path.getBoundsFromPath(this.path);
     }
-    @invalidSetterFor("Path")
-    public set bounds(_value: Bounds) {
-        return;
+    protected shiftY(value: number) {
+        for (let i = 0; i < this.path.length; ++i) {
+            this.path[i].y += value;
+        }
+        this._bounds = Path.getBoundsFromPath(this.path);
+    }
+
+    protected shift(value: Position) {
+        for (let i = 0; i < this.path.length; ++i) {
+            this.path[i].x += value.x;
+            this.path[i].y += value.y;
+        }
+        this._bounds = Path.getBoundsFromPath(this.path);
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
-        const bounds = Path.getBoundsFromPath(this.path);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
         super.draw(ctx, {
             path: this.path,
             closePath: this.closePath,
@@ -53,7 +57,9 @@ export default class Path<DetailsType = any>
 
     public static readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: PathProperties
+        properties: PathProperties,
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         let path: Position[] = [];
         for (const point of (properties.path ?? [])) {
@@ -71,6 +77,7 @@ export default class Path<DetailsType = any>
         if (properties.closePath) {
             region.closePath();
         }
+        StrokeableSprite.strokeDropShadow(ctx, dropShadow, region, properties.stroke, colorAlpha, properties.fillRule);
         ctx.fill(region, properties.fillRule ?? "nonzero");
         StrokeableSprite.strokeRegion(ctx, properties.stroke, region);
         return region;

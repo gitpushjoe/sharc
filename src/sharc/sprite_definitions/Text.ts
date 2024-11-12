@@ -1,9 +1,10 @@
-import { Bounds, Position, invalidSetterFor } from "../Utils";
-import { TextProperties, HiddenTextProperties, OmitBaseProps } from "../types/Sprites";
+import { Color, Position } from "../Utils";
+import { TextProperties, HiddenTextProperties, OmitBaseProps, DropShadowType } from "../types/Sprites";
+import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class TextSprite<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<TextProperties>, HiddenTextProperties>
+    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<TextProperties>, HiddenTextProperties>
     implements Required<OmitBaseProps<TextProperties>>
 {
     constructor(props: TextProperties<DetailsType>, defaults?: TextProperties<DetailsType>) {
@@ -20,11 +21,7 @@ export default class TextSprite<DetailsType = any>
         this.maxWidth = props.maxWidth ?? defaults?.maxWidth ?? this.maxWidth;
         this.bold = props.bold ?? defaults?.bold ?? this.bold;
         this.italic = props.italic ?? defaults?.italic ?? this.italic;
-        const bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
     }
 
     // NORMAL PROPERTIES
@@ -38,88 +35,39 @@ export default class TextSprite<DetailsType = any>
     public textBaseline: CanvasTextBaseline = "alphabetic";
     public textDirection: CanvasDirection = "inherit";
     public maxWidth: number | null = null;
-    public positionX = 0;
-    public positionY = 0;
+    private _positionX = 0;
+    private _positionY = 0;
 
-    // AGGREGATE PROPERTIES
+    public get positionX(): number {
+        return this._positionX;
+    }
+    public set positionX(value: number) {
+        this._positionX = value;
+        this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext('2d')!);
+    }
+
+    public get positionY(): number {
+        return this._positionY;
+    }
+    public set positionY(value: number) {
+        this._positionY = value;
+        this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext('2d')!);
+    }
+
     public get position(): Position {
         return new Position(this.positionX, this.positionY);
     }
     public set position(value: Position) {
         this.positionX = value.x;
         this.positionY = value.y;
+        this._bounds = this.calculateBounds(new OffscreenCanvasRenderingContext2D());
     }
 
-    // CALCULATED PROPERTIES
-    public get bounds() {
-        return this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+    protected shiftX(value: number) {
+        this.positionX += value;
     }
-    @invalidSetterFor("Text")
-    public set bounds(_value: Bounds) {
-        return;
-    }
-
-    public get center() {
-        const bounds = this.bounds;
-        return new Position((bounds.x1 + bounds.x2) / 2, (bounds.y1 + bounds.y2) / 2);
-    }
-    public set center(value: Position) {
-        const center = this.center;
-        const dx = value.x - center.x;
-        const dy = value.y - center.y;
-        this.position = new Position(this.positionX + dx, this.positionY + dy);
-    }
-
-    public get centerX() {
-        return this.center.x;
-    }
-    public set centerX(value: number) {
-        const center = this.center;
-        const dx = value - center.x;
-        this.position = new Position(this.positionX + dx, this.positionY);
-    }
-
-    public get centerY() {
-        return this.center.y;
-    }
-    public set centerY(value: number) {
-        const center = this.center;
-        const dy = value - center.y;
-        this.position = new Position(this.positionX, this.positionY + dy);
-    }
-
-    public get corner1() {
-        return new Position(this.x1, this.y1);
-    }
-    public set corner1(value: Position) {
-        const corner1 = this.corner1;
-        const dx = value.x - corner1.x;
-        const dy = value.y - corner1.y;
-        this.position = new Position(this.positionX + dx, this.positionY + dy);
-    }
-
-    public get corner2() {
-        return new Position(this.x2, this.y2);
-    }
-    public set corner2(value: Position) {
-        const corner2 = this.corner2;
-        const dx = value.x - corner2.x;
-        const dy = value.y - corner2.y;
-        this.position = new Position(this.positionX + dx, this.positionY + dy);
-    }
-
-    public get width() {
-        return Math.abs(this.x2 - this.x1);
-    }
-    public set width(_value: number) {
-        throw new Error("Text width cannot be set");
-    }
-
-    public get height() {
-        return Math.abs(this.y2 - this.y1);
-    }
-    public set height(_value: number) {
-        throw new Error("Text height cannot be set");
+    protected shiftY(value: number) {
+        this.positionY += value;
     }
 
     private calculateBounds(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
@@ -142,12 +90,12 @@ export default class TextSprite<DetailsType = any>
             ? 0
             : (this.root as TextSprite).stage?.rootStyle === "centered"
               ? -height
-              : 0;
+              : -height / 2;
         return {
-            x1: this.positionX + (this.positionIsCenter ? -width / 2 : 0) - xOffset,
-            y1: this.positionY + (this.positionIsCenter ? -height / 2 : 0) + yOffset,
-            x2: this.positionX + (this.positionIsCenter ? width / 2 : width) - xOffset,
-            y2: this.positionY + (this.positionIsCenter ? height / 2 : height) + yOffset
+            x1: this._positionX + (this.positionIsCenter ? -width / 2 : 0) - xOffset,
+            y1: this._positionY + (this.positionIsCenter ? -height / 2 : 0) + yOffset,
+            x2: this._positionX + (this.positionIsCenter ? width / 2 : width) - xOffset,
+            y2: this._positionY + (this.positionIsCenter ? height / 2 : height) + yOffset
         };
     }
 
@@ -155,11 +103,7 @@ export default class TextSprite<DetailsType = any>
         if ((this.root as TextSprite).stage?.rootStyle === "centered") {
             this.scaleY *= -1;
         }
-        const bounds = this.calculateBounds(ctx);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        this._bounds = this.calculateBounds(ctx);
         super.draw(ctx, {
             text: this.text,
             position: new Position(this.positionX, this.positionY),
@@ -182,12 +126,41 @@ export default class TextSprite<DetailsType = any>
 
     public static readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: TextProperties
+        properties: TextProperties,
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         const { text, maxWidth } = properties;
         const metrics = ctx.measureText(text ?? "");
         const textWidth = metrics.width;
-        const height = properties.fontSize! * 0.725;
+        // TO-DO(gitpushjoe): un-hardcode this
+        const height = properties.fontSize! * 0.6;
+        StrokeableSprite.strokeDropShadow(
+            ctx,
+            dropShadow,
+            undefined,
+            properties.stroke,
+            colorAlpha,
+            undefined,
+            (ctx, shadow) => {
+                const stroke = properties.stroke;
+                const prevStrokeColor = stroke?.color ?? new Color();
+                shadow ??= undefined;
+                const strokeColor = new Color(
+                    shadow?.color?.red ?? 0,
+                    shadow?.color?.green ?? 0,
+                    shadow?.color?.blue ?? 0,
+                    (shadow?.color?.alpha ?? 0) * (stroke?.color?.alpha ?? 1) * (shadow?.alpha ?? 1)
+                );
+                ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
+                stroke ? (stroke.color = strokeColor) : 0;
+                if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
+                    StrokeableSprite.strokeRegion(ctx, properties.stroke);
+                    ctx.strokeText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
+                }
+                stroke ? (stroke.color = prevStrokeColor) : 0;
+            }
+        );
         ctx.fillText(text ?? "", -textWidth / 2, height / 2, maxWidth ?? undefined);
         if (properties.stroke !== null && properties.stroke?.lineWidth !== 0) {
             StrokeableSprite.strokeRegion(ctx, properties.stroke);

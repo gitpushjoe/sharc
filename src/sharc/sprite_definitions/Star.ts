@@ -1,10 +1,10 @@
-import { Bounds, Position, invalidSetterFor } from "../Utils";
-import { OmitBaseProps, StarProperties } from "../types/Sprites";
+import { Bounds, Position } from "../Utils";
+import { DropShadowType, OmitBaseProps, StarProperties } from "../types/Sprites";
 import Path from "./Path";
-import StrokeableSprite from "./StrokeableSprite";
+import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
 
 export default class Star<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: Position }, object>
+    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: Position }, object>
     implements Required<OmitBaseProps<StarProperties>>
 {
     constructor(props: StarProperties<DetailsType>, defaults?: StarProperties<DetailsType>) {
@@ -21,6 +21,7 @@ export default class Star<DetailsType = any>
         const center = props.center ?? defaults?.center ?? new Position();
         this.centerX = center.x;
         this.centerY = center.y;
+        this._bounds = Bounds.fromCircle(this.centerX, this.centerY, this.radius);
     }
 
     // NORMAL PROPERTIES
@@ -34,44 +35,21 @@ export default class Star<DetailsType = any>
     private _centerX = 0;
     private _centerY = 0;
 
-    public get centerX(): number {
-        return this._centerX;
+    
+    protected shiftX(value: number) {
+        console.log({ value }, 'shiftx');
+        this._centerX += value;
+        this._x1 += value;
+        this._x2 += value;
     }
-    public set centerX(value: number) {
-        this._centerX = value;
-        this.x1 = this._centerX - this.radius;
-        this.x2 = this._centerX + this.radius;
-    }
-
-    public get centerY(): number {
-        return this._centerY;
-    }
-    public set centerY(value: number) {
-        this._centerY = value;
-        this.y1 = this._centerY - this.radius;
-        this.y2 = this._centerY + this.radius;
-    }
-
-    // AGGREGATE PROPERTIES
-    public get center(): Position {
-        return { x: this.centerX, y: this.centerY };
-    }
-    public set center(value: Position) {
-        this._centerX = value.x;
-        this._centerY = value.y;
-    }
-
-    // Bounds cannot be set, only get
-    @invalidSetterFor("Star")
-    public set bounds(_bounds: Bounds) {
-        return;
+    protected shiftY(value: number) {
+        console.log({ value }, 'shifty');
+        this._centerY += value;
+        this._y1 += value;
+        this._y2 += value;
     }
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
-        this.x1 = this.centerX - this.radius;
-        this.y1 = this.centerY - this.radius;
-        this.x2 = this.centerX + this.radius;
-        this.y2 = this.centerY + this.radius;
         super.draw(ctx, {
             center: new Position(this.centerX, this.centerY),
             radius: this.radius,
@@ -84,7 +62,9 @@ export default class Star<DetailsType = any>
 
     public readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: StarProperties
+        properties: StarProperties,
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         const radius = properties.radius ?? 5;
         const innerRadius = properties.innerRadius ?? (radius * (3 - Math.sqrt(5))) / 2;
@@ -113,6 +93,6 @@ export default class Star<DetailsType = any>
             stroke: properties.stroke,
             startRatio: properties.startRatio ?? 0,
             endRatio: properties.endRatio ?? 1
-        });
+        }, dropShadow, colorAlpha);
     };
 }

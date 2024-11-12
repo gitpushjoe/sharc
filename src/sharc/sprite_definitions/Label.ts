@@ -1,18 +1,25 @@
-import { Bounds, Position, Color, invalidSetterFor } from "../Utils";
-import { OmitBaseProps, LabelProperties, HiddenLabelProperties, StrokeType, RadiusType } from "../types/Sprites";
-import StrokeableSprite from "./StrokeableSprite";
+import { Bounds, Position, Color } from "../Utils";
+import {
+    OmitBaseProps,
+    LabelProperties,
+    HiddenLabelProperties,
+    StrokeType,
+    RadiusType,
+    DropShadowType
+} from "../types/Sprites";
 import TextSprite from "./Text";
 import Rect from "./Rect";
+import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
 
 export default class LabelSprite<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<LabelProperties>, HiddenLabelProperties>
+    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<LabelProperties>, HiddenLabelProperties>
     implements Required<OmitBaseProps<LabelProperties> & HiddenLabelProperties>
 {
     constructor(props: LabelProperties<DetailsType>, defaults?: LabelProperties<DetailsType>) {
         super(props, defaults);
         this.text = props.text ?? defaults?.text ?? this.text;
-        this.positionX = props.position?.x ?? defaults?.position?.x ?? this.positionX;
-        this.positionY = props.position?.y ?? defaults?.position?.y ?? this.positionY;
+        this._positionX = props.position?.x ?? defaults?.position?.x ?? this._positionX;
+        this._positionY = props.position?.y ?? defaults?.position?.y ?? this._positionY;
         this.positionIsCenter = props.positionIsCenter ?? defaults?.positionIsCenter ?? this.positionIsCenter;
         this.font = props.font ?? defaults?.font ?? this.font;
         this.fontSize = props.fontSize ?? defaults?.fontSize ?? this.fontSize;
@@ -26,11 +33,7 @@ export default class LabelSprite<DetailsType = any>
         this.backgroundRadius = props.backgroundRadius ?? defaults?.backgroundRadius ?? this.backgroundRadius;
         this.padding = props.padding ?? defaults?.padding ?? this.padding;
         this.textStroke = props.textStroke ?? defaults?.textStroke ?? this.textStroke;
-        const bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
     }
 
     // NORMAL PROPERTIES
@@ -44,8 +47,8 @@ export default class LabelSprite<DetailsType = any>
     public textBaseline: CanvasTextBaseline = "alphabetic";
     public textDirection: CanvasDirection = "inherit";
     public maxWidth: number | null = null;
-    public positionX = 0;
-    public positionY = 0;
+    private _positionX = 0;
+    private _positionY = 0;
     public padding = 10;
     public backgroundRed = 0;
     public backgroundGreen = 0;
@@ -54,66 +57,36 @@ export default class LabelSprite<DetailsType = any>
     public backgroundRadius: RadiusType = [5];
     public textStroke: StrokeType | null = null;
 
-    // AGGREGATE PROPERTIES
+    public get positionX(): number {
+        return this._positionX;
+    }
+    public set positionX(value: number) {
+        this._positionX = value;
+        this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+    }
+
+    public get positionY(): number {
+        return this._positionY;
+    }
+    public set positionY(value: number) {
+        this._positionY = value;
+        this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+    }
+
     public get position(): Position {
         return new Position(this.positionX, this.positionY);
     }
     public set position(value: Position) {
         this.positionX = value.x;
         this.positionY = value.y;
+        this._bounds = this.calculateBounds(new OffscreenCanvasRenderingContext2D());
     }
 
-    // CALCULATED PROPERTIES
-    public get bounds() {
-        return this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
+    protected shiftX(value: number) {
+        this.positionX += value;
     }
-    @invalidSetterFor("Label")
-    public set bounds(_value: Bounds) {
-        return;
-    }
-
-    public get center() {
-        return new Position((this.x1 + this.x2) / 2, (this.y1 + this.y2) / 2);
-    }
-    public set center(value: Position) {
-        const center = this.center;
-        const dx = value.x - center.x;
-        const dy = value.y - center.y;
-        this.position = new Position(this.positionX + dx, this.positionY + dy);
-    }
-
-    public get corner1() {
-        return new Position(this.x1, this.y1);
-    }
-    public set corner1(value: Position) {
-        const corner1 = this.corner1;
-        const dx = value.x - corner1.x;
-        const dy = value.y - corner1.y;
-        this.position = new Position(this.positionX + dx, this.positionY + dy);
-    }
-
-    public get corner2() {
-        return new Position(this.x2, this.y2);
-    }
-    public set corner2(value: Position) {
-        const corner2 = this.corner2;
-        const dx = value.x - corner2.x;
-        const dy = value.y - corner2.y;
-        this.position = new Position(this.positionX + dx, this.positionY + dy);
-    }
-
-    public get width() {
-        return Math.abs(this.x2 - this.x1);
-    }
-    public set width(_value: number) {
-        throw new Error("Text width cannot be set");
-    }
-
-    public get height() {
-        return Math.abs(this.y2 - this.y1);
-    }
-    public set height(_value: number) {
-        throw new Error("Text height cannot be set");
+    protected shiftY(value: number) {
+        this.positionY += value;
     }
 
     private calculateBounds(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
@@ -159,11 +132,7 @@ export default class LabelSprite<DetailsType = any>
         if ((this.root as LabelSprite).stage?.rootStyle === "centered") {
             this.scaleY *= -1;
         }
-        const bounds = this.calculateBounds(ctx);
-        this.x1 = bounds.x1;
-        this.y1 = bounds.y1;
-        this.x2 = bounds.x2;
-        this.y2 = bounds.y2;
+        this._bounds = this.calculateBounds(ctx);
         super.draw(ctx, {
             text: this.text,
             position: new Position(this.positionX, this.positionY),
@@ -188,34 +157,64 @@ export default class LabelSprite<DetailsType = any>
 
     public readonly drawFunction = (
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        properties: LabelProperties
+        properties: LabelProperties,
+        dropShadow?: DropShadowType | null,
+        colorAlpha?: number
     ): Path2D => {
         const fillStyle = ctx.fillStyle;
         ctx.fillStyle = `rgba(${properties.backgroundColor!.red}, ${properties.backgroundColor!.green}, ${
             properties.backgroundColor!.blue
         }, ${properties.backgroundColor!.alpha})`;
-        const path = Rect.drawFunction(ctx, {
-            bounds: new Bounds(this.x1, this.y1, this.x2, this.y2),
-            color: properties.backgroundColor,
-            radius: properties.backgroundRadius,
-            blur: properties.blur,
-            stroke: properties.stroke
-        });
+        const path = Rect.drawFunction(
+            ctx,
+            {
+                bounds: new Bounds(this.x1, this.y1, this.x2, this.y2),
+                color: properties.backgroundColor,
+                radius: properties.backgroundRadius,
+                blur: properties.blur,
+                stroke: properties.stroke
+            },
+            dropShadow,
+            properties.backgroundColor?.alpha
+        );
         ctx.fillStyle = fillStyle;
-        TextSprite.drawFunction(ctx, {
-            text: properties.text,
-            position: properties.position,
-            font: properties.font,
-            fontSize: properties.fontSize,
-            textAlign: properties.textAlign,
-            textBaseline: properties.textBaseline,
-            textDirection: properties.textDirection,
-            maxWidth: properties.maxWidth,
-            bold: properties.bold,
-            italic: properties.italic,
-            positionIsCenter: properties.positionIsCenter,
-            stroke: properties.textStroke
-        });
+        TextSprite.drawFunction(
+            ctx,
+            {
+                text: properties.text,
+                position: properties.position,
+                font: properties.font,
+                fontSize: properties.fontSize,
+                textAlign: properties.textAlign,
+                textBaseline: properties.textBaseline,
+                textDirection: properties.textDirection,
+                maxWidth: properties.maxWidth,
+                bold: properties.bold,
+                italic: properties.italic,
+                positionIsCenter: properties.positionIsCenter,
+                stroke: properties.textStroke
+            },
+            dropShadow,
+            colorAlpha
+        );
+        ctx.fillStyle = `rgba(${properties.backgroundColor!.red}, ${properties.backgroundColor!.green}, ${
+            properties.backgroundColor!.blue
+        }, ${properties.backgroundColor!.alpha})`;
+        if (dropShadow) {
+            Rect.drawFunction(
+                ctx,
+                {
+                    bounds: new Bounds(this.x1, this.y1, this.x2, this.y2),
+                    color: properties.backgroundColor,
+                    radius: properties.backgroundRadius,
+                    blur: properties.blur,
+                    stroke: properties.stroke
+                },
+                dropShadow,
+                properties.backgroundColor?.alpha
+            );
+        }
+        ctx.fillStyle = fillStyle;
         return path;
     };
 }

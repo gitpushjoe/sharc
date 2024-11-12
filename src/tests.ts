@@ -7,9 +7,11 @@ import {
     Line,
     ManagerSprite,
     NullSprite,
+    Path,
     PolarWrapper,
     Polygon,
     Rect,
+    Star,
     TextSprite
 } from "./sharc/Sprites";
 import { Stage } from "./sharc/Stage";
@@ -82,7 +84,7 @@ export const tests: Test[] = [
                 bold: true
             });
             stage.root.addChild(fps);
-    
+
             stage.root.logHierarchy();
             (stage as Stage).on("beforeDraw", (_, frame) => {
                 if (frame % 5 !== 4) {
@@ -520,23 +522,25 @@ export const tests: Test[] = [
                             new PolarWrapper({
                                 location: { radius: 45 },
                                 offset: { angle: 360 / 8 }
-                            }).addChild(
-                                new FactorySprite({
-                                    factory: (n: number) =>
-                                        new Ellipse({
-                                            radius: 12,
-                                            name: `${n}`,
-                                            color: getRandomColor(175, 55, 0.25),
-                                            stroke: { lineWidth: 3 }
-                                        }),
-                                    parameters: 8
-                                }).on("beforeDraw", sprite => {
-                                    sprite.generate();
-                                    sprite.parent!.addChildren(...sprite.children);
-                                    sprite.parent!.animate(AnimateTo("rotation", -360, 400), { loop: true });
-                                    sprite.removeSelf();
-                                })
-                            ).animate(Animate("rotation", 0, -360, 140), {loop: true})
+                            })
+                                .addChild(
+                                    new FactorySprite({
+                                        factory: (n: number) =>
+                                            new Ellipse({
+                                                radius: 12,
+                                                name: `${n}`,
+                                                color: getRandomColor(175, 55, 0.25),
+                                                stroke: { lineWidth: 3 }
+                                            }),
+                                        parameters: 8
+                                    }).on("beforeDraw", sprite => {
+                                        sprite.generate();
+                                        sprite.parent!.addChildren(...sprite.children);
+                                        sprite.parent!.animate(AnimateTo("rotation", -360, 400), { loop: true });
+                                        sprite.removeSelf();
+                                    })
+                                )
+                                .animate(Animate("rotation", 0, -360, 140), { loop: true })
                         )
                 );
 
@@ -697,53 +701,245 @@ export const tests: Test[] = [
     {
         name: "themes",
         apply: (stage: Stage | WorkerStage<any, string>) => {
-
             const t = new Theme({
                 Rect: {
                     color: Colors.Lime,
                     radius: [5],
                     stroke: { lineWidth: 5, color: Colors.None },
+                    gradient: {
+                        type: "linear",
+                        direction: "horizontal",
+                        colorStops: [
+                            [0, Colors.Black],
+                            [0.5, Colors.LightGreen],
+                            [1, Colors.Black]
+                        ]
+                    },
+                    dropShadow: {
+                        offset: new Position(10, 10),
+                        scale: new Position(1.05, 1.05),
+                        blur: 2,
+                        color: Colors.DarkGreen
+                    }
                 },
                 Ellipse: {
                     blur: 5,
+                    radius: 60,
                     color: Colors.Aqua,
-                    gradient: (() => {
-                        const ctx = new OffscreenCanvas(0, 0).getContext('2d')!;
-                        const gradient = ctx.createLinearGradient(-50, 0, 50, 0);
-                        gradient.addColorStop(0, "aqua");
-                        gradient.addColorStop(0.5, "white");
-                        gradient.addColorStop(1, "aqua");
-                        return gradient;
-                    })()
-                },
+                    gradient: {
+                        type: "radial",
+                        innerRadius: 10,
+                        outerRadius: 60,
+                        colorStops: [
+                            [0, Colors.Black],
+                            [0.1, Colors.Purple],
+                            [1, Colors.Black]
+                        ]
+                    }
+                }
             });
 
             const root = stage.root;
 
-            const rect = new t.Rect({ 
+            const rect = new t.Rect({
                 bounds: Rect.Bounds(0, 0, 100, 100),
-                stroke: { color: Colors.DarkGreen } 
+                stroke: { color: Colors.DarkGreen }
             });
-            const rectWithoutTheme = new Rect({ 
+            const rectWithoutTheme = new Rect({
                 bounds: Rect.Bounds(0, 0, 100, 100),
-                stroke: { color: Colors.DarkGreen } 
+                stroke: { color: Colors.DarkGreen }
             });
 
             const ellipse = new t.Ellipse({
-                radius: 50,
+                radius: 50
             });
             const ellipseWithoutTheme = new Ellipse({
-                radius: 25,
+                radius: 25
             });
 
             const manager = new t.ManagerSprite({
                 position: new Position(200, 200),
-                align: 'row-center',
-                padding: 25,
+                align: "row-center",
+                padding: 25
             }).addChildren(rect, rectWithoutTheme, ellipse, ellipseWithoutTheme);
-            manager.update(['align', 'padding']);
+            manager.update(["align", "padding"]);
 
             root.addChild(manager);
+        }
+    },
+    {
+        name: "dropshadow",
+        apply: (stage: Stage | WorkerStage<any, string>) => {
+            const root = stage.root;
+            root.scale = new Position(.9, .9);
+
+            const dropShadow = {
+                offset: new Position(10, 10),
+                color: Colors.DarkTurquoise,
+                alpha: 1,
+                blur: 5,
+            };
+
+            const circle = new Ellipse({
+                radius: 50,
+                color: {...Colors.DarkRed, alpha: 0.75},
+                stroke: {
+                    color: Colors.Black,
+                    lineWidth: 8
+                },
+                dropShadow
+            });
+
+            const bezierCurve = new BezierCurve({
+                start: new Position(-50, -50),
+                points: [
+                    {
+                        control1: new Position(-50, 0),
+                        control2: new Position(0, 0),
+                        end: new Position(0, 0)
+                    },
+                    {
+                        control1: new Position(0, 0),
+                        control2: new Position(50, 0),
+                        end: new Position(50, 50)
+                    }
+                ],
+                color: Colors.None,
+                stroke: {
+                    color: circle.color,
+                    lineWidth: 10,
+                    lineCap: 'round'
+                },
+                arrow: {
+                    side: 'end',
+                    length: 20,
+                    stroke: {
+                        color: circle.color,
+                        lineWidth: 10,
+                        lineCap: 'round'
+                    }
+                },
+                dropShadow
+            });
+
+            const line = new Line({
+                bounds: Line.Bounds(-50, -50, 50, 50),
+                lineWidth: 10,
+                lineCap: "round",
+                color: {...circle.color, alpha: 1},
+                lineDashGap: 30,
+                lineDash: 12,
+                arrow: {
+                    length: 25,
+                    stroke: {
+                        lineWidth: 10,
+                        lineCap: "round",
+                        lineJoin: "round",
+                        color: {...circle.color, alpha: 1},
+                    }
+                },
+                dropShadow,
+            }).animate(Animate("lineDashOffset", 0, -42, 120), { loop: true });
+
+            const image = new ImageSprite({
+                bounds: new Bounds(-50, -50, 50, 50),
+                stroke: {
+                    lineWidth: 10,
+                    lineJoin: 'round',
+                },
+                src: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Green_Apple_Icon.png/640px-Green_Apple_Icon.png",
+                dropShadow
+            });
+
+            const label = new LabelSprite({
+                positionIsCenter: true,
+                position: new Position(),
+                text: ":)",
+                fontSize: 80,
+                padding: 20,
+                bold: true,
+                stroke: { lineWidth: 10 },
+                color: circle.color,
+                textStroke: {lineWidth: 6 },
+                // backgroundColor: Colors.Pink
+                dropShadow
+            });
+
+            const text = new TextSprite({
+                // positionIsCenter: true,
+                position: new Position(),
+                text: "(:",
+                fontSize: 80,
+                bold: true,
+                color: circle.color,
+                stroke: { lineWidth: 4 },
+                dropShadow
+            });
+
+            // const line = new Line({
+            //     bounds: Line.Bounds(-50, -50, 50, 50),
+            //     lineWidth: 5
+            // });
+            
+            const path = new Path({
+                path: [
+                    new Position(50, -50),
+                    new Position(-50, -50),
+                    new Position(-50, 10),
+                    new Position(20, 10),
+                    new Position(20, 30),
+                    new Position(-50, 30),
+                    new Position(-50, 50),
+                    new Position(50, 50),
+                    new Position(50, -10),
+                    new Position(-30, -10),
+                    new Position(-30, -30),
+                    new Position(50, -30),
+                ],
+                color: {...circle.color, alpha: 0.6},
+                stroke: {lineWidth: 5},
+                closePath: true,
+                dropShadow
+            });
+
+
+            const polygon = new Polygon({
+                sides: 5,
+                radius: 50,
+                color: circle.color,
+                stroke: circle.stroke,
+                dropShadow
+            });
+
+            const star = new Star({
+                radius: 50,
+                color: circle.color,
+                stroke: circle.stroke,
+                rotation: 180,
+                dropShadow: {...dropShadow, offset: Position.factor(dropShadow.offset, -1)}
+            });
+
+            const rect = new Rect({
+                bounds: Bounds.fromCircle(0, 0, 50),
+                color: circle.color,
+                stroke: circle.stroke,
+                radius: [20],
+                dropShadow
+            });
+
+            const manager = new ManagerSprite({
+                position: new Position(100, 400),
+                align: "row-center",
+                padding: 30
+            });
+
+
+            manager.addChildren(bezierCurve, circle, image, label, line, path, polygon, rect, star, text);
+            manager.update(["padding"]);
+            // bezierCurve.width
+
+            root.addChild(manager);
+            root.logHierarchy();
         }
     }
 ];
