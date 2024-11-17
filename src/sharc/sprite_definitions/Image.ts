@@ -1,4 +1,4 @@
-import { ColorType } from "sharc/types/Common";
+import { BoundsType, ColorType, PositionType } from "sharc/types/Common";
 import { Position, Bounds, Color } from "../Utils";
 import { ImageProperties, HiddenImageProperties, OmitBaseProps, DropShadowType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
@@ -7,7 +7,7 @@ export default class ImageSprite<DetailsType = any>
     extends StrokeableSprite<
         DetailsType,
         OmitBaseProps<ImageProperties> & {
-            bounds?: Bounds;
+            bounds?: BoundsType;
             image?: ImageBitmap | null;
         },
         HiddenImageProperties
@@ -44,28 +44,28 @@ export default class ImageSprite<DetailsType = any>
     public srcY2 = 0;
 
     // AGGREGATE PROPERTIES
-    public get srcBounds(): Bounds {
-        return new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2);
+    public get srcBounds(): BoundsType {
+        return Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2);
     }
-    public set srcBounds(value: Bounds) {
+    public set srcBounds(value: BoundsType) {
         this.srcX1 = value.x1;
         this.srcY1 = value.y1;
         this.srcX2 = value.x2;
         this.srcY2 = value.y2;
     }
 
-    public get srcCorner1(): Position {
-        return new Position(this.srcX1, this.srcY1);
+    public get srcCorner1(): PositionType {
+        return Position(this.srcX1, this.srcY1);
     }
-    public set srcCorner1(value: Position) {
+    public set srcCorner1(value: PositionType) {
         this.srcX1 = value.x;
         this.srcY1 = value.y;
     }
 
-    public get srcCorner2(): Position {
-        return new Position(this.srcX2, this.srcY2);
+    public get srcCorner2(): PositionType {
+        return Position(this.srcX2, this.srcY2);
     }
-    public set srcCorner2(value: Position) {
+    public set srcCorner2(value: PositionType) {
         this.srcX2 = value.x;
         this.srcY2 = value.y;
     }
@@ -123,7 +123,7 @@ export default class ImageSprite<DetailsType = any>
             src: "",
             image: this.image,
             bounds: this.bounds,
-            srcBounds: this.useSrcBounds ? new Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2) : null
+            srcBounds: this.useSrcBounds ? Bounds(this.srcX1, this.srcY1, this.srcX2, this.srcY2) : null
         });
     }
 
@@ -202,7 +202,7 @@ export default class ImageSprite<DetailsType = any>
         return region;
     };
 
-    public static Bounds(x1: number, y1: number, width: number, height: number): Bounds {
+    public static Bounds(x1: number, y1: number, width: number, height: number): BoundsType {
         return Bounds.fromDimensions(x1, y1, width, height);
     }
 }

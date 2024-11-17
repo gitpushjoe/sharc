@@ -1,10 +1,11 @@
+import { PositionType } from "sharc/types/Common";
 import { Bounds, Position } from "../Utils";
 import { DropShadowType, OmitBaseProps, StarProperties } from "../types/Sprites";
 import Path from "./Path";
 import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
 
 export default class Star<DetailsType = any>
-    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: Position }, object>
+    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<StarProperties> & { center?: PositionType }, object>
     implements Required<OmitBaseProps<StarProperties>>
 {
     constructor(props: StarProperties<DetailsType>, defaults?: StarProperties<DetailsType>) {
@@ -18,10 +19,10 @@ export default class Star<DetailsType = any>
             (props.radius !== undefined
                 ? ((props.radius ?? 5) * (3 - Math.sqrt(5))) / 2
                 : (defaults?.innerRadius ?? ((defaults?.radius ?? 5) * (3 - Math.sqrt(5))) / 2));
-        const center = props.center ?? defaults?.center ?? new Position();
+        const center = props.center ?? defaults?.center ?? Position();
         this.centerX = center.x;
         this.centerY = center.y;
-        this._bounds = Bounds.fromCircle(this.centerX, this.centerY, this.radius);
+        this._bounds = Bounds.Circle(this.centerX, this.centerY, this.radius);
     }
 
     // NORMAL PROPERTIES
@@ -37,13 +38,11 @@ export default class Star<DetailsType = any>
 
     
     protected shiftX(value: number) {
-        console.log({ value }, 'shiftx');
         this._centerX += value;
         this._x1 += value;
         this._x2 += value;
     }
     protected shiftY(value: number) {
-        console.log({ value }, 'shifty');
         this._centerY += value;
         this._y1 += value;
         this._y2 += value;
@@ -51,7 +50,7 @@ export default class Star<DetailsType = any>
 
     public draw(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {
         super.draw(ctx, {
-            center: new Position(this.centerX, this.centerY),
+            center: Position(this.centerX, this.centerY),
             radius: this.radius,
             innerRadius: this.innerRadius,
             startRatio: this.startRatio,
@@ -70,7 +69,7 @@ export default class Star<DetailsType = any>
         const innerRadius = properties.innerRadius ?? (radius * (3 - Math.sqrt(5))) / 2;
 
         const pointFromAngle = (angle: number, radius: number) => {
-            return new Position(radius * Math.cos(Math.PI / 2 + angle), radius * Math.sin(Math.PI / 2 + angle));
+            return Position(radius * Math.cos(Math.PI / 2 + angle), radius * Math.sin(Math.PI / 2 + angle));
         };
 
         const path = [

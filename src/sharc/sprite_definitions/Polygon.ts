@@ -1,10 +1,11 @@
+import { PositionType } from "sharc/types/Common";
 import { Bounds, Position } from "../Utils";
 import { DropShadowType, OmitBaseProps, PolygonProperties } from "../types/Sprites";
 import Path from "./Path";
 import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
 
 export default class Polygon<DetailsType = any>
-    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: Position }, object>
+    extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<PolygonProperties> & { center?: PositionType }, object>
     implements Required<OmitBaseProps<PolygonProperties>>
 {
     constructor(props: PolygonProperties<DetailsType>, defaults?: PolygonProperties<DetailsType>) {
@@ -16,7 +17,7 @@ export default class Polygon<DetailsType = any>
         this.fillRule = props.fillRule ?? defaults?.fillRule ?? this.fillRule;
         this.centerX = props.center?.x ?? defaults?.center?.x ?? this.centerX;
         this.centerY = props.center?.y ?? defaults?.center?.y ?? this.centerY;
-        this._bounds = Bounds.fromCircle(this.center.x, this.center.y, this.radius);
+        this._bounds = Bounds.Circle(this.center.x, this.center.y, this.radius);
     }
 
     // NORMAL PROPERTIES
@@ -31,13 +32,11 @@ export default class Polygon<DetailsType = any>
     private _centerY = 0;
 
     protected shiftX(value: number) {
-        console.log({ value }, 'shiftx');
         this._centerX += value;
         this._x1 += value;
         this._x2 += value;
     }
     protected shiftY(value: number) {
-        console.log({ value }, 'shifty');
         this._centerY += value;
         this._y1 += value;
         this._y2 += value;
@@ -65,10 +64,10 @@ export default class Polygon<DetailsType = any>
         if (sides < 3 || radius <= 0) {
             throw new Error("Polygon must have at least 3 sides and a positive radius");
         }
-        const path: Position[] = [];
+        const path: PositionType[] = [];
         for (let idx = 0; idx < sides; ++idx) {
             const angle = (2 * Math.PI * idx) / sides;
-            path.push(new Position(radius * Math.cos(angle), radius * Math.sin(angle)));
+            path.push(Position(radius * Math.cos(angle), radius * Math.sin(angle)));
         }
         return Path.drawFunction(ctx, {
             path,

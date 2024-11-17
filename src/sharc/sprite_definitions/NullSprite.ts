@@ -1,3 +1,4 @@
+import { PositionType } from "sharc/types/Common";
 import { Sprite } from "../Sprite";
 import { Position, Bounds } from "../Utils";
 import { DEFAULT_PROPERTIES, HiddenNullSpriteProperties, NullSpriteProperties, OmitBaseProps } from "../types/Sprites";
@@ -8,21 +9,21 @@ export default class NullSprite<DetailsType = any>
 {
     constructor(props: NullSpriteProperties<DetailsType> & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">,
         defaults?: NullSpriteProperties<DetailsType> & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">) {
-        (props as DEFAULT_PROPERTIES).bounds = new Bounds(
+        (props as DEFAULT_PROPERTIES).bounds = Bounds(
             props.position?.x ?? defaults?.position?.x ?? 0,
             props.position?.y ?? defaults?.position?.y ?? 0,
             props.position?.x ?? defaults?.position?.x ?? 0,
             props.position?.y ?? defaults?.position?.y ?? 0
         );
-        props.position ??= new Position(0, 0);
+        props.position ??= Position(0, 0);
         super(props, defaults);
     }
 
     // AGGREGATE PROPERTIES
-    public get position(): Position {
-        return new Position(this.positionX, this.positionY);
+    public get position(): PositionType {
+        return Position(this.positionX, this.positionY);
     }
-    public set position(value: Position) {
+    public set position(value: PositionType) {
         this.positionX = value.x;
         this.positionY = value.y;
     }

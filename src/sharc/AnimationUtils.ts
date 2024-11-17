@@ -1,300 +1,41 @@
-import { Shape } from "./Sprite";
-import { Easing, Position } from "./Utils";
+import { Easing, Position, Scale } from "./Utils";
 import { AnimationCallback, AnimationType, EasingType } from "./types/Animation";
+import { PositionType, ScaleType } from "./types/Common";
 
-export function FadeIn(
-    durationOrSprite = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = 0,
-    to: number | AnimationCallback<number> = 1,
-    name = ""
-): AnimationType<{ alpha: number }> {
-    return {
-        property: "alpha",
-        from,
-        to,
-        duration: durationOrSprite,
-        delay,
-        easing,
-        name
-    };
+export function configureAnimation<propName extends string, propType = number>(
+    property: propName,
+    defaultFrom: propType | null,
+    defaultTo: NonNullable<propType> | AnimationCallback<NonNullable<propType>>,
+    defaultDuration = 30,
+    defaultEasing = Easing.LINEAR
+) {
+    return (
+        duration: number = defaultDuration,
+        easing: EasingType = defaultEasing,
+        from: propType | null = defaultFrom,
+        to: NonNullable<propType> | AnimationCallback<NonNullable<propType>> = defaultTo,
+        delay = 0,
+        name = ""
+    ): AnimationType<Record<propName, propType>> =>
+        ({
+            property,
+            from,
+            to,
+            duration,
+            delay,
+            easing,
+            name
+        }) as unknown as AnimationType<Record<propName, propType>>;
 }
 
-export function FadeInSprite(
-    sprite: Shape,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = 0,
-    to: number | AnimationCallback<number> = 1,
-    name = ""
-): AnimationType<{ alpha: number }> {
-    const property = FadeIn(duration, delay, easing, from, to, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function FadeOut(
-    durationOrSprite = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = 1,
-    to: number | AnimationCallback<number> = 0,
-    name = ""
-): AnimationType<{ alpha: number }> {
-    return {
-        property: "alpha",
-        from,
-        to,
-        duration: durationOrSprite,
-        delay,
-        easing,
-        name
-    };
-}
-
-export function FadeOutSprite(
-    sprite: Shape,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = 1,
-    to: number | AnimationCallback<number> = 0,
-    name = ""
-): AnimationType<{ alpha: number }> {
-    const property = FadeOut(duration, delay, easing, from, to, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function Translate(
-    to: Position | AnimationCallback<Position>,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: Position | null = null,
-    name = ""
-): AnimationType<{ center: { x: number; y: number } }> {
-    return { property: "center", from, to, duration, delay, easing, name };
-}
-
-export function TranslateSprite(
-    sprite: Shape,
-    to: Position | AnimationCallback<Position>,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: Position | null = null,
-    name = ""
-): AnimationType<{ center: { x: number; y: number } }> {
-    const property = Translate(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function Grow(
-    to = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scale: { x: number; y: number } }> {
-    return {
-        property: "scale",
-        from: from ? new Position(from, from) : null,
-        to: (pos: Position) => new Position(pos.x * to, pos.y * to),
-        duration,
-        delay,
-        name,
-        easing
-    };
-}
-
-export function Shrink(
-    to = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scale: { x: number; y: number } }> {
-    return Grow(1 / to, duration, delay, easing, from, name);
-}
-
-export function GrowSprite(
-    sprite: Shape,
-    to = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scale: { x: number; y: number } }> {
-    const property = Grow(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function ShrinkSprite(
-    sprite: Shape,
-    to = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scale: { x: number; y: number } }> {
-    return GrowSprite(sprite, 1 / to, duration, delay, easing, from, name);
-}
-
-export function Rotate(
-    to: number | AnimationCallback<number> = 360,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ rotation: number }> {
-    return { property: "rotation", from, to, duration, delay, easing, name };
-}
-
-export function RotateSprite(
-    sprite: Shape,
-    to: number | AnimationCallback<number> = 360,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ rotation: number }> {
-    const property = Rotate(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function Scale(
-    to: number | AnimationCallback<number> = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scale: number }> {
-    return { property: "scale", from, to, duration, delay, easing, name };
-}
-
-export function ScaleSprite(
-    sprite: Shape,
-    to: number | AnimationCallback<number> = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scale: number }> {
-    const property = Scale(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function ScaleX(
-    to: number | AnimationCallback<number> = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scaleX: number }> {
-    return { property: "scaleX", from, to, duration, delay, easing, name };
-}
-
-export function ScaleXSprite(
-    sprite: Shape,
-    to: number | AnimationCallback<number> = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scaleX: number }> {
-    const property = ScaleX(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function ScaleY(
-    to: number | AnimationCallback<number> = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scaleY: number }> {
-    return { property: "scaleY", from, to, duration, delay, easing, name };
-}
-
-export function ScaleYSprite(
-    sprite: Shape,
-    to: number | AnimationCallback<number> = 2,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ scaleY: number }> {
-    const property = ScaleY(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function Blur(
-    to: number | AnimationCallback<number> = 10,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ blur: number }> {
-    return { property: "blur", from, to, duration, delay, easing, name };
-}
-
-export function BlurSprite(
-    sprite: Shape,
-    to: number | AnimationCallback<number> = 10,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = null,
-    name = ""
-): AnimationType<{ blur: number }> {
-    const property = Blur(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
-
-export function Unblur(
-    to: number | AnimationCallback<number> = 0,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = 10,
-    name = ""
-): AnimationType<{ blur: number }> {
-    return Blur(to, duration, delay, easing, from, name);
-}
-
-export function UnblurSprite(
-    sprite: Shape,
-    to: number | AnimationCallback<number> = 0,
-    duration = 30,
-    delay = 0,
-    easing: EasingType = Easing.LINEAR,
-    from: number | null = 10,
-    name = ""
-): AnimationType<{ blur: number }> {
-    const property = Unblur(to, duration, delay, easing, from, name);
-    sprite.distribute([[property]]);
-    return property;
-}
+export const fadeIn = configureAnimation("alpha", 0, 1);
+export const fadeOut = configureAnimation("alpha", 1, 0);
+export const rotate = configureAnimation("rotation", null, (rot: number) => rot + 360);
+export const scale = configureAnimation("scale", null, (scale: ScaleType) => Scale.factor(scale, 2));
+export const scaleX = configureAnimation("scaleX", null, (x: number) => x * 2);
+export const scaleY = configureAnimation("scaleY", null, (y: number) => y * 2);
+export const blur = configureAnimation("blur", null, 5);
+export const unblur = configureAnimation("blur", null, 0);
+export const shiftX = configureAnimation("centerX", null, (x: number) => x + 10);
+export const shiftY = configureAnimation("centerY", null, (y: number) => y + 10);
+export const shift = configureAnimation("center", null, (p: PositionType) => Position.sum(p, Position(10, 10)));

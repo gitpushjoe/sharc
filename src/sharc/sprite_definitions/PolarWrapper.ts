@@ -1,3 +1,4 @@
+import { PolarPositionType, PositionType } from "sharc/types/Common";
 import { Sprite } from "../Sprite";
 import { Bounds, PolarPosition, Position } from "../Utils";
 import {
@@ -12,7 +13,7 @@ export default class PolarWrapper<DetailsType = any>
     implements Required<OmitBaseProps<PolarWrapperProperties & HiddenPolarWrapperProperties>>
 {
     constructor(props: PolarWrapperProperties<DetailsType>, defaults?: PolarWrapperProperties<DetailsType>) {
-        (props as DEFAULT_PROPERTIES).bounds = new Bounds(
+        (props as DEFAULT_PROPERTIES).bounds = Bounds(
             props.position?.x ?? defaults?.position?.x ?? 0,
             props.position?.y ?? defaults?.position?.y ?? 0,
             props.position?.x ?? defaults?.position?.x ?? 0,
@@ -34,24 +35,24 @@ export default class PolarWrapper<DetailsType = any>
     public active = true;
 
     // AGGREGATE PROPERTIES
-    public get location(): PolarPosition {
-        return new PolarPosition(this.angle, this.radius);
+    public get location(): PolarPositionType {
+        return PolarPosition(this.angle, this.radius);
     }
-    public set location(value: PolarPosition) {
+    public set location(value: PolarPositionType) {
         this.angle = value.angle;
         this.radius = value.radius;
     }
 
-    public get offset(): PolarPosition {
-        return new PolarPosition(this.offsetAngle, this.offsetRadius);
+    public get offset(): PolarPositionType {
+        return PolarPosition(this.offsetAngle, this.offsetRadius);
     }
-    public set offset(value: PolarPosition) {
+    public set offset(value: PolarPositionType) {
         this.offsetAngle = value.angle;
         this.offsetRadius = value.radius;
     }
 
-    public get position(): Position {
-        return new Position(this.positionX, this.positionY);
+    public get position(): PositionType {
+        return Position(this.positionX, this.positionY);
     }
 
     // CALCULATED PROPERTIES
@@ -80,8 +81,8 @@ export default class PolarWrapper<DetailsType = any>
             return;
         }
         const child = this.child;
-        const childPosition = new PolarPosition(this.location?.angle ?? 0, this.location?.radius ?? 0);
-        const offset = new PolarPosition(this.offset?.angle ?? 0, this.offset?.radius ?? 0);
+        const childPosition = PolarPosition(this.location?.angle ?? 0, this.location?.radius ?? 0);
+        const offset = PolarPosition(this.offset?.angle ?? 0, this.offset?.radius ?? 0);
         if (child) {
             child.center = PolarPosition.toPosition(childPosition);
         } else {

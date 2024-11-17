@@ -1,3 +1,4 @@
+import { BoundsType, PositionType } from "sharc/types/Common";
 import { Position, Bounds } from "../Utils";
 import { PathProperties, OmitBaseProps, DropShadowType } from "../types/Sprites";
 import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
@@ -18,7 +19,7 @@ export default class Path<DetailsType = any>
     }
 
     // NORMAL PROPERTIES
-    public path: Position[] = [];
+    public path: PositionType[] = [];
     public closePath = false;
     public fillRule: CanvasFillRule = "nonzero";
     public startRatio = 0;
@@ -37,7 +38,7 @@ export default class Path<DetailsType = any>
         this._bounds = Path.getBoundsFromPath(this.path);
     }
 
-    protected shift(value: Position) {
+    protected shift(value: PositionType) {
         for (let i = 0; i < this.path.length; ++i) {
             this.path[i].x += value.x;
             this.path[i].y += value.y;
@@ -61,8 +62,8 @@ export default class Path<DetailsType = any>
         dropShadow?: DropShadowType | null,
         colorAlpha?: number
     ): Path2D => {
-        let path: Position[] = [];
-        for (const point of (properties.path ?? [])) {
+        let path: PositionType[] = [];
+        for (const point of properties.path ?? []) {
             path.push(Position.wrtBounds(point, Path.getBoundsFromPath(properties.path ?? [])));
         }
         path = Path.getPathSegment(path, properties.startRatio ?? 0, properties.endRatio ?? 1);
@@ -85,7 +86,7 @@ export default class Path<DetailsType = any>
 
     public readonly drawFunction = Path.drawFunction;
 
-    public static getPathSegment(path: Position[], start: number, end: number): Position[] {
+    public static getPathSegment(path: PositionType[], start: number, end: number): PositionType[] {
         if (start === 0 && end === 1) {
             return path;
         } else if (start === end) {
@@ -98,7 +99,7 @@ export default class Path<DetailsType = any>
         const distances = path.map((point, idx) => Path.calculateDistance(point, path[idx + 1] ?? path[0]));
         distances.pop();
         const totalDistance = distances.reduce((a, b) => a + b, 0);
-        const newPath = [] as Position[];
+        const newPath = [] as PositionType[];
         let currentIdx = 0;
         let ratio = 0;
         for (const distance of distances) {
@@ -129,20 +130,20 @@ export default class Path<DetailsType = any>
         return end === 1 ? newPath.concat(path[path.length - 1]) : newPath;
     }
 
-    public static interpolate(point1: Position, point2: Position, ratio: number): Position {
-        return new Position(point1.x + ratio * (point2.x - point1.x), point1.y + ratio * (point2.y - point1.y));
+    public static interpolate(point1: PositionType, point2: PositionType, ratio: number): PositionType {
+        return Position(point1.x + ratio * (point2.x - point1.x), point1.y + ratio * (point2.y - point1.y));
     }
 
-    public static calculateDistance(point1: Position, point2: Position): number {
+    public static calculateDistance(point1: PositionType, point2: PositionType): number {
         return Position.distance(point1, point2);
     }
 
-    public static getBoundsFromPath(path: Position[]): Bounds {
-        const bounds = new Bounds(
+    public static getBoundsFromPath(path: PositionType[]): BoundsType {
+        const bounds = Bounds(
             Number.POSITIVE_INFINITY,
             Number.POSITIVE_INFINITY,
             Number.NEGATIVE_INFINITY,
-            Number.NEGATIVE_INFINITY,
+            Number.NEGATIVE_INFINITY
         );
         for (let i = 0; i < path.length; ++i) {
             const point = path[i];

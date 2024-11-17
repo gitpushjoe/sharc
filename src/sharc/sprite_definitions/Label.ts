@@ -10,6 +10,7 @@ import {
 import TextSprite from "./Text";
 import Rect from "./Rect";
 import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
+import { ColorType, PositionType } from "sharc/types/Common";
 
 export default class LabelSprite<DetailsType = any>
     extends SlidingStrokeableSprite<DetailsType, OmitBaseProps<LabelProperties>, HiddenLabelProperties>
@@ -73,10 +74,10 @@ export default class LabelSprite<DetailsType = any>
         this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext("2d")!);
     }
 
-    public get position(): Position {
-        return new Position(this.positionX, this.positionY);
+    public get position(): PositionType {
+        return Position(this.positionX, this.positionY);
     }
-    public set position(value: Position) {
+    public set position(value: PositionType) {
         this.positionX = value.x;
         this.positionY = value.y;
         this._bounds = this.calculateBounds(new OffscreenCanvasRenderingContext2D());
@@ -118,10 +119,10 @@ export default class LabelSprite<DetailsType = any>
         };
     }
 
-    public get backgroundColor(): Color {
-        return new Color(this.backgroundRed, this.backgroundGreen, this.backgroundBlue, this.backgroundAlpha);
+    public get backgroundColor(): ColorType {
+        return Color(this.backgroundRed, this.backgroundGreen, this.backgroundBlue, this.backgroundAlpha);
     }
-    public set backgroundColor(backgroundColor: Color) {
+    public set backgroundColor(backgroundColor: ColorType) {
         this.backgroundRed = backgroundColor.red;
         this.backgroundGreen = backgroundColor.green;
         this.backgroundBlue = backgroundColor.blue;
@@ -135,7 +136,7 @@ export default class LabelSprite<DetailsType = any>
         this._bounds = this.calculateBounds(ctx);
         super.draw(ctx, {
             text: this.text,
-            position: new Position(this.positionX, this.positionY),
+            position: Position(this.positionX, this.positionY),
             font: this.font,
             fontSize: this.fontSize,
             textAlign: this.textAlign,
@@ -168,7 +169,7 @@ export default class LabelSprite<DetailsType = any>
         const path = Rect.drawFunction(
             ctx,
             {
-                bounds: new Bounds(this.x1, this.y1, this.x2, this.y2),
+                bounds: Bounds(this.x1, this.y1, this.x2, this.y2),
                 color: properties.backgroundColor,
                 radius: properties.backgroundRadius,
                 blur: properties.blur,
@@ -204,7 +205,7 @@ export default class LabelSprite<DetailsType = any>
             Rect.drawFunction(
                 ctx,
                 {
-                    bounds: new Bounds(this.x1, this.y1, this.x2, this.y2),
+                    bounds: Bounds(this.x1, this.y1, this.x2, this.y2),
                     color: properties.backgroundColor,
                     radius: properties.backgroundRadius,
                     blur: properties.blur,

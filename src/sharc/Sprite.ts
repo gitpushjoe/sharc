@@ -1,4 +1,4 @@
-import { Position, Bounds, Color, callAndPrune } from "./Utils";
+import { Position, Bounds, Color, callAndPrune, Scale } from "./Utils";
 import { PrivateAnimationType, AnimationParams, AnimationType, AnimationCallback } from "./types/Animation";
 import { EventCollection, PositionedPointerEvent, StageEventCallback } from "./types/Events";
 import {
@@ -13,6 +13,7 @@ import {
 import { SpriteEventListeners, PointerEventCallback } from "./types/Events";
 import { Channel, ChannelAnimationType } from "./Channels";
 import { Stage } from "./Stage";
+import { BoundsType, ColorType, PositionType, ScaleType } from "./types/Common";
 
 export abstract class Shape<Properties = any, HiddenProperties = any, DetailsType = any>
     implements MostlyRequired<DEFAULT_PROPERTIES & HIDDEN_SHAPE_PROPERTIES>
@@ -268,11 +269,11 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     ): Listener;
 
     public abstract effects: EffectsType;
-    public abstract bounds: Bounds;
-    public abstract color: Color;
+    public abstract bounds: BoundsType;
+    public abstract color: ColorType;
     public abstract alpha: number;
     public abstract rotation: number;
-    public abstract scale: Position;
+    public abstract scale: ScaleType;
     public abstract x1: number;
     public abstract y1: number;
     public abstract x2: number;
@@ -283,9 +284,9 @@ export abstract class Shape<Properties = any, HiddenProperties = any, DetailsTyp
     public abstract height: number;
     public abstract centerX: number;
     public abstract centerY: number;
-    public abstract center: Position;
-    public abstract corner1: Position;
-    public abstract corner2: Position;
+    public abstract center: PositionType;
+    public abstract corner1: PositionType;
+    public abstract corner2: PositionType;
     public abstract enabled: boolean;
     public abstract red: number;
     public abstract green: number;
@@ -391,46 +392,46 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
     public blur = 0;
 
     // AGGREGATE PROPERTIES
-    public get bounds(): Bounds {
-        return new Bounds(this.x1, this.y1, this.x2, this.y2);
+    public get bounds(): BoundsType {
+        return Bounds(this.x1, this.y1, this.x2, this.y2);
     }
-    public set bounds(value: Bounds) {
+    public set bounds(value: BoundsType) {
         this.x1 = value.x1;
         this.y1 = value.y1;
         this.x2 = value.x2;
         this.y2 = value.y2;
     }
 
-    public get color(): Color {
-        return new Color(this.red, this.green, this.blue, this.colorAlpha);
+    public get color(): ColorType {
+        return Color(this.red, this.green, this.blue, this.colorAlpha);
     }
-    public set color(value: Color) {
+    public set color(value: ColorType) {
         this.red = value.red;
         this.green = value.green;
         this.blue = value.blue;
         this.colorAlpha = value.alpha;
     }
 
-    public get scale(): Position {
-        return new Position(this.scaleX, this.scaleY);
+    public get scale(): ScaleType {
+        return Scale(this.scaleX, this.scaleY);
     }
-    public set scale(value: Position) {
+    public set scale(value: ScaleType) {
         this.scaleX = value.x;
         this.scaleY = value.y;
     }
 
-    public get corner1(): Position {
-        return new Position(this.x1, this.y1);
+    public get corner1(): PositionType {
+        return Position(this.x1, this.y1);
     }
-    public set corner1(value: Position) {
+    public set corner1(value: PositionType) {
         this.x1 = value.x;
         this.y1 = value.y;
     }
 
-    public get corner2(): Position {
-        return new Position(this.x2, this.y2);
+    public get corner2(): PositionType {
+        return Position(this.x2, this.y2);
     }
-    public set corner2(value: Position) {
+    public set corner2(value: PositionType) {
         this.x2 = value.x;
         this.y2 = value.y;
     }
@@ -472,16 +473,16 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         this.y2 = value + height / 2;
     }
 
-    public get center(): Position {
-        return new Position(this.centerX, this.centerY);
+    public get center(): PositionType {
+        return Position(this.centerX, this.centerY);
     }
-    public set center(value: Position) {
+    public set center(value: PositionType) {
         this.centerX = value.x;
         this.centerY = value.y;
     }
 
     protected pointerId?: number = undefined;
-    private lastPointerPosition?: Position = undefined;
+    private lastPointerPosition?: PositionType = undefined;
     private lastTransformationMatrix?: DOMMatrix = undefined;
     protected hovered = false;
 
@@ -556,7 +557,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         ctx.translate(dropShadow.offset?.x ?? 0, dropShadow.offset?.y ?? 0);
         ctx.scale(dropShadow.scale?.x ?? 1, dropShadow?.scale?.y ?? 1);
         ctx.fillStyle = Color.toString(
-            new Color(
+            Color(
                 dropShadow.color?.red ?? 0,
                 dropShadow.color?.green ?? 0,
                 dropShadow.color?.blue ?? 0,
@@ -799,7 +800,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
             pointerId?: number
         ) => {
             const { event, translatedPoint } = positionedPointerEvent;
-            const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as Position;
+            const transformedPos = ctx.getTransform().inverse().transformPoint(translatedPoint) as PositionType;
             const transformationMatrix = ctx.getTransform();
             self.lastPointerPosition = transformedPos;
             self.lastTransformationMatrix = transformationMatrix;
@@ -875,30 +876,6 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         return ctx.isPointInPath(this._region, x, y);
     }
 
-    static initializeProps(props: {
-        color?: Color;
-        alpha?: number;
-        rotation?: number;
-        scale?: Position;
-        bounds?: Bounds;
-        name?: string;
-        effects?: EffectsType;
-    }) {
-        return {
-            color: props.color ?? new Color(0, 0, 0),
-            alpha: props.alpha ?? 1,
-            rotation: props.rotation ?? 0,
-            scale: props.scale ?? new Position(1, 1),
-            bounds: props.bounds ?? new Bounds(0, 0, 0, 0),
-            name: props.name ?? "",
-            effects:
-                props.effects ??
-                (() => {
-                    return;
-                })
-        };
-    }
-
     public logHierarchy(indent = 0) {
         const name = this.name === "" ? this.constructor.name : this.name;
         const red = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.red;
@@ -906,7 +883,7 @@ export abstract class Sprite<DetailsType = any, Properties = object, HiddenPrope
         const blue = [this.red, this.green, this.blue].every(color => color < 25) ? 125 : this.blue;
         console.log(
             `%c${"\t".repeat(indent)} ⌞${name} \t{ ${this.constructor.name} @ (${this.x1.toLocaleString()}, ${this.y1.toLocaleString()}) (${this.x2.toLocaleString()}, ${this.y2.toLocaleString()}) }`,
-            `color: ${Color.toString(new Color(red, green, blue))}; font-weight: bold;`
+            `color: ${Color.toString(Color(red, green, blue))}; font-weight: bold;`
         );
         this._children.forEach(child => child.logHierarchy(indent + 1));
     }

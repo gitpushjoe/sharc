@@ -1,3 +1,4 @@
+import { BoundsType } from "sharc/types/Common";
 import { Bounds } from "../Utils";
 import { DropShadowType, EllipseProperties, HiddenEllipseProperties, OmitBaseProps } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
@@ -25,7 +26,7 @@ export default class Ellipse<DetailsType = any>
                       : (defaults?.radius ?? [5, 5])));
         this.radiusX = radius[0];
         this.radiusY = radius[1];
-        const bounds = Bounds.fromCircle(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
+        const bounds = Bounds.Circle(props.center?.x ?? 0, props.center?.y ?? 0, radius[0], radius[1]);
         this.x1 = bounds.x1;
         this.y1 = bounds.y1;
         this.x2 = bounds.x2;
@@ -80,7 +81,7 @@ export default class Ellipse<DetailsType = any>
         dropShadow?: DropShadowType | null,
         colorAlpha?: number
     ): Path2D => {
-        const getX1Y1WH = (bounds: Bounds) => [
+        const getX1Y1WH = (bounds: BoundsType) => [
             -Math.abs(bounds.x1 - bounds.x2) / 2,
             -Math.abs(bounds.y1 - bounds.y2) / 2,
             Math.abs(bounds.x1 - bounds.x2),
@@ -90,7 +91,7 @@ export default class Ellipse<DetailsType = any>
             typeof properties.radius === "number"
                 ? [properties.radius, properties.radius]
                 : (properties.radius ?? [5, 5]);
-        const bounds = Bounds.fromCircle(properties.center!.x, properties.center!.y, radiusX, radiusY);
+        const bounds = Bounds.Circle(properties.center!.x, properties.center!.y, radiusX, radiusY);
         const coords = getX1Y1WH(bounds);
         ctx.beginPath();
         const region = new Path2D();

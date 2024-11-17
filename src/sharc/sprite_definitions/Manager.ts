@@ -9,17 +9,18 @@ import {
     OmitBaseProps
 } from "../types/Sprites";
 import NullSprite from "./NullSprite";
+import { BoundsType, PositionType, ScaleType } from "sharc/types/Common";
 
 // TODO(gitpushjoe): make this not exposed
 export class Transformation {
     constructor(
-        public translation: Position,
-        public scale: Position
+        public translation: PositionType,
+        public scale: ScaleType
     ) {
         return Transformation.new(translation, scale);
     }
 
-    public static new(translation: Position, scale: Position): { translation: Position; scale: Position } {
+    public static new(translation: PositionType, scale: ScaleType): { translation: PositionType; scale: ScaleType } {
         return { translation, scale };
     }
 
@@ -38,20 +39,20 @@ export class Transformation {
     }
 
     public static get Identity() {
-        return new Transformation(new Position(0, 0), new Position(1, 1));
+        return new Transformation(Position(0, 0), Position(1, 1));
     }
 
-    public static applyInverse(transformation: Transformation, position: Position): Position {
-        return new Position(
+    public static applyInverse(transformation: Transformation, position: PositionType): PositionType {
+        return Position(
             position.x * transformation.scale.x + transformation.translation.x,
             position.y * transformation.scale.y + transformation.translation.y
         );
     }
 
-    public static applyInverseToBounds(transformation: Transformation, bounds: Bounds): Bounds {
-        const p1 = Transformation.applyInverse(transformation, new Position(bounds.x1, bounds.y1));
-        const p2 = Transformation.applyInverse(transformation, new Position(bounds.x2, bounds.y2));
-        return new Bounds(p1.x, p1.y, p2.x, p2.y);
+    public static applyInverseToBounds(transformation: Transformation, bounds: BoundsType): BoundsType {
+        const p1 = Transformation.applyInverse(transformation, Position(bounds.x1, bounds.y1));
+        const p2 = Transformation.applyInverse(transformation, Position(bounds.x2, bounds.y2));
+        return Bounds(p1.x, p1.y, p2.x, p2.y);
     }
 
     public static combine(a: Transformation, b: Transformation): Transformation {
@@ -68,18 +69,18 @@ export class Transformation {
     }
 }
 
-function getTotalBounds(shape: Shape, transformation: Transformation = Transformation.Identity): Bounds {
+function getTotalBounds(shape: Shape, transformation: Transformation = Transformation.Identity): BoundsType {
     transformation = Transformation.combine(transformation, new Transformation(shape.center, shape.scale));
     const selfBounds = Transformation.applyInverseToBounds(transformation, Bounds.wrtSelf(shape.bounds));
     const bounds =
         shape.constructor.name === "NullSprite"
-            ? new Bounds( // TODO(gitpushjoe): might be a problem?
+            ? Bounds( // TODO(gitpushjoe): might be a problem?
                   Number.POSITIVE_INFINITY,
                   Number.POSITIVE_INFINITY,
                   Number.NEGATIVE_INFINITY,
                   Number.NEGATIVE_INFINITY
               )
-            : new Bounds(
+            : Bounds(
                   Math.min(selfBounds.x1, selfBounds.x2),
                   Math.min(selfBounds.y1, selfBounds.y2),
                   Math.max(selfBounds.x1, selfBounds.x2),
@@ -104,13 +105,13 @@ export function managerUpdate(
     if (updates.length === 0 || root.children.length === 0) {
         return;
     }
-    const totalBounds = new Bounds(
+    const totalBounds = Bounds(
         Number.POSITIVE_INFINITY,
         Number.POSITIVE_INFINITY,
         Number.NEGATIVE_INFINITY,
         Number.NEGATIVE_INFINITY
     );
-    const childrenTotalBounds: Bounds[] = [];
+    const childrenTotalBounds: BoundsType[] = [];
     for (let i = 0; i < root.children.length; i++) {
         let child = root.children[i];
         if (child.scale.x !== 1 || child.scale.y !== 1) {
@@ -196,23 +197,23 @@ export function managerUpdate(
     if (updates.includes("anchor") && properties.anchor !== null) {
         const position =
             properties.anchor === "top-left"
-                ? new Position(totalBounds.x1, totalBounds.y1)
+                ? Position(totalBounds.x1, totalBounds.y1)
                 : properties.anchor === "top-center"
-                  ? new Position((totalBounds.x1 + totalBounds.x2) / 2, totalBounds.y1)
+                  ? Position((totalBounds.x1 + totalBounds.x2) / 2, totalBounds.y1)
                   : properties.anchor === "top-right"
-                    ? new Position(totalBounds.x2, totalBounds.y1)
+                    ? Position(totalBounds.x2, totalBounds.y1)
                     : properties.anchor === "center-left"
-                      ? new Position(totalBounds.x1, (totalBounds.y1 + totalBounds.y2) / 2)
+                      ? Position(totalBounds.x1, (totalBounds.y1 + totalBounds.y2) / 2)
                       : properties.anchor === "center"
-                        ? new Position((totalBounds.x1 + totalBounds.x2) / 2, (totalBounds.y1 + totalBounds.y2) / 2)
+                        ? Position((totalBounds.x1 + totalBounds.x2) / 2, (totalBounds.y1 + totalBounds.y2) / 2)
                         : properties.anchor === "center-right"
-                          ? new Position(totalBounds.x2, (totalBounds.y1 + totalBounds.y2) / 2)
+                          ? Position(totalBounds.x2, (totalBounds.y1 + totalBounds.y2) / 2)
                           : properties.anchor === "bottom-left"
-                            ? new Position(totalBounds.x1, totalBounds.y2)
+                            ? Position(totalBounds.x1, totalBounds.y2)
                             : properties.anchor === "bottom-center"
-                              ? new Position((totalBounds.x1 + totalBounds.x2) / 2, totalBounds.y2)
+                              ? Position((totalBounds.x1 + totalBounds.x2) / 2, totalBounds.y2)
                               : properties.anchor === "bottom-right"
-                                ? new Position(totalBounds.x2, totalBounds.y2)
+                                ? Position(totalBounds.x2, totalBounds.y2)
                                 : (() => {
                                       throw new Error("Invalid anchor value");
                                   })();
@@ -228,7 +229,7 @@ export default class Manager<DetailsType = any>
     implements Required<OmitBaseProps<ManagerProperties & HiddenManagerProperties>>
 {
     constructor(props: ManagerProperties<DetailsType>, defaults?: ManagerProperties<DetailsType>) {
-        (props as DEFAULT_PROPERTIES).bounds = new Bounds(
+        (props as DEFAULT_PROPERTIES).bounds = Bounds(
             props.position?.x ?? defaults?.position?.x ?? 0,
             props.position?.y ?? defaults?.position?.y ?? 0,
             props.position?.x ?? defaults?.position?.x ?? 0,
@@ -250,10 +251,10 @@ export default class Manager<DetailsType = any>
     public padding: number | null = null;
 
     // AGGREGATE PROPERTIES
-    public get position(): Position {
-        return new Position(this.positionX, this.positionY);
+    public get position(): PositionType {
+        return Position(this.positionX, this.positionY);
     }
-    public set position(value: Position) {
+    public set position(value: PositionType) {
         this.positionX = value.x;
         this.positionY = value.y;
     }

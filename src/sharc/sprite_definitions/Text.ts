@@ -1,3 +1,4 @@
+import { PositionType } from "sharc/types/Common";
 import { Color, Position } from "../Utils";
 import { TextProperties, HiddenTextProperties, OmitBaseProps, DropShadowType } from "../types/Sprites";
 import SlidingStrokeableSprite from "./SlidingStrokeableSprite";
@@ -54,10 +55,10 @@ export default class TextSprite<DetailsType = any>
         this._bounds = this.calculateBounds(new OffscreenCanvas(0, 0).getContext('2d')!);
     }
 
-    public get position(): Position {
-        return new Position(this.positionX, this.positionY);
+    public get position(): PositionType {
+        return Position(this.positionX, this.positionY);
     }
-    public set position(value: Position) {
+    public set position(value: PositionType) {
         this.positionX = value.x;
         this.positionY = value.y;
         this._bounds = this.calculateBounds(new OffscreenCanvasRenderingContext2D());
@@ -106,7 +107,7 @@ export default class TextSprite<DetailsType = any>
         this._bounds = this.calculateBounds(ctx);
         super.draw(ctx, {
             text: this.text,
-            position: new Position(this.positionX, this.positionY),
+            position: Position(this.positionX, this.positionY),
             font: this.font,
             fontSize: this.fontSize,
             textAlign: "start",
@@ -144,9 +145,9 @@ export default class TextSprite<DetailsType = any>
             undefined,
             (ctx, shadow) => {
                 const stroke = properties.stroke;
-                const prevStrokeColor = stroke?.color ?? new Color();
+                const prevStrokeColor = stroke?.color ?? Color();
                 shadow ??= undefined;
-                const strokeColor = new Color(
+                const strokeColor = Color(
                     shadow?.color?.red ?? 0,
                     shadow?.color?.green ?? 0,
                     shadow?.color?.blue ?? 0,

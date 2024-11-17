@@ -7,6 +7,7 @@ import {
     DEFAULT_PROPERTIES,
     DropShadowType
 } from "../types/Sprites";
+import { ColorType } from "sharc/types/Common";
 
 export default class StrokeableSprite<DetailsType = any, Properties = object, HiddenProperties = object>
     extends Sprite<DetailsType, Properties & StrokeProperties, HiddenProperties & HiddenStrokeProperties>
@@ -85,7 +86,7 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
         }
     }
 
-    public get strokeColor(): Color {
+    public get strokeColor(): ColorType {
         return {
             red: this.strokeRed,
             green: this.strokeGreen,
@@ -93,7 +94,7 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
             alpha: this.strokeAlpha
         };
     }
-    public set strokeColor(value: Color) {
+    public set strokeColor(value: ColorType) {
         this.strokeRed = value.red;
         this.strokeGreen = value.green;
         this.strokeBlue = value.blue;
@@ -141,7 +142,7 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
         ctx.translate(dropShadow.offset?.x ?? 0, dropShadow.offset?.y ?? 0);
         ctx.scale(dropShadow.scale?.x ?? 1, dropShadow?.scale?.y ?? 1);
         ctx.fillStyle = Color.toString(
-            new Color(
+            Color(
                 dropShadow.color?.red ?? 0,
                 dropShadow.color?.green ?? 0,
                 dropShadow.color?.blue ?? 0,
@@ -157,8 +158,8 @@ export default class StrokeableSprite<DetailsType = any, Properties = object, Hi
             ctx.fill(region, fillRule);
         }
         if (stroke) {
-            const prevStrokeColor = stroke?.color ?? new Color();
-            const strokeColor = new Color(
+            const prevStrokeColor = stroke?.color ?? Color();
+            const strokeColor = Color(
                 dropShadow.color?.red ?? 0,
                 dropShadow.color?.green ?? 0,
                 dropShadow.color?.blue ?? 0,

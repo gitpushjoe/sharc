@@ -1,7 +1,8 @@
 import { AsyncStageEventListeners, EventCollection, PointerEventCallback } from "../types/Events";
 import { AsyncMessage, CanvasInterface, StageStateMessage } from "../types/Stage";
 import { Stage } from "../Stage";
-import { Color, Colors, Position, callAndPrune } from "../Utils";
+import { Colors, Position, callAndPrune } from "../Utils";
+import { ColorType } from "sharc/types/Common";
 
 const DEFAULT_CANVAS_INTERFACE: CanvasInterface = {
     width: 0,
@@ -53,7 +54,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
     constructor(
         private readonly _postMessage: (message: AsyncMessage<MessageType>) => void,
         public readonly rootStyle: "classic" | "centered" = "centered",
-        public bgColor: Color = Colors.White
+        public bgColor: ColorType = Colors.White
     ) {
         const offscreen = new OffscreenCanvas(1, 1);
         super(DEFAULT_CANVAS_INTERFACE, rootStyle, bgColor, offscreen.getContext("2d")!);
@@ -141,7 +142,7 @@ export class WorkerStage<DetailsType = any, MessageType = any> extends Stage<Det
                 this.offscreenCanvas.width = e.width;
                 this.offscreenCanvas.height = e.height;
                 this._root.position =
-                    this.rootStyle === "centered" ? new Position(e.width / 2, e.height / 2) : new Position(0, 0);
+                    this.rootStyle === "centered" ? Position(e.width / 2, e.height / 2) : Position(0, 0);
                 this.postMessage({ type: "ready" });
                 this.loop();
                 break;

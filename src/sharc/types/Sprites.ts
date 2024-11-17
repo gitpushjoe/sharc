@@ -1,10 +1,10 @@
 import { Shape } from "../Sprite";
-import { PositionType, BoundsType, ColorType } from "./Common";
+import { PositionType, BoundsType, ColorType, ScaleType } from "./Common";
 
 export type DropShadowType = {
     color?: ColorType;
     offset?: PositionType;
-    scale?: PositionType;
+    scale?: ScaleType;
     blur?: number;
     alpha?: number;
 };
@@ -43,7 +43,7 @@ export type ShapeProperties<T = object> = {
     color?: ColorType;
     alpha?: number;
     rotation?: number;
-    scale?: PositionType;
+    scale?: ScaleType;
     name?: string;
     effects?: EffectsType;
     enabled?: boolean;

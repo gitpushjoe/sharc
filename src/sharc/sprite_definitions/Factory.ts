@@ -1,3 +1,4 @@
+import { PositionType } from "sharc/types/Common";
 import { Shape, Sprite } from "../Sprite";
 import { Bounds, Position } from "../Utils";
 import {
@@ -15,7 +16,7 @@ export default class Factory<ParametersType = any, DetailsType = any>
     implements Required<OmitBaseProps<FactoryProperties<ParametersType> & HiddenFactoryProperties>>
 {
     constructor(props: FactoryProperties<ParametersType, DetailsType>, defaults?: FactoryProperties<ParametersType, DetailsType>) {
-        (props as DEFAULT_PROPERTIES).bounds = new Bounds(
+        (props as DEFAULT_PROPERTIES).bounds = Bounds(
             props.position?.x ?? defaults?.position?.x ?? 0,
             props.position?.y ?? defaults?.position?.y ?? 0,
             props.position?.x ?? defaults?.position?.x ?? 0,
@@ -37,10 +38,10 @@ export default class Factory<ParametersType = any, DetailsType = any>
     public parameters: ParametersType extends number ? number : ParametersType[];
 
     // AGGREGATE PROPERTIES
-    public get position(): Position {
-        return new Position(this.positionX, this.positionY);
+    public get position(): PositionType {
+        return Position(this.positionX, this.positionY);
     }
-    public set position(value: Position) {
+    public set position(value: PositionType) {
         this.positionX = value.x;
         this.positionY = value.y;
     }

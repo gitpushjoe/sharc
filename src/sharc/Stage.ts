@@ -1,5 +1,6 @@
 import { NullSprite } from "./Sprites";
 import { Color, Colors, Position, callAndPrune } from "./Utils";
+import { ColorType, PositionType } from "./types/Common";
 import { PointerEventCallback, EventCollection, StageEventListeners } from "./types/Events";
 import { DEFAULT_PROPERTIES } from "./types/Sprites";
 import { CanvasInterface } from "./types/Stage";
@@ -7,7 +8,7 @@ import { CanvasInterface } from "./types/Stage";
 export class StageRoot<DetailsType = any> extends NullSprite {
     constructor(
         stage: Stage,
-        props: { position?: Position } & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">
+        props: { position?: PositionType } & Omit<DEFAULT_PROPERTIES<DetailsType>, "bounds" | "color">
     ) {
         super(props);
         this.stage = stage;
@@ -44,7 +45,7 @@ export class Stage<RootDetailsType = any> {
     constructor(
         protected canvas?: CanvasInterface,
         public readonly rootStyle: "classic" | "centered" = "centered",
-        public bgColor: Color = Colors.White,
+        public bgColor: ColorType = Colors.White,
         ctx?: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
         noCtx = false
     ) {
@@ -55,8 +56,8 @@ export class Stage<RootDetailsType = any> {
             rootStyle === "classic"
                 ? new StageRoot<RootDetailsType>(this, {})
                 : new StageRoot<RootDetailsType>(this, {
-                      position: new Position(this.width! / 2, this.height! / 2),
-                      scale: new Position(1, -1)
+                      position: Position(this.width! / 2, this.height! / 2),
+                      scale: Position(1, -1)
                   });
         canvas.oncontextmenu = () => false;
         canvas.style.touchAction = "none";
@@ -111,7 +112,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        const position = new Position(
+        const position = Position(
             (e.offsetX || e.pageX - this.canvas!.offsetLeft) * this.scaleX -
                 (this.rootStyle === "centered" ? this.width! / 2 : 0),
             ((e.offsetY || e.pageY - this.canvas!.offsetTop) * this.scaleY -
@@ -131,7 +132,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        const position = new Position(
+        const position = Position(
             (e.offsetX || e.pageX - this.canvas!.offsetLeft) * this.scaleX -
                 (this.rootStyle === "centered" ? this.width! / 2 : 0),
             ((e.offsetY || e.pageY - this.canvas!.offsetTop) * this.scaleY -
@@ -150,7 +151,7 @@ export class Stage<RootDetailsType = any> {
             return;
         }
         e.preventDefault();
-        const position = new Position(
+        const position = Position(
             (e.offsetX || e.pageX - this.canvas!.offsetLeft) * this.scaleX -
                 (this.rootStyle === "centered" ? this.width! / 2 : 0),
             ((e.offsetY || e.pageY - this.canvas!.offsetTop) * this.scaleY -
@@ -191,8 +192,8 @@ export class Stage<RootDetailsType = any> {
         e.preventDefault();
     }
 
-    public positionOnCanvas(canvas: CanvasInterface, e: PointerEvent): Position {
-        return new Position(
+    public positionOnCanvas(canvas: CanvasInterface, e: PointerEvent): PositionType {
+        return Position(
             ((e.offsetX || e.clientX - canvas.getBoundingClientRect().left) * canvas.width) / canvas.clientWidth, // (Google Chrome) || (Firefox)
             ((e.offsetY || e.clientY - canvas.getBoundingClientRect().top) * canvas.height) / canvas.clientHeight // (Google Chrome) || (Firefox)
         );

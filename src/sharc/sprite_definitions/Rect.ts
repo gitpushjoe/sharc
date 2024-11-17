@@ -1,9 +1,10 @@
+import { BoundsType } from "sharc/types/Common";
 import { Bounds } from "../Utils";
 import { RectProperties, RadiusType, OmitBaseProps, DropShadowType } from "../types/Sprites";
 import StrokeableSprite from "./StrokeableSprite";
 
 export default class Rect<DetailsType = any>
-    extends StrokeableSprite<DetailsType, OmitBaseProps<RectProperties> & { bounds?: Bounds }, object>
+    extends StrokeableSprite<DetailsType, OmitBaseProps<RectProperties> & { bounds?: BoundsType }, object>
     implements Required<OmitBaseProps<RectProperties>>
 {
     constructor(props: RectProperties<DetailsType>, defaults?: RectProperties<DetailsType>) {
@@ -28,7 +29,7 @@ export default class Rect<DetailsType = any>
         dropShadow?: DropShadowType | null,
         colorAlpha?: number
     ): Path2D => {
-        const coords = Bounds.wrtSelf(properties.bounds ?? new Bounds(0, 0, 0, 0));
+        const coords = Bounds.wrtSelf(properties.bounds ?? Bounds(0, 0, 0, 0));
         if (properties.stroke === null || properties.stroke?.lineWidth === 0) {
             if (properties.radius && properties.radius[0] === 0 && properties.radius.length === 1) {
                 const region = new Path2D();
@@ -62,7 +63,7 @@ export default class Rect<DetailsType = any>
         }
     };
 
-    public static Bounds(x1: number, y1: number, width: number, height: number): Bounds {
+    public static Bounds(x1: number, y1: number, width: number, height: number): BoundsType {
         return Bounds.fromDimensions(x1, y1, width, height);
     }
 }

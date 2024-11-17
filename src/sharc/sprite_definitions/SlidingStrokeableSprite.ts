@@ -1,6 +1,7 @@
 import { Bounds, Position, invalidSetterFor } from "../Utils";
 import StrokeableSprite from "./StrokeableSprite";
 import { StrokeType, DEFAULT_PROPERTIES } from "../types/Sprites";
+import { BoundsType, PositionType } from "sharc/types/Common";
 
 export default abstract class SlidingStrokeableSprite<
     DetailsType = any,
@@ -68,7 +69,7 @@ export default abstract class SlidingStrokeableSprite<
 
     protected abstract shiftX(value: number): void;
     protected abstract shiftY(value: number): void;
-    protected shift(value: Position): void {
+    protected shift(value: PositionType): void {
         this.shiftX(value.x);
         this.shiftY(value.y);
     }
@@ -87,42 +88,42 @@ export default abstract class SlidingStrokeableSprite<
         this.shiftY(value - this.centerY);
     }
 
-    public get center(): Position {
-        return new Position(this.centerX, this.centerY);
+    public get center(): PositionType {
+        return Position(this.centerX, this.centerY);
     }
-    public set center(value: Position) {
+    public set center(value: PositionType) {
         this.centerX = value.x;
         this.centerY = value.y;
     }
 
-    public get corner1(): Position {
-        return new Position(this.x1, this.y1);
+    public get corner1(): PositionType {
+        return Position(this.x1, this.y1);
     }
-    public set corner1(value: Position) {
+    public set corner1(value: PositionType) {
         this.shiftX(value.x - this._x1);
         this.shiftY(value.y - this._y1);
     }
 
-    public get corner2(): Position {
-        return new Position(this.x2, this.y2);
+    public get corner2(): PositionType {
+        return Position(this.x2, this.y2);
     }
-    public set corner2(value: Position) {
+    public set corner2(value: PositionType) {
         this.shiftX(value.x - this._x2);
         this.shiftY(value.y - this._y2);
     }
 
     public get bounds() {
-        return new Bounds(this.x1, this.y1, this.x2, this.y2);
+        return Bounds(this.x1, this.y1, this.x2, this.y2);
     }
     @invalidSetterFor("DeltaStrokeableSprite")
-    public set bounds(_value: Bounds) {
+    public set bounds(_value: BoundsType) {
         return;
     }
 
     protected get _bounds() {
         return this.bounds;
     }
-    protected set _bounds(bounds: Bounds) {
+    protected set _bounds(bounds: BoundsType) {
         this._x1 = bounds.x1;
         this._y1 = bounds.y1;
         this._x2 = bounds.x2;

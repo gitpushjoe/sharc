@@ -3,6 +3,8 @@ export type PositionType = {
     y: number;
 };
 
+export type ScaleType = PositionType;
+
 export type ColorType = {
     red: number;
     green: number;
@@ -16,3 +18,8 @@ export type BoundsType = {
     x2: number;
     y2: number;
 };
+
+export type PolarPositionType = {
+    angle: number;
+    radius: number;
+}

@@ -17,6 +17,7 @@ import {
 import { Stage } from "./sharc/Stage";
 import { WorkerStage } from "./sharc/async_stages/WorkerStage";
 import { Animate, AnimateTo, Bounds, Color, Colors, Easing, Position } from "./sharc/Utils";
+import { rotate, scale, shiftX } from "./sharc/AnimationUtils";
 import { ColorType } from "./sharc/types/Common";
 import { Theme } from "./sharc/Theme";
 
@@ -43,10 +44,10 @@ export const tests: Test[] = [
         name: "perf",
         apply: (stage: Stage | WorkerStage<any, string>) => {
             for (let i = 0; i < 70 * 30; i++) {
-                const ellipse = new Polygon({ sides: 5, color: Colors.Blue, radius: 10 });
-                ellipse.centerX = 20 + (i % 70) * 15;
-                ellipse.centerY = 65 + Math.floor(i / 70) * 25;
-                ellipse.animate(
+                const pentagon = new Polygon({ sides: 5, color: Colors.Blue, radius: 10 });
+                pentagon.centerX = 20 + (i % 70) * 15;
+                pentagon.centerY = 65 + Math.floor(i / 70) * 25;
+                pentagon.animate(
                     {
                         property: "centerX",
                         from: null,
@@ -57,9 +58,9 @@ export const tests: Test[] = [
                     { loop: true }
                 );
 
-                ellipse.createChannels(2);
+                pentagon.createChannels(2);
 
-                ellipse.animate(
+                pentagon.animate(
                     Animate(
                         "color",
                         getRandomColor(180, 55),
@@ -70,15 +71,15 @@ export const tests: Test[] = [
                     { loop: true }
                 );
 
-                ellipse.animate(Animate("rotation", 0, 360, 20, Easing.EASE_IN_OUT), { loop: true });
+                pentagon.animate(rotate(20, Easing.EASE_IN_OUT, 0, 360), { loop: true });
 
-                stage.root.addChild(ellipse);
+                stage.root.addChild(pentagon);
             }
             const fps = new TextSprite<[number, number, number[]]>({
                 text: "FPS: 0   Skipped: 0",
                 color: Colors.Black,
                 fontSize: 40,
-                position: { x: 10, y: 10 },
+                position: Position(10, 30),
                 positionIsCenter: false,
                 details: [performance.now(), 0, []],
                 bold: true
@@ -203,7 +204,7 @@ export const tests: Test[] = [
             stage.root.addChild(image);
             stage.root.addChild(
                 new Ellipse({ color: Colors.Blue, radius: 10 }).distribute(
-                    [[Animate("centerX", 0, 1000, 100, Easing.Bounce(Easing.EASE_IN_OUT))]],
+                    [[shiftX(100, Easing.Bounce(Easing.EASE_IN_OUT), 0, 1000)]],
                     { loop: true }
                 )
             );
@@ -224,7 +225,7 @@ export const tests: Test[] = [
                     color: (i % 2 && Colors.Red) || Colors.Blue,
                     radius: 50,
                     stroke: { lineWidth: 5 },
-                    center: new Position(50 + (i + 2) * 40, 50 + (i % 2) * 40),
+                    center: Position(50 + (i + 2) * 40, 50 + (i % 2) * 40),
                     name: `ellipse${i}`
                 })
                     .on("drag", (sprite, pos) => {
@@ -260,13 +261,9 @@ export const tests: Test[] = [
                         if (stage.currentFrame >= 240) {
                             return 1;
                         }
-                        sprite.animate({
-                            property: "scale",
-                            from: Position.new(1, 1),
-                            to: new Position(1.5, 1.5),
-                            duration: 30,
-                            easing: Easing.Bounce(Easing.EASE_IN_OUT)
-                        });
+                        sprite.animate(
+                            scale(30, Easing.Bounce(Easing.EASE_IN_OUT), Position(1, 1), Position(1.5, 1.5))
+                        );
                     }
                 );
 
@@ -303,7 +300,7 @@ export const tests: Test[] = [
                 new TextSprite<number>({
                     text: `Counting up to ${max}: 0`,
                     fontSize: 50,
-                    position: new Position(1175, 725),
+                    position: Position(1175, 725),
                     textAlign: "right",
                     details: 0
                 })
@@ -316,7 +313,7 @@ export const tests: Test[] = [
                 stage.root.addChild(
                     new LabelSprite({
                         text: "Click me and type!",
-                        position: new Position(50, 200 + 72 * i),
+                        position: Position(50, 200 + 72 * i),
                         fontSize: 50,
                         backgroundColor: Colors.LightBlue,
                         backgroundRadius: [10, 10],
@@ -342,11 +339,11 @@ export const tests: Test[] = [
     {
         name: "readme", // TODO(gitpushjoe): update readme
         apply: (stage: Stage | WorkerStage<any, string>) => {
-            (stage.root.center = new Position(600, 400)), (stage.root.scaleY = -1);
+            (stage.root.center = Position(600, 400)), (stage.root.scaleY = -1);
             const circle = new Ellipse({
                 color: Colors.Red,
                 radius: 100,
-                center: new Position(50, -50),
+                center: Position(50, -50),
                 stroke: {
                     color: Colors.Pink,
                     lineWidth: 10,
@@ -453,11 +450,11 @@ export const tests: Test[] = [
                 color: Colors.Red,
                 bounds: Rect.Bounds(0, 0, 100, 100),
                 stroke: { lineWidth: 5 },
-                scale: new Position(-2, 1),
+                scale: Position(-2, 1),
                 name: "rect"
             });
             const origin = new Ellipse({
-                center: new Position(600, 400),
+                center: Position(600, 400),
                 radius: 10,
                 color: Colors.None,
                 stroke: {
@@ -476,9 +473,9 @@ export const tests: Test[] = [
                     console.log(`update took ${Date.now() - start}ms`);
                 }
                 if (frame % 80 === 70) {
-                    ellipse.center = new Position(Math.random() * 300 + 150, Math.random() * 300 - 150);
-                    rect.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
-                    text.center = new Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
+                    ellipse.center = Position(Math.random() * 300 + 150, Math.random() * 300 - 150);
+                    rect.center = Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
+                    text.center = Position(Math.random() * 300 - 150, Math.random() * 300 - 150);
                 }
             });
         }
@@ -488,7 +485,7 @@ export const tests: Test[] = [
         apply: (stage: Stage | WorkerStage<any, string>) => {
             const root = stage.root;
             root.details = 0;
-            root.center = new Position(600, 400);
+            root.center = Position(600, 400);
             stage.bgColor = { ...Colors.LightSlateGray, alpha: 0.01 };
 
             for (let i = 1; i < 7; i++) {
@@ -540,7 +537,7 @@ export const tests: Test[] = [
                                         sprite.removeSelf();
                                     })
                                 )
-                                .animate(Animate("rotation", 0, -360, 140), { loop: true })
+                                .animate(rotate(140, Easing.LINEAR, 0, -360), { loop: true })
                         )
                 );
 
@@ -548,7 +545,7 @@ export const tests: Test[] = [
                     root.details = Math.max(0, --root.details);
                 });
 
-                pole.animate(Animate("rotation", 0, 360, 250 * i * 0.7), {
+                pole.animate(rotate(250 * i, Easing.LINEAR, 0, 360), {
                     loop: true
                 });
 
@@ -562,7 +559,7 @@ export const tests: Test[] = [
             const ellipseProps = {
                 color: Colors.Blue,
                 radius: 25,
-                center: new Position(250, 0),
+                center: Position(250, 0),
                 stroke: { lineWidth: 5 }
             };
             const ellipses = [
@@ -609,7 +606,7 @@ export const tests: Test[] = [
                             to: Colors.Fuchsia,
                             duration: 90,
                             easing: Easing.Bounce(Easing.EASE_IN_OUT),
-                            clamp: new Color(200, 0, 200)
+                            clamp: Color(200, 0, 200)
                         },
                         { loop: true }
                     ),
@@ -637,7 +634,7 @@ export const tests: Test[] = [
                             to: Colors.Fuchsia,
                             duration: 90,
                             easing: Easing.Bounce(Easing.EASE_IN_OUT),
-                            minClamp: new Color(50, 0, 50)
+                            minClamp: Color(50, 0, 50)
                         },
                         { loop: true }
                     ),
@@ -666,8 +663,8 @@ export const tests: Test[] = [
                             to: Colors.Fuchsia,
                             duration: 90,
                             easing: Easing.Bounce(Easing.EASE_IN_OUT),
-                            clamp: new Color(200, 0, 200),
-                            minClamp: new Color(50, 0, 50)
+                            clamp: Color(200, 0, 200),
+                            minClamp: Color(50, 0, 50)
                         },
                         { loop: true }
                     )
@@ -677,7 +674,7 @@ export const tests: Test[] = [
                 anchor: "center-left",
                 align: "column-center",
                 padding: 10,
-                position: new Position(50, 200)
+                position: Position(50, 200)
             });
             ellipses.forEach(ellipse =>
                 manager.addChild(
@@ -716,8 +713,8 @@ export const tests: Test[] = [
                         ]
                     },
                     dropShadow: {
-                        offset: new Position(10, 10),
-                        scale: new Position(1.05, 1.05),
+                        offset: Position(10, 10),
+                        scale: Position(1.05, 1.05),
                         blur: 2,
                         color: Colors.DarkGreen
                     }
@@ -758,7 +755,7 @@ export const tests: Test[] = [
             });
 
             const manager = new t.ManagerSprite({
-                position: new Position(200, 200),
+                position: Position(200, 200),
                 align: "row-center",
                 padding: 25
             }).addChildren(rect, rectWithoutTheme, ellipse, ellipseWithoutTheme);
@@ -771,18 +768,18 @@ export const tests: Test[] = [
         name: "dropshadow",
         apply: (stage: Stage | WorkerStage<any, string>) => {
             const root = stage.root;
-            root.scale = new Position(.9, .9);
+            root.scale = Position(0.9, 0.9);
 
             const dropShadow = {
-                offset: new Position(10, 10),
+                offset: Position(10, 10),
                 color: Colors.DarkTurquoise,
                 alpha: 1,
-                blur: 5,
+                blur: 5
             };
 
             const circle = new Ellipse({
                 radius: 50,
-                color: {...Colors.DarkRed, alpha: 0.75},
+                color: { ...Colors.DarkRed, alpha: 0.75 },
                 stroke: {
                     color: Colors.Black,
                     lineWidth: 8
@@ -791,32 +788,32 @@ export const tests: Test[] = [
             });
 
             const bezierCurve = new BezierCurve({
-                start: new Position(-50, -50),
+                start: Position(-50, -50),
                 points: [
                     {
-                        control1: new Position(-50, 0),
-                        control2: new Position(0, 0),
-                        end: new Position(0, 0)
+                        control1: Position(-50, 0),
+                        control2: Position(0, 0),
+                        end: Position(0, 0)
                     },
                     {
-                        control1: new Position(0, 0),
-                        control2: new Position(50, 0),
-                        end: new Position(50, 50)
+                        control1: Position(0, 0),
+                        control2: Position(50, 0),
+                        end: Position(50, 50)
                     }
                 ],
                 color: Colors.None,
                 stroke: {
                     color: circle.color,
                     lineWidth: 10,
-                    lineCap: 'round'
+                    lineCap: "round"
                 },
                 arrow: {
-                    side: 'end',
+                    side: "end",
                     length: 20,
                     stroke: {
                         color: circle.color,
                         lineWidth: 10,
-                        lineCap: 'round'
+                        lineCap: "round"
                     }
                 },
                 dropShadow
@@ -826,7 +823,7 @@ export const tests: Test[] = [
                 bounds: Line.Bounds(-50, -50, 50, 50),
                 lineWidth: 10,
                 lineCap: "round",
-                color: {...circle.color, alpha: 1},
+                color: { ...circle.color, alpha: 1 },
                 lineDashGap: 30,
                 lineDash: 12,
                 arrow: {
@@ -835,17 +832,17 @@ export const tests: Test[] = [
                         lineWidth: 10,
                         lineCap: "round",
                         lineJoin: "round",
-                        color: {...circle.color, alpha: 1},
+                        color: { ...circle.color, alpha: 1 }
                     }
                 },
-                dropShadow,
+                dropShadow
             }).animate(Animate("lineDashOffset", 0, -42, 120), { loop: true });
 
             const image = new ImageSprite({
-                bounds: new Bounds(-50, -50, 50, 50),
+                bounds: Bounds(-50, -50, 50, 50),
                 stroke: {
                     lineWidth: 10,
-                    lineJoin: 'round',
+                    lineJoin: "round"
                 },
                 src: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Green_Apple_Icon.png/640px-Green_Apple_Icon.png",
                 dropShadow
@@ -853,21 +850,21 @@ export const tests: Test[] = [
 
             const label = new LabelSprite({
                 positionIsCenter: true,
-                position: new Position(),
+                position: Position(),
                 text: ":)",
                 fontSize: 80,
                 padding: 20,
                 bold: true,
                 stroke: { lineWidth: 10 },
                 color: circle.color,
-                textStroke: {lineWidth: 6 },
+                textStroke: { lineWidth: 6 },
                 // backgroundColor: Colors.Pink
                 dropShadow
             });
 
             const text = new TextSprite({
                 // positionIsCenter: true,
-                position: new Position(),
+                position: Position(),
                 text: "(:",
                 fontSize: 80,
                 bold: true,
@@ -880,28 +877,27 @@ export const tests: Test[] = [
             //     bounds: Line.Bounds(-50, -50, 50, 50),
             //     lineWidth: 5
             // });
-            
+
             const path = new Path({
                 path: [
-                    new Position(50, -50),
-                    new Position(-50, -50),
-                    new Position(-50, 10),
-                    new Position(20, 10),
-                    new Position(20, 30),
-                    new Position(-50, 30),
-                    new Position(-50, 50),
-                    new Position(50, 50),
-                    new Position(50, -10),
-                    new Position(-30, -10),
-                    new Position(-30, -30),
-                    new Position(50, -30),
+                    Position(50, -50),
+                    Position(-50, -50),
+                    Position(-50, 10),
+                    Position(20, 10),
+                    Position(20, 30),
+                    Position(-50, 30),
+                    Position(-50, 50),
+                    Position(50, 50),
+                    Position(50, -10),
+                    Position(-30, -10),
+                    Position(-30, -30),
+                    Position(50, -30)
                 ],
-                color: {...circle.color, alpha: 0.6},
-                stroke: {lineWidth: 5},
+                color: { ...circle.color, alpha: 0.6 },
+                stroke: { lineWidth: 5 },
                 closePath: true,
                 dropShadow
             });
-
 
             const polygon = new Polygon({
                 sides: 5,
@@ -916,11 +912,11 @@ export const tests: Test[] = [
                 color: circle.color,
                 stroke: circle.stroke,
                 rotation: 180,
-                dropShadow: {...dropShadow, offset: Position.factor(dropShadow.offset, -1)}
+                dropShadow: { ...dropShadow, offset: Position.factor(dropShadow.offset, -1) }
             });
 
             const rect = new Rect({
-                bounds: Bounds.fromCircle(0, 0, 50),
+                bounds: Bounds.Circle(0, 0, 50),
                 color: circle.color,
                 stroke: circle.stroke,
                 radius: [20],
@@ -928,11 +924,10 @@ export const tests: Test[] = [
             });
 
             const manager = new ManagerSprite({
-                position: new Position(100, 400),
+                position: Position(100, 400),
                 align: "row-center",
                 padding: 30
             });
-
 
             manager.addChildren(bezierCurve, circle, image, label, line, path, polygon, rect, star, text);
             manager.update(["padding"]);
